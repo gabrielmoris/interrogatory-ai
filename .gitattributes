@@ -1,64 +1,7 @@
-# -------------------------------------------------------------------------------
-# 1. Line Endings & Text Normalization
-# -------------------------------------------------------------------------------
-# Default all files to LF for cross-platform compatibility
 * text=auto eol=lf
 
-# Windows scripts
-*.bat           text eol=crlf
-*.cmd           text eol=crlf
-*.ps1           text eol=crlf
-
-# Unix scripts
-*.sh            text eol=lf
-
-# -------------------------------------------------------------------------------
-# 2. Frontend (Vite + TypeScript + Bun)
-# -------------------------------------------------------------------------------
-*.ts            text eol=lf
-*.tsx           text eol=lf
-*.json          text eol=lf
-*.html          text eol=lf
-*.css           text eol=lf
-*.md            text eol=lf
-
-# Bun lockfile noise reduction
-bun.lock            linguist-generated=true
-bun.lockb           binary linguist-generated=true
-
-# Source Maps
-*.map               linguist-generated=true -diff
-
-# -------------------------------------------------------------------------------
-# 3. Tauri v2 & Rust Backend
-# -------------------------------------------------------------------------------
-*.rs                            text eol=lf
-src-tauri/Cargo.toml            text eol=lf
-src-tauri/Cargo.lock            linguist-generated=true
-src-tauri/tauri.conf.json       text eol=lf
-
-# Security Capabilities (e.g., capabilities/default.json)
-src-tauri/capabilities/*.json   text eol=lf
-
-# Hide auto-generated schemas in src-tauri/gen from PR diffs
-src-tauri/gen/**                linguist-generated=true -diff
-
-# -------------------------------------------------------------------------------
-# 4. App Assets & Binary Files
-# -------------------------------------------------------------------------------
-# Tauri Icons folder
-src-tauri/icons/**  binary
-
-# General Binaries
-*.ico               binary
-*.icns              binary
-*.png               binary
-*.jpg               binary
-*.jpeg              binary
-*.webp              binary
-*.svg               text eol=lf
-
-# Fonts
-*.woff              binary
-*.woff2             binary
-*.ttf               binary
+*.png binary
+*.ico binary
+*.icns binary
+*.svg text eol=lf
+*.gguf binary

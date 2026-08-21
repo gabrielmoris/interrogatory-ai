@@ -23,5 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Rust (workspace target dir)
+/target
+
+# Local LLM weights — never commit these
+models/
+*.gguf
+
 # Others
 docs
