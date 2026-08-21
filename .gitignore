@@ -31,5 +31,4 @@ models/
 *.gguf
 
 # Others
-docs
 task.md

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "doc": "cd src-tauri && cargo doc --no-deps --open",
+    "test:rust": "cd src-tauri && cargo check --tests",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
