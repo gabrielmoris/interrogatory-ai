@@ -35,6 +35,13 @@ Exceptions you may edit directly: test files, `docs/**`, `CLAUDE.md`, build conf
 - He asks conceptual questions mid-stage ("why is this here?"). Answer them fully; it is not a detour.
 - Be direct. No motivational filler. He pushes back when he disagrees, which is welcome and
   frequently correct — engage with the argument rather than restating your position.
+- **Calibrate to "first month of Rust", not "senior engineer".** He is senior in TypeScript, so do
+  not explain hash maps, sorting or type systems in general. Do explain *Rust's* machinery from the
+  ground up: what a trait is, what `derive` actually does, what a move is, what an error code means.
+  Corrected 2026-08-22 — "the way you explain is like if I were writing Rust for years."
+- **One concept per reply, finished.** Explain it, give the shape in another domain, say exactly
+  what to run, then stop and let him come back. Do not stack five buckets of errors, error-code
+  trivia, or asides into one answer — a wall of correct information is still a wall.
 
 ### Tone
 

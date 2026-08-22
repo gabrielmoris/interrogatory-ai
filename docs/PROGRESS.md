@@ -1,16 +1,16 @@
 # PROGRESS — where we are
 
 > Resume order for a fresh session: `CLAUDE.md` → this file → the current stage brief in `docs/stages/`.
-> Last updated: 2026-08-21.
+> Last updated: 2026-08-22.
 
 ## Status
 
 | | |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Stage | **1 complete** (`Difficulty` / `Tuning`) — reviewed, passing |
-| Next | Stage 2 — not yet written |
-| Blocked on | nothing |
+| Stage | **2 issued** (`SuspectId` / `FactId`) — brief written, test failing, awaiting implementation |
+| Next | Stage 3 — `Fact` (with `known_by`) and `Case` |
+| Blocked on | Gabriel — say "ready" when `cargo test --test ids` is green |
 
 ---
 
@@ -70,6 +70,27 @@ Hints reached: got to the `impl` skeleton with guidance; needed the array-litera
 Review outcome: **pass**, with a polish pass requested — derives on `Tuning`, `Self` inside the
 `impl` block, and doc comments on public items.
 
+### Stage 2 — `SuspectId` and `FactId` 🟡 issued 2026-08-22
+`src-tauri/src/ids.rs` (to be written by Gabriel), spec at `src-tauri/tests/ids.rs`, brief at
+`docs/stages/stage-02-ids.md`.
+
+To build: two tuple structs wrapping a **private** `u32`, each with `new` / `get`, eight derives,
+and hand-written `Display` and `From<u32>`.
+
+Concepts targeted: the newtype pattern (vs bare `u32`, vs `String`, vs TS branded types); tuple
+structs and field-level privacy as a real escape-hatch-free boundary; **derive vs hand-written
+`impl`** and why std ships no `derive(Display)`; the `Debug`/`Display` split; the trait hierarchy
+(`Copy: Clone`, `Eq: PartialEq`, `Ord: PartialOrd + Eq`); the `Hash`/`Eq` consistency contract and
+why `f32` can never be a map key; **blanket impls** as the source of `to_string()` and `.into()`;
+the orphan rule. Optional extra: `compile_fail` doctests as type-level tests.
+
+Instruction given: add derives **one at a time**, driven by the top compiler error. `E0507` returns
+in a new costume via `.iter().map(|f| f.get())`.
+
+Spec verified against a reference implementation in a scratch crate: 10/10 tests pass,
+`clippy -D warnings` clean, and the optional `compile_fail` doctest runs under this crate's
+`crate-type` list.
+
 ---
 
 ## Phase 0 leftovers (deferred, not forgotten)
@@ -91,8 +112,9 @@ Review outcome: **pass**, with a polish pass requested — derives on `Tuning`, 
 
 Phase 1 continues, roughly in this order — each becomes one stage with its own failing test:
 
-1. `SuspectId` / `FactId` newtypes — why `struct FactId(u32)` beats a bare `String`.
+1. ~~`SuspectId` / `FactId` newtypes~~ — issued as Stage 2.
 2. `Fact` with visibility data (`known_by`), and `Case` holding suspects and facts.
+   First encounter with `String` vs `&str`.
 3. Borrowing and lifetimes: `fn suspect_facts<'a>(&'a Case, SuspectId) -> impl Iterator<Item = &'a Fact>`.
 4. `AppError` with `thiserror`, and `Result` across the IPC boundary.
 5. Parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.
