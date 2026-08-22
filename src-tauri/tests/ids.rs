@@ -6,9 +6,9 @@
 //! *not* do — it never touches `.0`. That is deliberate. The inner field must
 //! stay private; the only way in is your constructor.
 
-use std::collections::{ HashMap, HashSet };
+use std::collections::{HashMap, HashSet};
 
-use interrogatory_ai_lib::ids::{ FactId, SuspectId };
+use interrogatory_ai_lib::ids::{FactId, SuspectId};
 
 #[test]
 fn ids_wrap_a_number_and_give_it_back() {
@@ -51,9 +51,18 @@ fn ids_sort() {
 fn ids_work_as_map_keys() {
     // This is the shape `Case` will really use: who knows which facts.
     let mut known: HashMap<SuspectId, Vec<FactId>> = HashMap::new();
-    known.entry(SuspectId::new(1)).or_default().push(FactId::new(7));
-    known.entry(SuspectId::new(1)).or_default().push(FactId::new(8));
-    known.entry(SuspectId::new(2)).or_default().push(FactId::new(7));
+    known
+        .entry(SuspectId::new(1))
+        .or_default()
+        .push(FactId::new(7));
+    known
+        .entry(SuspectId::new(1))
+        .or_default()
+        .push(FactId::new(8));
+    known
+        .entry(SuspectId::new(2))
+        .or_default()
+        .push(FactId::new(7));
 
     assert_eq!(known.len(), 2);
     assert_eq!(known[&SuspectId::new(1)].len(), 2);
@@ -78,10 +87,7 @@ fn ids_are_copied_not_moved() {
     assert_eq!(a, b);
 
     let ids = [FactId::new(1), FactId::new(2)];
-    let total: u32 = ids
-        .iter()
-        .map(|f| f.get())
-        .sum();
+    let total: u32 = ids.iter().map(|f| f.get()).sum();
     assert_eq!(total, 3);
 }
 

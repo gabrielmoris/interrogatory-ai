@@ -1,0 +1,8 @@
+# Prettier has no Rust support. Even if a plugin is installed globally,
+# keep it away from the crate — rustfmt owns this directory.
+src-tauri/
+*.rs
+
+# Generated
+dist/
+bun.lock

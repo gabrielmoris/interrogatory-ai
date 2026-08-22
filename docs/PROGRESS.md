@@ -8,15 +8,42 @@
 | | |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Stage | **2 issued** (`SuspectId` / `FactId`) — brief written, test failing, awaiting implementation |
-| Next | Stage 3 — `Fact` (with `known_by`) and `Case` |
-| Blocked on | Gabriel — say "ready" when `cargo test --test ids` is green |
+| Stage | **2 complete** (`SuspectId` / `FactId`) — reviewed, 10/10 passing |
+| Next | Stage 3 — `Fact` (with `known_by`) and `Case`. Not yet written. |
+| Blocked on | nothing |
 
 ---
 
 ## Decisions log
 
 Newest first. Record the *why*, not just the what.
+
+### 2026-08-22 — rustfmt owns `.rs`; Prettier is fenced out.
+Rust has one formatter and its default output is the community style — `rustfmt.toml` exists but
+most of its options are nightly-only, so we keep defaults and configure nothing.
+
+Added `.vscode/settings.json` (format-on-save via `rust-analyzer`, `linkedProjects` pointed at
+`src-tauri/Cargo.toml` since the crate is not at the repo root, and `check.command = clippy` with
+`--all-targets -- -D warnings` so the stage-exit bar shows up while typing) and `.prettierignore`
+excluding `src-tauri/` and `*.rs` ahead of Prettier arriving for the React side in Phase 4.
+
+**Cause confirmed:** the `jinxdash.prettier-rust` VS Code extension (Prettier + `prettier-plugin-rust`)
+was formatting `.rs` on save. Proven by running that plugin over the repo's files — `difficulty.rs`
+and `lib.rs` are byte-exact fixed points of it. It disagrees with rustfmt in at least two places:
+it breaks after `=>` before a struct literal, and it treats `::` as a member chain
+(`tauri::Builder\n    ::default()`).
+
+Note the plugin is effectively abandoned: v0.1.9 crashes under Prettier 3 (`Unexpected doc.type
+'concat'`) and only runs on Prettier 2.
+
+Gabriel to uninstall/disable the extension; the workspace `[rust]` formatter override covers this
+repo regardless, since workspace settings beat user settings. `cargo fmt` still needs running over
+`difficulty.rs` and `lib.rs` *after* the extension is off.
+
+Diagnostic misstep worth remembering: the mentor first concluded "nothing is formatting" because
+`src/ids.rs` was rustfmt-clean. Invalid — `ids.rs` is simple enough that rustfmt and prettier-rust
+produce identical output, so it was a fixed point of both and proved nothing. Test the suspected
+tool directly instead of reasoning from a file that both candidates agree on.
 
 ### 2026-08-21 — No `crates/core` workspace split. Everything in `src-tauri`.
 Proposed and **rejected by Gabriel**: "I prefer to do everything on src-tauri and don't optimize
@@ -70,11 +97,11 @@ Hints reached: got to the `impl` skeleton with guidance; needed the array-litera
 Review outcome: **pass**, with a polish pass requested — derives on `Tuning`, `Self` inside the
 `impl` block, and doc comments on public items.
 
-### Stage 2 — `SuspectId` and `FactId` 🟡 issued 2026-08-22
-`src-tauri/src/ids.rs` (to be written by Gabriel), spec at `src-tauri/tests/ids.rs`, brief at
+### Stage 2 — `SuspectId` and `FactId` ✅
+`src-tauri/src/ids.rs`, spec at `src-tauri/tests/ids.rs`, brief at
 `docs/stages/stage-02-ids.md`.
 
-To build: two tuple structs wrapping a **private** `u32`, each with `new` / `get`, eight derives,
+Built: two tuple structs wrapping a **private** `u32`, each with `new` / `get`, eight derives,
 and hand-written `Display` and `From<u32>`.
 
 Concepts targeted: the newtype pattern (vs bare `u32`, vs `String`, vs TS branded types); tuple
@@ -87,9 +114,27 @@ the orphan rule. Optional extra: `compile_fail` doctests as type-level tests.
 Instruction given: add derives **one at a time**, driven by the top compiler error. `E0507` returns
 in a new costume via `.iter().map(|f| f.get())`.
 
-Spec verified against a reference implementation in a scratch crate: 10/10 tests pass,
-`clippy -D warnings` clean, and the optional `compile_fail` doctest runs under this crate's
-`crate-type` list.
+Hints reached: needed the concepts unpacked in-chat rather than the `<details>` hints — see the
+teaching-format note below. Wrote all four impl blocks himself.
+
+Review outcome: **pass** — 10/10, `clippy --all-targets -D warnings` clean, `cargo fmt` clean.
+Polish requested: `Self(id)` instead of `SuspectId(id)` inside the impl blocks (third time this
+note has come up), and doc comments moved off the `impl` blocks onto the two public types, saying
+what an id *means* rather than what a trait *is*.
+
+**Teaching-format correction, 2026-08-22.** Mid-stage he said: *"the way you explain is like if I
+were writing Rust for years... go slowly."* The written brief and its progressive hints were
+pitched too high, and dumping all remaining errors at once made it worse. What worked instead:
+one concept per reply, built from zero (what a trait is → what `derive` generates → ownership and
+moves → `impl Trait for Type` → `From`), each ending with a single command to run and a checkpoint
+to come back to. `CLAUDE.md` and [[explanation-depth]] updated. Write Stage 3's brief at that
+level from the start.
+
+Notable moment: his first `Display` impl compiled but printed `"3 suspect #"`. The compiler had
+nothing to say about it; the test caught it. Good place to have landed the shapes-vs-behaviour
+distinction.
+
+Spec was verified against a reference implementation in a throwaway crate before issuing.
 
 ---
 
@@ -98,7 +143,7 @@ Spec verified against a reference implementation in a scratch crate: 10/10 tests
 - [x] `.gitattributes` + line-ending renormalization (`940912b`)
 - [x] `/target`, `models/`, `*.gguf` ignored
 - [x] Package manager settled on bun
-- [ ] **`docs` is still listed in `.gitignore`** — every planning document, ADR and stage brief is
+- [x] **`docs` is still listed in `.gitignore`** — every planning document, ADR and stage brief is
       therefore untracked and will not survive a fresh clone. Remove that line.
 - [ ] Delete the `greet` demo command, the template `App.tsx`, `public/vite.svg`,
       `src/assets/react.svg`
@@ -112,9 +157,9 @@ Spec verified against a reference implementation in a scratch crate: 10/10 tests
 
 Phase 1 continues, roughly in this order — each becomes one stage with its own failing test:
 
-1. ~~`SuspectId` / `FactId` newtypes~~ — issued as Stage 2.
-2. `Fact` with visibility data (`known_by`), and `Case` holding suspects and facts.
-   First encounter with `String` vs `&str`.
+1. ~~`SuspectId` / `FactId` newtypes~~ — done, Stage 2.
+2. **Next:** `Fact` with visibility data (`known_by`), and `Case` holding suspects and facts.
+   First encounter with `String` vs `&str`, and with `Vec` / `HashSet` as struct fields.
 3. Borrowing and lifetimes: `fn suspect_facts<'a>(&'a Case, SuspectId) -> impl Iterator<Item = &'a Fact>`.
 4. `AppError` with `thiserror`, and `Result` across the IPC boundary.
 5. Parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.

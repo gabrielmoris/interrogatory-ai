@@ -8,7 +8,7 @@ pub struct FactId(u32);
 
 impl SuspectId {
     pub fn new(id: u32) -> Self {
-        SuspectId(id)
+        Self(id)
     }
 
     pub fn get(self) -> u32 {
@@ -16,8 +16,7 @@ impl SuspectId {
     }
 }
 
-/// Allows the possibility to display the number, Is a trait that I can't derive
-/// so I have to create it.
+/// Renders as "suspect #3"
 impl fmt::Display for SuspectId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "suspect #{}", self.0)
@@ -27,13 +26,13 @@ impl fmt::Display for SuspectId {
 /// Gives to suspectID the possibiklity to convert between types
 impl From<u32> for SuspectId {
     fn from(id: u32) -> Self {
-        SuspectId(id)
+        Self(id)
     }
 }
 
 impl FactId {
     pub fn new(id: u32) -> Self {
-        FactId(id)
+        Self(id)
     }
 
     pub fn get(self) -> u32 {
@@ -41,8 +40,7 @@ impl FactId {
     }
 }
 
-/// Allows the possibility for FactId to display the number. Same as SuspectId
-/// so I have to create it.
+/// Renders as "fact #3"
 impl fmt::Display for FactId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "fact #{}", self.0)
@@ -52,6 +50,6 @@ impl fmt::Display for FactId {
 /// Gives to FactId the possibiklity to convert between types
 impl From<u32> for FactId {
     fn from(id: u32) -> Self {
-        FactId(id)
+        Self(id)
     }
 }

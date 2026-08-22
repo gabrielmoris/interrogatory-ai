@@ -24,30 +24,26 @@ impl Difficulty {
 
     pub fn tuning(self) -> Tuning {
         match self {
-            Difficulty::Easy =>
-                Tuning {
-                    temperature: 0.5,
-                    facts_volunteered_per_turn: 2,
-                    will_lie: false,
-                },
-            Difficulty::Normal =>
-                Tuning {
-                    temperature: 0.7,
-                    facts_volunteered_per_turn: 1,
-                    will_lie: false,
-                },
-            Difficulty::Hard =>
-                Tuning {
-                    temperature: 0.9,
-                    facts_volunteered_per_turn: 1,
-                    will_lie: true,
-                },
-            Difficulty::Nightmare =>
-                Tuning {
-                    temperature: 1.1,
-                    facts_volunteered_per_turn: 0,
-                    will_lie: true,
-                },
+            Difficulty::Easy => Tuning {
+                temperature: 0.5,
+                facts_volunteered_per_turn: 2,
+                will_lie: false,
+            },
+            Difficulty::Normal => Tuning {
+                temperature: 0.7,
+                facts_volunteered_per_turn: 1,
+                will_lie: false,
+            },
+            Difficulty::Hard => Tuning {
+                temperature: 0.9,
+                facts_volunteered_per_turn: 1,
+                will_lie: true,
+            },
+            Difficulty::Nightmare => Tuning {
+                temperature: 1.1,
+                facts_volunteered_per_turn: 0,
+                will_lie: true,
+            },
         }
     }
 }
