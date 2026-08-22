@@ -5,47 +5,21 @@
 
 ## Status
 
-| | |
-|---|---|
-| Phase | **1 — Rust core & Tauri foundations** |
-| Stage | **2 complete** (`SuspectId` / `FactId`) — reviewed, 10/10 passing |
-| Next | Stage 3 — `Fact` (with `known_by`) and `Case`. Not yet written. |
-| Blocked on | nothing |
+|            |                                                                   |
+| ---------- | ----------------------------------------------------------------- |
+| Phase      | **1 — Rust core & Tauri foundations**                             |
+| Stage      | **2 complete** (`SuspectId` / `FactId`) — reviewed, 10/10 passing |
+| Next       | Stage 3 — `Fact` (with `known_by`) and `Case`. Not yet written.   |
+| Blocked on | nothing                                                           |
 
 ---
 
 ## Decisions log
 
-Newest first. Record the *why*, not just the what.
-
-### 2026-08-22 — rustfmt owns `.rs`; Prettier is fenced out.
-Rust has one formatter and its default output is the community style — `rustfmt.toml` exists but
-most of its options are nightly-only, so we keep defaults and configure nothing.
-
-Added `.vscode/settings.json` (format-on-save via `rust-analyzer`, `linkedProjects` pointed at
-`src-tauri/Cargo.toml` since the crate is not at the repo root, and `check.command = clippy` with
-`--all-targets -- -D warnings` so the stage-exit bar shows up while typing) and `.prettierignore`
-excluding `src-tauri/` and `*.rs` ahead of Prettier arriving for the React side in Phase 4.
-
-**Cause confirmed:** the `jinxdash.prettier-rust` VS Code extension (Prettier + `prettier-plugin-rust`)
-was formatting `.rs` on save. Proven by running that plugin over the repo's files — `difficulty.rs`
-and `lib.rs` are byte-exact fixed points of it. It disagrees with rustfmt in at least two places:
-it breaks after `=>` before a struct literal, and it treats `::` as a member chain
-(`tauri::Builder\n    ::default()`).
-
-Note the plugin is effectively abandoned: v0.1.9 crashes under Prettier 3 (`Unexpected doc.type
-'concat'`) and only runs on Prettier 2.
-
-Gabriel to uninstall/disable the extension; the workspace `[rust]` formatter override covers this
-repo regardless, since workspace settings beat user settings. `cargo fmt` still needs running over
-`difficulty.rs` and `lib.rs` *after* the extension is off.
-
-Diagnostic misstep worth remembering: the mentor first concluded "nothing is formatting" because
-`src/ids.rs` was rustfmt-clean. Invalid — `ids.rs` is simple enough that rustfmt and prettier-rust
-produce identical output, so it was a fixed point of both and proved nothing. Test the suspected
-tool directly instead of reasoning from a file that both candidates agree on.
+Newest first. Record the _why_, not just the what.
 
 ### 2026-08-21 — No `crates/core` workspace split. Everything in `src-tauri`.
+
 Proposed and **rejected by Gabriel**: "I prefer to do everything on src-tauri and don't optimize
 prematurely. This project is just to learn, won't be a production project."
 
@@ -53,7 +27,7 @@ He is right that it is reversible: if the domain modules stay pure, extraction l
 a `Cargo.toml` + fixing `use` paths — roughly an hour, not a weekend.
 
 The mentor's original argument was oversold and was corrected: with incremental compilation the
-loop is ~1–2s vs ~10–20s, not 2s vs 2min. The remaining real argument was *enforcement* (a crate
+loop is ~1–2s vs ~10–20s, not 2s vs 2min. The remaining real argument was _enforcement_ (a crate
 boundary makes purity a compile error rather than a promise) — noted, not decisive.
 
 **Tripwire for revisiting:** if `cargo test` inside the Tauri crate turns flaky on Windows for
@@ -66,11 +40,13 @@ If a scoring or domain function ever wants an `AppHandle`, that is the signal �
 quietly reach for it.
 
 ### 2026-08-21 — Windows + Android, one engine.
+
 `llama-cpp-2` compiled twice with different feature flags. Windows CUDA; Android via NDK with
 Vulkan/OpenCL or CPU floor. Full reasoning: `docs/adr/ADR-0001-cross-platform-inference.md`.
-Android is **Phase 2.5**, sequenced *after* Phase 3.
+Android is **Phase 2.5**, sequenced _after_ Phase 3.
 
 ### 2026-08-21 — Package manager: bun.
+
 `package-lock.json` dropped, `bun.lock` in place, matches `tauri.conf.json`'s `bun run` commands.
 
 ---
@@ -78,6 +54,7 @@ Android is **Phase 2.5**, sequenced *after* Phase 3.
 ## Stage log
 
 ### Stage 1 — `Difficulty` and `Tuning` ✅
+
 `src-tauri/src/difficulty.rs`, spec at `src-tauri/tests/difficulty.rs`, brief at
 `docs/stages/stage-01-difficulty.md`.
 
@@ -98,6 +75,7 @@ Review outcome: **pass**, with a polish pass requested — derives on `Tuning`, 
 `impl` block, and doc comments on public items.
 
 ### Stage 2 — `SuspectId` and `FactId` ✅
+
 `src-tauri/src/ids.rs`, spec at `src-tauri/tests/ids.rs`, brief at
 `docs/stages/stage-02-ids.md`.
 
@@ -120,10 +98,10 @@ teaching-format note below. Wrote all four impl blocks himself.
 Review outcome: **pass** — 10/10, `clippy --all-targets -D warnings` clean, `cargo fmt` clean.
 Polish requested: `Self(id)` instead of `SuspectId(id)` inside the impl blocks (third time this
 note has come up), and doc comments moved off the `impl` blocks onto the two public types, saying
-what an id *means* rather than what a trait *is*.
+what an id _means_ rather than what a trait _is_.
 
-**Teaching-format correction, 2026-08-22.** Mid-stage he said: *"the way you explain is like if I
-were writing Rust for years... go slowly."* The written brief and its progressive hints were
+**Teaching-format correction, 2026-08-22.** Mid-stage he said: _"the way you explain is like if I
+were writing Rust for years... go slowly."_ The written brief and its progressive hints were
 pitched too high, and dumping all remaining errors at once made it worse. What worked instead:
 one concept per reply, built from zero (what a trait is → what `derive` generates → ownership and
 moves → `impl Trait for Type` → `From`), each ending with a single command to run and a checkpoint
