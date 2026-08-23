@@ -1,15 +1,15 @@
 # PROGRESS — where we are
 
 > Resume order for a fresh session: `CLAUDE.md` → this file → the current stage brief in `docs/stages/`.
-> Last updated: 2026-08-22.
+> Last updated: 2026-08-23.
 
 ## Status
 
 |            |                                                                   |
 | ---------- | ----------------------------------------------------------------- |
 | Phase      | **1 — Rust core & Tauri foundations**                             |
-| Stage      | **2 complete** (`SuspectId` / `FactId`) — reviewed, 10/10 passing |
-| Next       | Stage 3 — `Fact` (with `known_by`) and `Case`. Not yet written.   |
+| Stage      | **3 issued** (`Fact` / `Suspect` / `Case`) — awaiting implementation |
+| Next       | Stage 4 — borrowing and lifetimes (`suspect_facts` returning refs)   |
 | Blocked on | nothing                                                           |
 
 ---
@@ -114,6 +114,40 @@ distinction.
 
 Spec was verified against a reference implementation in a throwaway crate before issuing.
 
+### Stage 3 — `Fact`, `Suspect` and `Case` — issued 2026-08-23, in progress
+
+Spec at `src-tauri/tests/case.rs` (9 tests), brief at `docs/stages/stage-03-case.md`.
+Implementation goes in `src-tauri/src/case.rs`.
+
+To build: `Suspect { id, name: String }`; `Fact { id, statement: String,
+known_by: HashSet<SuspectId>, is_ground_truth_only: bool }` with `reveal_to(&mut self)` /
+`is_known_by(&self)`; `Case { title, briefing, suspects: Vec<Suspect>, facts: Vec<Fact> }` with the
+two collections **private**, `add_suspect` / `add_fact` / `suspect_count` / `fact_count`, and
+`facts_known_by(&self, SuspectId) -> Vec<FactId>` filtering out `is_ground_truth_only`.
+
+Concepts targeted: `String` vs `&str` (structs own, parameters borrow) and why a struct cannot
+store the `&str` it was handed; `Vec<T>` vs Stage 1's fixed array; `HashSet` as the right shape for
+a membership question, cashing in Stage 2's `Hash`/`Eq` derives; the three receivers
+(`&self` / `&mut self` / `self`) and `let mut` at the call site; `E0204` — why `Copy` is now
+impossible and `Clone` is not free; `E0382` on moving a `Fact` into the case.
+
+Design decisions recorded in the brief: `Fact`/`Suspect` fields public (no invariant of their own),
+`Case`'s collections private (they will carry the "every referenced id exists" invariant from Stage
+5). `known_by` is a `HashSet`, not the `Vec` sketched in `ROADMAP.md` §1.1 — dedupe and O(1)
+membership, and the ROADMAP line predates the id newtypes.
+
+Deliberately excluded, to keep the stage to one theme: `Option`, explicit lifetimes, and anything
+returning a reference. `facts_known_by` returns owned `Vec<FactId>` precisely so that Stage 4 can
+upgrade it to `suspect_facts<'a>(&'a self, ...) -> impl Iterator<Item = &'a Fact>` and make the
+lifetime the whole subject.
+
+Written at the depth agreed on 2026-08-22 — built from zero, one concept per section, with
+checkpoints telling him to run the test and come back rather than read straight through.
+
+Spec verified against a reference implementation in a throwaway crate before issuing: 9/9 passing,
+`clippy --all-targets -D warnings` clean, `cargo fmt --check` clean. `E0382` confirmed to be the
+error the commented-out line produces.
+
 ---
 
 ## Phase 0 leftovers (deferred, not forgotten)
@@ -136,9 +170,8 @@ Spec was verified against a reference implementation in a throwaway crate before
 Phase 1 continues, roughly in this order — each becomes one stage with its own failing test:
 
 1. ~~`SuspectId` / `FactId` newtypes~~ — done, Stage 2.
-2. **Next:** `Fact` with visibility data (`known_by`), and `Case` holding suspects and facts.
-   First encounter with `String` vs `&str`, and with `Vec` / `HashSet` as struct fields.
-3. Borrowing and lifetimes: `fn suspect_facts<'a>(&'a Case, SuspectId) -> impl Iterator<Item = &'a Fact>`.
+2. ~~`Fact` with `known_by`, and `Case` holding suspects and facts~~ — issued, Stage 3.
+3. **Next:** borrowing and lifetimes: `fn suspect_facts<'a>(&'a Case, SuspectId) -> impl Iterator<Item = &'a Fact>`.
 4. `AppError` with `thiserror`, and `Result` across the IPC boundary.
 5. Parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.
 6. `tauri::State` and managed app state — the first stage that touches the Tauri shell.
