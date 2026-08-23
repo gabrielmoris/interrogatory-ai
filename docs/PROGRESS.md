@@ -8,8 +8,8 @@
 |            |                                                                   |
 | ---------- | ----------------------------------------------------------------- |
 | Phase      | **1 — Rust core & Tauri foundations**                             |
-| Stage      | **3 issued** (`Fact` / `Suspect` / `Case`) — awaiting implementation |
-| Next       | Stage 4 — borrowing and lifetimes (`suspect_facts` returning refs)   |
+| Stage      | **3 complete** (`Fact` / `Suspect` / `Case`) — reviewed, 9/9 passing |
+| Next       | Stage 4 — borrowing and lifetimes. Not yet written.                  |
 | Blocked on | nothing                                                           |
 
 ---
@@ -114,39 +114,57 @@ distinction.
 
 Spec was verified against a reference implementation in a throwaway crate before issuing.
 
-### Stage 3 — `Fact`, `Suspect` and `Case` — issued 2026-08-23, in progress
+### Stage 3 — `Fact`, `Suspect` and `Case` ✅
 
-Spec at `src-tauri/tests/case.rs` (9 tests), brief at `docs/stages/stage-03-case.md`.
-Implementation goes in `src-tauri/src/case.rs`.
+`src-tauri/src/case.rs`, spec at `src-tauri/tests/case.rs`, brief at
+`docs/stages/stage-03-case.md`.
 
-To build: `Suspect { id, name: String }`; `Fact { id, statement: String,
-known_by: HashSet<SuspectId>, is_ground_truth_only: bool }` with `reveal_to(&mut self)` /
-`is_known_by(&self)`; `Case { title, briefing, suspects: Vec<Suspect>, facts: Vec<Fact> }` with the
-two collections **private**, `add_suspect` / `add_fact` / `suspect_count` / `fact_count`, and
-`facts_known_by(&self, SuspectId) -> Vec<FactId>` filtering out `is_ground_truth_only`.
+Built: `Suspect { id, name: String }`; `Fact { id, statement: String, known_by: HashSet<SuspectId>,
+is_ground_truth_only }` with `reveal_to(&mut self)` / `is_known_by(&self)`; `Case` with `title` /
+`briefing` public and `suspects` / `facts` **private**, plus `add_*` / `*_count` and
+`facts_known_by(&self, SuspectId) -> Vec<FactId>`.
 
-Concepts targeted: `String` vs `&str` (structs own, parameters borrow) and why a struct cannot
-store the `&str` it was handed; `Vec<T>` vs Stage 1's fixed array; `HashSet` as the right shape for
-a membership question, cashing in Stage 2's `Hash`/`Eq` derives; the three receivers
-(`&self` / `&mut self` / `self`) and `let mut` at the call site; `E0204` — why `Copy` is now
-impossible and `Clone` is not free; `E0382` on moving a `Fact` into the case.
+Concepts landed: `String` vs `&str` — structs own, parameters borrow, the constructor converts, and
+why a struct cannot store the `&str` it was handed; `Vec<T>` vs Stage 1's fixed array; `HashSet` as
+the right shape for a membership question, cashing in Stage 2's `Hash`/`Eq` derives; **`self` is an
+explicit parameter** — `&self` reads, `&mut self` writes, and omitting it silently gives you an
+associated function rather than a method; no uninitialized fields in Rust, so "I don't have that
+data yet" always resolves to "what is the empty value"; `E0204` — why `Copy` is impossible once a
+`String` is in the struct, and why `Clone` is not free; `E0382` on moving a `Fact` into the case;
+closures and `.filter().map().collect()`.
 
 Design decisions recorded in the brief: `Fact`/`Suspect` fields public (no invariant of their own),
-`Case`'s collections private (they will carry the "every referenced id exists" invariant from Stage
-5). `known_by` is a `HashSet`, not the `Vec` sketched in `ROADMAP.md` §1.1 — dedupe and O(1)
-membership, and the ROADMAP line predates the id newtypes.
+`Case`'s collections private (they carry the "every referenced id exists" invariant from Stage 5).
+`known_by` is a `HashSet`, overriding the `Vec` sketched in `ROADMAP.md` §1.1. `facts_known_by`
+returns owned `Vec<FactId>` on purpose, so Stage 4 can upgrade it to the iterator-of-references
+version and make the lifetime the whole subject.
 
-Deliberately excluded, to keep the stage to one theme: `Option`, explicit lifetimes, and anything
-returning a reference. `facts_known_by` returns owned `Vec<FactId>` precisely so that Stage 4 can
-upgrade it to `suspect_facts<'a>(&'a self, ...) -> impl Iterator<Item = &'a Fact>` and make the
-lifetime the whole subject.
+Hints reached: needed the full signature skeleton handed over (Hint 5's shape) after trying and
+failing to derive signatures from the test's call sites — see the teaching note below. Wrote every
+body himself, and reached for the iterator chain in `facts_known_by` unprompted rather than the
+loop.
 
-Written at the depth agreed on 2026-08-22 — built from zero, one concept per section, with
-checkpoints telling him to run the test and come back rather than read straight through.
+Review outcome: **pass** — 9/9, `clippy --all-targets -D warnings` clean, `cargo fmt` clean. Doc
+comments present on all three types and saying what the type *means*; that polish note, open since
+Stage 1, is now closed. `Self` used throughout without prompting.
 
-Spec verified against a reference implementation in a throwaway crate before issuing: 9/9 passing,
-`clippy --all-targets -D warnings` clean, `cargo fmt --check` clean. `E0382` confirmed to be the
-error the commented-out line produces.
+Notable moment: with `!` missing from the ground-truth condition, **both** visibility tests failed
+in opposite directions — one returned everything, the other returned nothing. Used to teach the
+debugging tell: every case inverted rather than some cases wrong means a missing negation.
+
+**Teaching notes, 2026-08-23.**
+1. Asking him to read signatures off the test's call sites was a step too far and cost several
+   rounds — he guessed instead (`Fact::new` taking every field, `is_known_by` with no `self`,
+   `statement` missing entirely). From Stage 4 on, **issue the signature skeleton with the brief**,
+   bodies elided. Shapes are scaffolding; bodies are the exercise.
+2. Teach `todo!()` before Stage 4. He stubbed with `-> Self {}` and got a wall of `E0308`;
+   `todo!()` type-checks as anything, so a stubbed file links and he gets a red suite to drive
+   instead of a build error.
+3. Jargon, not just depth: "one boolean in your filter closure" did not parse, though he had
+   written the closure himself. Name Rust vocabulary against its TS equivalent on first use.
+
+Spec was verified against a reference implementation in a throwaway crate before issuing, and his
+implementation re-verified in the same crate at review.
 
 ---
 
