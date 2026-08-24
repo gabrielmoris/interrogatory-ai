@@ -88,4 +88,25 @@ impl Case {
             .map(|fact| fact.id)
             .collect()
     }
+
+    /// The suspect with this id, or `None` if the case has no such suspect.
+    pub fn suspect(&self, id: SuspectId) -> Option<&Suspect> {
+        todo!()
+    }
+
+    /// Exclusive access to one fact, so callers can reveal it or edit it in place.
+    pub fn fact_mut(&mut self, id: FactId) -> Option<&mut Fact> {
+        todo!()
+    }
+
+    /// Every fact this suspect knows and is allowed to see, borrowed from the case.
+    /// Same visibility rule as `facts_known_by`: ground-truth-only facts never appear.
+    pub fn suspect_facts(&self, suspect: SuspectId) -> impl Iterator<Item = &Fact> {
+        std::iter::empty() // `todo!()` does not compile here — see section 0
+    }
+}
+
+/// Whichever of the two facts has the longer statement; `a` on a tie.
+pub fn longer_statement<'a>(a: &'a Fact, b: &'a Fact) -> &'a Fact {
+    todo!()
 }
