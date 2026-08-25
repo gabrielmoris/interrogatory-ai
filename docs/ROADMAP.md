@@ -91,7 +91,7 @@ No Rust learning here. This is removing friction that would otherwise tax every 
 ### 1.1 — Domain model (`crates/core`)
 Model `Case`, `Suspect`, `Fact`, `FactId`, `Difficulty`. Design decisions to make deliberately, not by accident:
 - `FactId` as a newtype (`struct FactId(u32)` or a `&'static str` wrapper) — not a bare `String`. This is your first taste of making illegal states unrepresentable.
-- `Fact { id, statement, known_by: Vec<SuspectId>, is_ground_truth_only: bool }` — visibility is *data*, so it can be filtered mechanically.
+- `Fact { id, statement, known_by: Vec<SuspectId>, is_ground_truth_only: bool }` — visibility is *data*, so it can be filtered mechanically. *(Amended: `known_by` is a `HashSet<SuspectId>`, and the accessor is `Case::suspect_facts` — see the decisions log in `PROGRESS.md`, 2026-08-21 and 2026-08-25.)*
 - `Difficulty` as an enum with associated data or an `impl` returning a tuning struct (`temperature`, `evasiveness`, `facts_volunteered`).
 
 **Drill:** write `fn suspect_facts<'a>(case: &'a Case, s: SuspectId) -> impl Iterator<Item = &'a Fact>`. Explain to yourself why the lifetime is needed and what happens if you return `Vec<Fact>` instead.
@@ -165,6 +165,8 @@ Reuse the KV cache across turns rather than re-prompting the whole transcript. D
 `fn build_prompt(case: &Case, suspect: &Suspect, difficulty: Difficulty, transcript: &Transcript) -> Prompt`, living in `crates/core`, pure and synchronous. Snapshot-test the rendered string (`insta`). Prompts are code; regressions in them are bugs, and they must show up in a diff.
 
 ### 3.2 — Knowledge gating, enforced by types
+*(Confirmed 2026-08-25 over the split-storage alternative. Scheduled as Stage 6; `Case::suspect_facts` is its Phase-1 ancestor. Reasoning in the decisions log in `PROGRESS.md`.)*
+
 `build_prompt` accepts only `&[VisibleFact]`, produced solely by `case.visible_to(suspect_id)`. There is no path by which a hidden fact reaches the context window, because there is no function that accepts one. Do not rely on "the system prompt tells it not to reveal X" — that is not enforcement.
 
 ### 3.3 — Interrogation state machine
