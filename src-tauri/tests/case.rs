@@ -19,6 +19,14 @@ fn viktor() -> SuspectId {
     SuspectId::new(2)
 }
 
+/// Stage 3 asked for this as `Case::facts_known_by` returning owned ids. Stage 4
+/// replaced it with `suspect_facts`, a borrowed view, and the decision of
+/// 2026-08-25 deleted the older one — one function owns the visibility rule.
+/// These tests keep their original assertions, expressed through the survivor.
+fn known_ids(case: &Case, suspect: SuspectId) -> Vec<FactId> {
+    case.suspect_facts(suspect).map(|f| f.id).collect()
+}
+
 #[test]
 fn a_suspect_owns_its_name() {
     let s = Suspect::new(marta(), "Marta Reyes");
@@ -112,11 +120,11 @@ fn a_suspect_sees_only_the_facts_they_know() {
 
     // Order follows insertion order, because the facts live in a Vec.
     assert_eq!(
-        case.facts_known_by(marta()),
+        known_ids(&case, marta()),
         vec![FactId::new(1), FactId::new(2)]
     );
-    assert_eq!(case.facts_known_by(viktor()), vec![FactId::new(1)]);
-    assert!(case.facts_known_by(SuspectId::new(99)).is_empty());
+    assert_eq!(known_ids(&case, viktor()), vec![FactId::new(1)]);
+    assert!(known_ids(&case, SuspectId::new(99)).is_empty());
 }
 
 #[test]
@@ -132,7 +140,7 @@ fn ground_truth_only_facts_are_never_visible() {
     case.add_fact(solution);
 
     assert_eq!(case.fact_count(), 1);
-    assert!(case.facts_known_by(marta()).is_empty());
+    assert!(known_ids(&case, marta()).is_empty());
 }
 
 #[test]
