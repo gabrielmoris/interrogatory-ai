@@ -8,8 +8,9 @@
 |            |                                                                   |
 | ---------- | ----------------------------------------------------------------- |
 | Phase      | **1 — Rust core & Tauri foundations**                             |
-| Stage      | **4 complete** (borrowing / `Option<&T>` / lifetimes) — reviewed, 12/12 passing |
-| Next       | Stage 5 — `AppError` with `thiserror`, `Result` across the IPC boundary. Not yet written. |
+| Stage      | **5 issued** (`AppError` / `thiserror` / `Result`) — spec at `src-tauri/tests/errors.rs`, 14 tests, awaiting his implementation |
+| Last done  | Stage 4 (borrowing / `Option<&T>` / lifetimes) — reviewed, 12/12 passing |
+| Next       | Stage 6 — parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file |
 | Blocked on | nothing                                                           |
 
 ---
@@ -17,6 +18,52 @@
 ## Decisions log
 
 Newest first. Record the _why_, not just the what.
+
+### 2026-08-25 — `AppError` is plain serializable data; `std::io::Error` never goes inside it.
+
+Three decisions taken while writing Stage 5, none of them left open for him.
+
+**1. Variants hold owned, serializable fields only.** `Io { path: String, message: String }`, not
+`Io(#[from] std::io::Error)`.
+
+`AppError` has to be `Serialize` (it crosses the IPC boundary — `ROADMAP.md` §1.2), `PartialEq` (so
+tests can `assert_eq!` on a failure rather than pattern-matching it), and `Clone` (a `Session` will
+hold the last failure). `std::io::Error` is none of the three, and putting it in the enum breaks all
+three derives at once — reproduced, four errors: `E0277 Clone`, `E0369 ==`, `E0277 Eq`,
+`E0277 serde::Serialize`.
+
+The rejected alternative — `#[from]` plus a hand-written `Serialize` — buys automatic `?` conversion
+and a `source()` chain. It loses on its own merits before the derives are even considered: a bare
+`std::io::Error` does not know *which file* failed, because the path only exists at the call site.
+So the call site has to add context regardless, which is one `.map_err` in the one function that
+touches the filesystem (Stage 6). Paying for that with a hand-written serializer and no `assert_eq!`
+is a bad trade.
+
+Standing rule this establishes: **our failures are structured, foreign diagnostics are text.**
+`SuspectNotFound` carries a `SuspectId`. `Io` / `Parse` / `Inference` carry a `String`, because those
+sentences come from the OS, the TOML parser and llama.cpp respectively and we cannot decompose what
+we did not write. Inventing structure we do not have is worse than admitting we have none.
+
+**2. The wire format is `#[serde(tag = "kind", rename_all = "camelCase")]`, and the message is not
+on it.** `{ "kind": "suspectNotFound", "id": 99 }`. The English sentence stays in `Display` (which
+`thiserror` generates) for logs and `tracing`; React branches on `kind` and writes its own copy,
+because a UI that may need to restyle or translate should not be handed a fixed English string from
+the backend. Consistent with the project's core principle — Rust owns the truth, the presentation
+layer owns the presentation.
+
+Consequence, recorded because it is a runtime failure rather than a compile error: internal tagging
+**cannot serialize a newtype variant holding an integer**. `SuspectNotFound(SuspectId)` compiles
+fine and then fails at runtime with `cannot serialize tagged newtype variant … containing an
+integer`. Hence: every variant of `AppError` uses named fields. The brief teaches this as a
+types-check-shapes / tests-check-behaviour moment, matching his Stage 2 `Display` bug.
+
+**3. Stage 5 does not touch the Tauri shell.** `ROADMAP.md` §1.2 says "every command returns
+`Result<T, AppError>`", but a real `#[tauri::command]` needs managed state, which is Stage 7 and was
+already sequenced as "the first stage that touches the Tauri shell". So Stage 5 makes the error
+*serializable* and pins the JSON shape with `serde_json` in the integration test; the command
+wrapper comes later. `error.rs` therefore stays a **domain module** under the `CLAUDE.md` purity
+rule — no `tauri::`, `tokio::` or `std::fs` — and moves to `crates/core` intact if the split is ever
+revisited. `serde` is a pure data-shape crate and does not violate the rule.
 
 ### 2026-08-25 — One owner for the visibility rule; enforcement moves to a newtype, not to split storage.
 
@@ -279,6 +326,47 @@ as evidence for anything. The rule only had two implementations because the ment
 one without reading `ROADMAP.md` §3.2 — see the decisions log entry for 2026-08-25. Treat it as a
 one-line filter bug, which is all it was from his side.
 
+### Stage 5 — `AppError`, `thiserror` and `Result` — **issued 2026-08-25, awaiting implementation**
+
+Spec at `src-tauri/tests/errors.rs` (14 tests), brief at `docs/stages/stage-05-errors.md`.
+New file `src-tauri/src/error.rs`; edits to `case.rs`, `ids.rs`, `lib.rs`, `Cargo.toml`.
+
+Asked for: `AppError` (seven variants, `thiserror::Error` + `Serialize`, named fields throughout),
+`pub type AppResult<T>`, `Serialize` on both id newtypes, and three methods on `Case` —
+`require_suspect(&self, SuspectId) -> AppResult<&Suspect>`,
+`require_fact_mut(&mut self, FactId) -> AppResult<&mut Fact>`,
+`reveal(&mut self, FactId, SuspectId) -> AppResult<()>`.
+
+Concepts targeted: `Result<T, E>` as `Option` with a reason attached, and why Rust has no exceptions
+for recoverable failure (the failure is in the signature or it does not exist); `thiserror` as a
+derive macro that writes `Display` + `impl std::error::Error`, and `#[error("...")]` as the *body*
+of that `Display` — which cashes in the `Display` he hand-wrote in Stage 2, since `{id}` renders as
+`suspect #99`; `thiserror` vs `anyhow` and why this crate is a library boundary; `Option::ok_or` as
+the bridge, and `ok_or` vs `ok_or_else` (eager vs lazy construction); `?` — what it desugars to,
+that it is control flow returning from the *enclosing function*, and that it calls `From::from`
+(identity today, the hook Stage 6 turns on); `#[must_use]` on `Result`; the unit type `()`;
+`cargo add` and feature flags; type aliases; serde's internally-tagged enum representation and
+newtype transparency on the wire.
+
+Four compiler/clippy errors are load-bearing and each was reproduced before issuing:
+`E0502` in `reveal` (holding the shared borrow from `require_suspect` across the `&mut` call — the
+fix is to drop the borrow with a bare `?;`, not to `clone()`); `clippy::unnecessary_lazy_evaluations`
+if he reaches for `ok_or_else`; `unused_must_use` if he drops the `?`; `E0277` if `SuspectId` is
+missing its own `Serialize`. Plus the runtime serde failure from a newtype variant, which the type
+system cannot catch — the test does.
+
+Teaching notes applied: signature skeleton issued with the brief, bodies elided; `todo!()` noted as
+working for all three this time (no `impl Trait` returns); every Rust term named against its TS
+equivalent on first use; the three architecture questions decided by the mentor and stated as
+decided, with the reasoning in the decisions log rather than posed to him.
+
+Rules for this stage: derives on `AppError` added **one at a time** (six derives, six failure modes);
+no `clone()` in the `require_*` methods; write `reveal` the broken way first and read `E0502`.
+
+Spec verified against a reference implementation in a throwaway crate — 14/14 passing,
+`clippy --all-targets -D warnings` clean, and the test file as written to his disk is `cargo fmt`
+clean.
+
 ---
 
 ## Phase 0 leftovers (deferred, not forgotten)
@@ -303,6 +391,10 @@ Phase 1 continues, roughly in this order — each becomes one stage with its own
 1. ~~`SuspectId` / `FactId` newtypes~~ — done, Stage 2.
 2. ~~`Fact` with `known_by`, and `Case` holding suspects and facts~~ — issued, Stage 3.
 3. ~~Borrowing and lifetimes: `suspect_facts` returning `impl Iterator<Item = &Fact>`~~ — issued, Stage 4.
-4. **Next:** `AppError` with `thiserror`, and `Result` across the IPC boundary.
-5. Parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.
-6. `tauri::State` and managed app state — the first stage that touches the Tauri shell.
+4. ~~`AppError` with `thiserror`, and `Result` across the IPC boundary~~ — issued, Stage 5.
+5. **Next:** parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.
+   This is where `?`'s `From::from` conversion and the `Io` / `Parse` / `CaseNotFound` variants get
+   their first real use, and where the `.map_err` promised in Stage 5's brief actually gets written.
+6. The `VisibleFact<'a>` newtype (`ROADMAP.md` §3.2) — needs lifetimes in type definitions.
+7. `tauri::State` and managed app state — the first stage that touches the Tauri shell, and where
+   `AppError` finally crosses a real `#[tauri::command]`.

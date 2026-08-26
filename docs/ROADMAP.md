@@ -97,7 +97,9 @@ Model `Case`, `Suspect`, `Fact`, `FactId`, `Difficulty`. Design decisions to mak
 **Drill:** write `fn suspect_facts<'a>(case: &'a Case, s: SuspectId) -> impl Iterator<Item = &'a Fact>`. Explain to yourself why the lifetime is needed and what happens if you return `Vec<Fact>` instead.
 
 ### 1.2 — Error handling (`src-tauri/src/error.rs`)
-`AppError` via `thiserror`, with `impl Serialize` so it can cross the IPC boundary as a structured object rather than a string. Variants for `CaseNotFound`, `Io`, `Parse`, `Inference`, `InvalidState`. Every command returns `Result<T, AppError>`.
+`AppError` via `thiserror`, with `Serialize` so it can cross the IPC boundary as a structured object rather than a string. Variants for `CaseNotFound`, `Io`, `Parse`, `Inference`, `InvalidState`. Every command returns `Result<T, AppError>`.
+
+*(Amended 2026-08-25, issued as Stage 5. Three points settled — reasoning in the decisions log in `PROGRESS.md`. (a) `Serialize` is **derived**, not hand-written: every variant holds owned, serializable fields, so `std::io::Error` never goes inside the enum — the `Io` and `Parse` variants carry `{ path, message }` and the conversion is one `.map_err` at the filesystem call site in §1.3. Our failures are structured; foreign diagnostics are text. (b) The wire format is `#[serde(tag = "kind", rename_all = "camelCase")]`, and the `Display` message is deliberately **not** on the wire — React branches on `kind` and writes its own copy. Every variant therefore uses named fields; internal tagging cannot serialize a newtype variant holding an integer. (c) Two extra variants beyond the five listed: `SuspectNotFound { id }` and `FactNotFound { id }`, because "not found" needs to say which.)*
 
 **Rule:** `anyhow` is for binaries and prototypes; `thiserror` is for library boundaries. Your core crate gets `thiserror`. Do not reach for `anyhow` in `crates/core`.
 
