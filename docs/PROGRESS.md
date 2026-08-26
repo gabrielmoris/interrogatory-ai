@@ -363,6 +363,20 @@ decided, with the reasoning in the decisions log rather than posed to him.
 Rules for this stage: derives on `AppError` added **one at a time** (six derives, six failure modes);
 no `clone()` in the `require_*` methods; write `reveal` the broken way first and read `E0502`.
 
+**Brief rewritten the same day after he pushed back a second time on explanation depth** — *"You keep
+using language too technical and too into rust... this is the FIRST time I code in rust. Be more
+pedagogical"* — and clarified he meant the `docs/stages/*.md` files, not just the chat replies. The
+first draft was an argued document: it defended its own architecture decisions at him (four compiler
+errors as evidence against `#[from] std::io::Error`), ran long essay-style paragraphs, and used
+words he has never been taught (extern prelude, supertrait, orthogonal, desugars, internally tagged
+representation). The rewrite leads every idea with a concrete example, keeps paragraphs to two or
+three sentences, moves the architecture reasoning to a three-line pointer at the decisions log, and
+cuts the concept count from eleven to six. Test file unchanged. See [[explanation-depth]].
+
+Checkpoint counts in the brief were measured, not guessed: enum written with all three `Case`
+methods stubbed → 2/14; plus `require_suspect` and `require_fact_mut` → 7/14; plus `reveal` → 12/14;
+plus the `#[serde(tag = "kind", rename_all = "camelCase")]` line → 14/14.
+
 Spec verified against a reference implementation in a throwaway crate — 14/14 passing,
 `clippy --all-targets -D warnings` clean, and the test file as written to his disk is `cargo fmt`
 clean.

@@ -67,6 +67,26 @@ Exceptions you may edit directly: test files, `docs/**`, `CLAUDE.md`, build conf
 - **One concept per reply, finished.** Explain it, give the shape in another domain, say exactly
   what to run, then stop and let him come back. Do not stack five buckets of errors, error-code
   trivia, or asides into one answer — a wall of correct information is still a wall.
+- **This applies to the stage briefs first of all.** Corrected a second time on 2026-08-25,
+  mid-Stage 5: *"You keep using language too technical and too into rust... this is the FIRST time I
+  code in rust. Be more pedagogical."* He meant the `docs/stages/*.md` files, not only the chat.
+  A brief is not an essay: lead each idea with a concrete example, keep paragraphs to two or three
+  sentences, cut every aside and parenthetical, and keep the whole thing near 300 lines of prose.
+  Rewriting Stage 5's brief for this took it from an argued document to a taught one — compare the
+  two if the difference is ever unclear.
+- **Keep mentor-facing reasoning out of the brief.** The Stage 5 draft argued its own architecture
+  decisions at him — why not `#[from] std::io::Error`, four compiler errors as evidence. That
+  belongs in the decisions log. The brief gets three lines: what was decided, and a pointer.
+- **A short question gets a short, plain answer** too. When he interrupts the work with a small
+  practical question ("do I need this dependency?"), answer *that* and stop. Do not turn it into a
+  mini-brief with sections and a pre-emptive answer to a question he did not ask.
+- **Vocabulary check before sending.** If a Rust term has not already been introduced *and defined*
+  in a stage brief, do not use it in chat — use plain English, or define it in the same sentence.
+  Words that broke this rule: extern prelude, transitive, orthogonal, supertrait, semver-compatible,
+  `&dyn std::error::Error`. Judge a term against what the stages have covered, not against what is
+  normal usage among Rust programmers.
+- **When a concept needs a picture, write the TypeScript version first**, then say what Rust does
+  differently. TS code he can already read, then the mapping — not Rust vocabulary up front.
 
 ### Tone
 

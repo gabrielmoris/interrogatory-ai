@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 pub mod case;
 pub mod difficulty;
+pub mod error;
 pub mod ids;
 
 #[tauri::command]
