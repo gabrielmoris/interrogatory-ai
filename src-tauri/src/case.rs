@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 
-use crate::{error::AppResult, ids::{FactId, SuspectId}};
+use crate::{
+    error::{AppError, AppResult},
+    ids::{FactId, SuspectId},
+};
 
 /// One person the player can interrogate.
 #[derive(Debug, Clone, PartialEq)]
@@ -100,13 +103,18 @@ impl Case {
     }
 
     pub fn require_suspect(&self, id: SuspectId) -> AppResult<&Suspect> {
-        todo!()
+        self.suspect(id).ok_or(AppError::SuspectNotFound { id })
     }
+
     pub fn require_fact_mut(&mut self, id: FactId) -> AppResult<&mut Fact> {
-        todo!()
+        self.fact_mut(id).ok_or(AppError::FactNotFound { id })
     }
+
     pub fn reveal(&mut self, fact: FactId, to: SuspectId) -> AppResult<()> {
-        todo!()
+        self.require_suspect(to)?;
+        let fact = self.require_fact_mut(fact)?;
+        fact.reveal_to(to);
+        Ok(())
     }
 }
 

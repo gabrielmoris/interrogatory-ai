@@ -1,6 +1,7 @@
 use crate::ids::{FactId, SuspectId};
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error, serde::Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
 pub enum AppError {
     #[error("this case has no {id}")]
     SuspectNotFound { id: SuspectId },
