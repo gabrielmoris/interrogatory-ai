@@ -102,14 +102,19 @@ impl Case {
             .filter(move |fact| !fact.is_ground_truth_only && fact.is_known_by(suspect))
     }
 
+    /// The suspect with this id. `Err` if the case has no such suspect.
     pub fn require_suspect(&self, id: SuspectId) -> AppResult<&Suspect> {
         self.suspect(id).ok_or(AppError::SuspectNotFound { id })
     }
 
+    /// Exclusive access to one fact, so the caller can edit it in place.
+    /// `Err` if this case has no such fact.
     pub fn require_fact_mut(&mut self, id: FactId) -> AppResult<&mut Fact> {
         self.fact_mut(id).ok_or(AppError::FactNotFound { id })
     }
 
+    /// Lets one suspect in on one fact — from here on it can show up in their answers.
+    /// Nothing changes unless both the suspect and the fact exist.
     pub fn reveal(&mut self, fact: FactId, to: SuspectId) -> AppResult<()> {
         self.require_suspect(to)?;
         let fact = self.require_fact_mut(fact)?;

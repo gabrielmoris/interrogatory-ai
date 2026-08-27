@@ -2,6 +2,8 @@ use crate::ids::{FactId, SuspectId};
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error, serde::Serialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
+/// Every fallible function in the
+/// app fails with one of these, and the React side branches on `kind`.
 pub enum AppError {
     #[error("this case has no {id}")]
     SuspectNotFound { id: SuspectId },
@@ -25,4 +27,5 @@ pub enum AppError {
     InvalidState { action: String, state: String },
 }
 
+/// A `Result` that fails with `AppError`. Use it instead of spelling out  `Result<T, AppError>` in every signature.
 pub type AppResult<T> = Result<T, AppError>;

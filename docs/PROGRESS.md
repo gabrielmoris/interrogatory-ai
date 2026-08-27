@@ -8,9 +8,9 @@
 |            |                                                                   |
 | ---------- | ----------------------------------------------------------------- |
 | Phase      | **1 — Rust core & Tauri foundations**                             |
-| Stage      | **5 issued** (`AppError` / `thiserror` / `Result`) — spec at `src-tauri/tests/errors.rs`, 14 tests, awaiting his implementation |
-| Last done  | Stage 4 (borrowing / `Option<&T>` / lifetimes) — reviewed, 12/12 passing |
-| Next       | Stage 6 — parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file |
+| Stage      | **5 complete** (`AppError` / `thiserror` / `Result`) — reviewed, 14/14 passing |
+| Last done  | Stage 5, 2026-08-25. All 52 tests across five files green, clippy and fmt clean |
+| Next       | Stage 6 — parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file. Not yet written. |
 | Blocked on | nothing                                                           |
 
 ---
@@ -326,7 +326,7 @@ as evidence for anything. The rule only had two implementations because the ment
 one without reading `ROADMAP.md` §3.2 — see the decisions log entry for 2026-08-25. Treat it as a
 one-line filter bug, which is all it was from his side.
 
-### Stage 5 — `AppError`, `thiserror` and `Result` — **issued 2026-08-25, awaiting implementation**
+### Stage 5 — `AppError`, `thiserror` and `Result` ✅
 
 Spec at `src-tauri/tests/errors.rs` (14 tests), brief at `docs/stages/stage-05-errors.md`.
 New file `src-tauri/src/error.rs`; edits to `case.rs`, `ids.rs`, `lib.rs`, `Cargo.toml`.
@@ -377,6 +377,44 @@ Checkpoint counts in the brief were measured, not guessed: enum written with all
 methods stubbed → 2/14; plus `require_suspect` and `require_fact_mut` → 7/14; plus `reveal` → 12/14;
 plus the `#[serde(tag = "kind", rename_all = "camelCase")]` line → 14/14.
 
+**Review outcome: pass, first submission.** 14/14, and all 52 tests across the five test files still
+green — no regressions in Stages 1–4. `clippy --all-targets -D warnings` clean, `cargo fmt` clean.
+Re-verified by dropping his `src/` into the throwaway crate.
+
+He wrote every body himself. Two things he did unprompted and well: `require_suspect` /
+`require_fact_mut` reuse the Stage 4 lookups rather than repeating the `find` (he had duplicated it
+at first and fixed it when told once), and he solved `CaseNotFound`'s quoted-slug message with a raw
+string, `#[error(r#"no case file named "{slug}" was found"#)]`, rather than the `{slug:?}` the hint
+suggested — a different and defensible answer.
+
+Polish note, open: **the three new `Case` methods and both items in `error.rs` have no doc
+comments**, while every other public item in `case.rs` does. This note was raised in Stages 1 and 2
+and closed in Stage 3; it has reopened on new code. Mention once at the start of Stage 6 rather than
+as a rule.
+
+Also noted for him, not a defect: in `reveal` he shadows the `fact: FactId` parameter with
+`let fact = ...` holding a `&mut Fact`. Legal and idiomatic Rust, and TypeScript does not allow it in
+the same scope, so it is worth him knowing he did it deliberately rather than by accident.
+
+**Where he got stuck, and what it cost** — both are mentor defects, not his:
+
+1. **`self.require_suspect(to)?;` — a line with `?` that stores nothing.** This took four exchanges
+   and ended with him saying *"No idea dude"* and *"either I am dumb or you are not being clear"*.
+   The wording that failed was "a line that keeps nothing", which reads as "a line that does
+   nothing". What finally worked: state that `?` does **two** jobs — (1) stop the function and
+   return the error, (2) hand back the value — and that job 1 is the point, job 2 is leftover. Then
+   trace `reveal(FactId(1), SuspectId(99))` line by line with and without the check. Then show his
+   own method with a commented gap where the line goes.
+   Interim damage: he deleted the `require_suspect` call entirely to make `E0502` go away, which
+   compiled and silently dropped the validation. Worth reusing as a lesson — *making the compiler
+   happy by deleting the code it complained about* is the most common way a borrow error turns into
+   a behaviour bug.
+2. **Where `#[serde(tag = ...)]` physically goes.** The brief said "add one line above the enum" and
+   never showed it in place. He could not place it. Fix that generally: **when a brief introduces an
+   attribute, show the two or three surrounding lines of the real file**, not a description. Attribute
+   stacking (`#[derive(..)]` and `#[serde(..)]` both above the same item, order irrelevant) had never
+   been taught — he had only ever seen one attribute at a time.
+
 Spec verified against a reference implementation in a throwaway crate — 14/14 passing,
 `clippy --all-targets -D warnings` clean, and the test file as written to his disk is `cargo fmt`
 clean.
@@ -405,7 +443,7 @@ Phase 1 continues, roughly in this order — each becomes one stage with its own
 1. ~~`SuspectId` / `FactId` newtypes~~ — done, Stage 2.
 2. ~~`Fact` with `known_by`, and `Case` holding suspects and facts~~ — issued, Stage 3.
 3. ~~Borrowing and lifetimes: `suspect_facts` returning `impl Iterator<Item = &Fact>`~~ — issued, Stage 4.
-4. ~~`AppError` with `thiserror`, and `Result` across the IPC boundary~~ — issued, Stage 5.
+4. ~~`AppError` with `thiserror`, and `Result` across the IPC boundary~~ — done, Stage 5.
 5. **Next:** parse-don't-validate: `RawCase` → `TryFrom` → `Case`, loading a real TOML case file.
    This is where `?`'s `From::from` conversion and the `Io` / `Parse` / `CaseNotFound` variants get
    their first real use, and where the `.map_err` promised in Stage 5's brief actually gets written.
