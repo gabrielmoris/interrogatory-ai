@@ -25,6 +25,15 @@ pub enum AppError {
 
     #[error("cannot {action} while {state}")]
     InvalidState { action: String, state: String },
+
+    #[error("{id} appears twice in this case file")]
+    DuplicateSuspect { id: SuspectId },
+
+    #[error("{id} appears twice in this case file")]
+    DuplicateFact { id: FactId },
+
+    #[error("{id} knows nothing they are allowed to talk about")]
+    SuspectKnowsNothing { id: SuspectId },
 }
 
 /// A `Result` that fails with `AppError`. Use it instead of spelling out  `Result<T, AppError>` in every signature.
