@@ -1,5 +1,6 @@
-use crate::case::Case;
+use crate::case::{Case, Suspect};
 use crate::error::{AppError, AppResult};
+use crate::ids::SuspectId;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -31,7 +32,14 @@ impl TryFrom<RawCase> for Case {
     type Error = AppError;
 
     fn try_from(raw: RawCase) -> AppResult<Self> {
-        let case = Case::new(&raw.title, &raw.briefing);
+        let mut case = Case::new(&raw.title, &raw.briefing);
+        for raw_suspect in &raw.suspects {
+            case.add_suspect(Suspect::new(
+                SuspectId::new(raw_suspect.id),
+                &raw_suspect.name,
+            ));
+        }
+
         Ok(case)
     }
 }
