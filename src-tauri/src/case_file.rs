@@ -31,7 +31,8 @@ impl TryFrom<RawCase> for Case {
     type Error = AppError;
 
     fn try_from(raw: RawCase) -> AppResult<Self> {
-        todo!()
+        let case = Case::new(&raw.title, &raw.briefing);
+        Ok(case)
     }
 }
 

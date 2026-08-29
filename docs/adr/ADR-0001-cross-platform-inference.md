@@ -47,7 +47,7 @@ pub struct ModelProfile {
 }
 ```
 
-Ship one profile per platform as a TOML file next to the case files. Nothing in `crates/core` may hardcode a template, a context size, or a token budget.
+Ship one profile per platform as a TOML file next to the case files. No domain module may hardcode a template, a context size, or a token budget.
 
 ---
 
@@ -131,7 +131,7 @@ Insert **Phase 2.5 — Android bring-up** *after* Phase 3 (case engine and scori
 
 **What to do *now*, at zero cost, so Phase 2.5 is possible:**
 
-- `crates/core` never touches `std::fs`. Paths are passed in; Tauri resolves them per platform.
+- Domain modules never touch `std::fs`. Paths are passed in; Tauri resolves them per platform. *(Amended 2026-08-21: `crates/core` here means the domain modules in `src-tauri/src` — the workspace split was rejected, see `DECISIONS.md`.)*
 - `ModelProfile` exists as data from the first commit that loads a model.
 - No hardcoded chat template, context size, thread count, or token cap anywhere.
 - `InferenceEngine` returns a stream and takes a cancellation token — already the plan, and non-negotiable once mobile is in scope.

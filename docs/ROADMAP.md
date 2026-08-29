@@ -29,27 +29,34 @@ The case's real facts, who knows what, and the scoring rubric are Rust data. The
 - The suspect cannot leak what it was never given, because hidden facts never enter the context window — enforced at the type level, not by prompt wording.
 - Phases 1, 3 and 4 can be built and tested with **zero inference**, because a mock engine satisfies the same trait.
 
-The second decision, which enforces the first physically:
+The second decision enforces the first by layering. *(Amended 2026-08-21: a Cargo workspace split
+into a pure `interrogator-core` crate was proposed and **rejected**. Everything lives in `src-tauri`
+as a single crate. Reasoning, and the tripwire for revisiting, in `DECISIONS.md`.)*
 
-> **Split into a Cargo workspace.** A pure `interrogator-core` crate that knows nothing about Tauri, async, or IO; and `src-tauri` as a thin shell around it.
+> **Domain modules are pure. Shell modules may touch the outside world.** The separation is a
+> convention enforced by review, not by a crate boundary — which is the price of not splitting.
 
 ```
 interrogatory-ai/
-├─ Cargo.toml                  # [workspace] members = ["crates/core", "src-tauri"]
-├─ crates/
-│  └─ core/                    # interrogator-core — pure, sync, no tauri, no tokio
-│     └─ src/
-│        ├─ lib.rs
-│        ├─ case.rs            # Case, Suspect, Fact, FactId, Difficulty
-│        ├─ transcript.rs      # Turn, Speaker, Transcript
-│        ├─ prompt.rs          # deterministic String assembly (snapshot-testable)
-│        └─ scoring.rs         # Report, Verdict, ScoreBreakdown
 └─ src-tauri/
+   ├─ Cargo.toml               # the only crate. Run cargo from here.
    └─ src/
       ├─ main.rs               # entry only
-      ├─ lib.rs                # tauri::Builder wiring only
-      ├─ error.rs              # AppError (thiserror) + Serialize for the IPC boundary
-      ├─ state.rs              # AppState, managed via tauri::State
+      ├─ lib.rs                # tauri::Builder wiring + module declarations
+      │
+      │  # ---- domain modules: no tauri::, no tokio::, no std::fs ----
+      ├─ difficulty.rs         # Difficulty, Tuning                        (Stage 1)
+      ├─ ids.rs                # SuspectId, FactId                         (Stage 2)
+      ├─ case.rs               # Case, Suspect, Fact                       (Stages 3-4)
+      ├─ error.rs              # AppError (thiserror) + Serialize          (Stage 5)
+      ├─ case_file.rs          # RawCase -> TryFrom -> Case                (Stage 6)
+      ├─ transcript.rs         # Turn, Speaker, Transcript                 (Phase 3)
+      ├─ prompt.rs             # deterministic String assembly             (Phase 3)
+      ├─ scoring.rs            # Report, Verdict, ScoreBreakdown           (Phase 3)
+      │
+      │  # ---- shell modules: allowed to touch Tauri, tokio, the filesystem ----
+      ├─ storage.rs            # reads case files from disk                (Stage 8)
+      ├─ state.rs              # AppState, managed via tauri::State        (Stage 9)
       ├─ session/              # stateful interrogation orchestration
       ├─ llm/
       │  ├─ mod.rs             # trait InferenceEngine
@@ -60,10 +67,16 @@ interrogatory-ai/
 
 **Invariants to hold for the whole project:**
 
-- If `interrogator-core` ever needs `tauri`, `tokio`, or `std::fs`, the boundary has leaked. Fix the boundary, not the import.
-- `ipc/` functions deserialize, delegate, and map errors. Nothing else. Commands are the least interesting code in the app.
-- No `unwrap()` or `expect()` outside `main.rs` and `#[cfg(test)]`. Enforce with `#![deny(clippy::unwrap_used, clippy::expect_used)]`.
-- Every phase ends with `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, and a commit.
+- If a **domain module** ever needs `tauri`, `tokio`, or `std::fs`, the boundary has leaked. Fix the
+  boundary, not the import. If the split is ever revisited, these are the files that move.
+- `ipc/` functions deserialize, delegate, and map errors. Nothing else. Commands are the least
+  interesting code in the app.
+- No `unwrap()` or `expect()` in domain modules. `main.rs`, `lib.rs`'s Tauri wiring and
+  `#[cfg(test)]` are exempt. *(The `#![deny(clippy::unwrap_used, clippy::expect_used)]` attribute
+  originally specified here is not in force: `lib.rs`'s `run()` needs `.expect()` on
+  `generate_context!`. Add it per-module when the module list settles.)*
+- Every phase ends with `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, and a
+  commit.
 
 ---
 
@@ -74,13 +87,13 @@ No Rust learning here. This is removing friction that would otherwise tax every 
 - [ ] Add `.gitattributes`: `* text=auto eol=lf`, plus `*.png binary`, `*.ico binary`, `*.icns binary`. Then `git add --renormalize . && git commit`.
 - [ ] Choose npm **or** bun. Align `tauri.conf.json`'s `beforeDevCommand`/`beforeBuildCommand` with the lockfile you keep.
 - [ ] Delete `greet`, the demo `App.tsx`, `src/assets/react.svg`, `public/vite.svg`.
-- [ ] Convert to a Cargo workspace; create `crates/core` with an empty `lib.rs`.
+- [x] ~~Convert to a Cargo workspace~~ — proposed and rejected 2026-08-21, see `DECISIONS.md`.
 - [ ] Add deps: `thiserror`, `tracing`, `tracing-subscriber`, `serde`, `toml`.
 - [ ] Add `rust-toolchain.toml` pinning a stable version, and `rustfmt.toml`.
 - [ ] `.gitignore`: `*.gguf`, `models/`. Model weights never enter git.
 - [ ] Rewrite `README.md` to describe Interrogator, not the Tauri template.
 
-**Exit criterion:** `git status` is clean, `cargo clippy -D warnings` passes, `bun/npm run tauri dev` opens a blank window with your own title.
+**Exit criterion:** `git status` is clean, `cargo clippy -D warnings` passes, `bun run tauri dev` opens a blank window with your own title.
 
 ---
 
@@ -88,25 +101,27 @@ No Rust learning here. This is removing friction that would otherwise tax every 
 
 **Rust concepts:** ownership vs. borrowing, move semantics, structs, enums with data, pattern matching, `Option`/`Result`, `?`, custom errors, traits, `TryFrom`, interior mutability.
 
-### 1.1 — Domain model (`crates/core`)
+### 1.1 — Domain model (`src-tauri/src`)
 Model `Case`, `Suspect`, `Fact`, `FactId`, `Difficulty`. Design decisions to make deliberately, not by accident:
 - `FactId` as a newtype (`struct FactId(u32)` or a `&'static str` wrapper) — not a bare `String`. This is your first taste of making illegal states unrepresentable.
-- `Fact { id, statement, known_by: Vec<SuspectId>, is_ground_truth_only: bool }` — visibility is *data*, so it can be filtered mechanically. *(Amended: `known_by` is a `HashSet<SuspectId>`, and the accessor is `Case::suspect_facts` — see the decisions log in `PROGRESS.md`, 2026-08-21 and 2026-08-25.)*
-- `Difficulty` as an enum with associated data or an `impl` returning a tuning struct (`temperature`, `evasiveness`, `facts_volunteered`).
+- `Fact { id, statement, known_by: Vec<SuspectId>, is_ground_truth_only: bool }` — visibility is *data*, so it can be filtered mechanically. *(Amended: `known_by` is a `HashSet<SuspectId>`, and the accessor is `Case::suspect_facts` — see `DECISIONS.md`, 2026-08-21 and 2026-08-25.)*
+- `Difficulty` as an enum with associated data or an `impl` returning a tuning struct. *(Amended: built in Stage 1 as `Tuning { temperature, facts_volunteered_per_turn, will_lie }` — the `evasiveness` field sketched here became `will_lie`.)*
 
 **Drill:** write `fn suspect_facts<'a>(case: &'a Case, s: SuspectId) -> impl Iterator<Item = &'a Fact>`. Explain to yourself why the lifetime is needed and what happens if you return `Vec<Fact>` instead.
 
 ### 1.2 — Error handling (`src-tauri/src/error.rs`)
 `AppError` via `thiserror`, with `Serialize` so it can cross the IPC boundary as a structured object rather than a string. Variants for `CaseNotFound`, `Io`, `Parse`, `Inference`, `InvalidState`. Every command returns `Result<T, AppError>`.
 
-*(Amended 2026-08-25, issued as Stage 5. Three points settled — reasoning in the decisions log in `PROGRESS.md`. (a) `Serialize` is **derived**, not hand-written: every variant holds owned, serializable fields, so `std::io::Error` never goes inside the enum — the `Io` and `Parse` variants carry `{ path, message }` and the conversion is one `.map_err` at the filesystem call site in §1.3. Our failures are structured; foreign diagnostics are text. (b) The wire format is `#[serde(tag = "kind", rename_all = "camelCase")]`, and the `Display` message is deliberately **not** on the wire — React branches on `kind` and writes its own copy. Every variant therefore uses named fields; internal tagging cannot serialize a newtype variant holding an integer. (c) Two extra variants beyond the five listed: `SuspectNotFound { id }` and `FactNotFound { id }`, because "not found" needs to say which.)*
+*(Amended 2026-08-25, issued as Stage 5. Three points settled — reasoning in `DECISIONS.md`. (a) `Serialize` is **derived**, not hand-written: every variant holds owned, serializable fields, so `std::io::Error` never goes inside the enum — the `Io` and `Parse` variants carry `{ path, message }` and the conversion is one `.map_err` at the filesystem call site in §1.3. Our failures are structured; foreign diagnostics are text. (b) The wire format is `#[serde(tag = "kind", rename_all = "camelCase")]`, and the `Display` message is deliberately **not** on the wire — React branches on `kind` and writes its own copy. Every variant therefore uses named fields; internal tagging cannot serialize a newtype variant holding an integer. (c) Two extra variants beyond the five listed: `SuspectNotFound { id }` and `FactNotFound { id }`, because "not found" needs to say which.)*
 
-**Rule:** `anyhow` is for binaries and prototypes; `thiserror` is for library boundaries. Your core crate gets `thiserror`. Do not reach for `anyhow` in `crates/core`.
+**Rule:** `anyhow` is for binaries and prototypes; `thiserror` is for library boundaries. The domain modules get `thiserror`. Do not reach for `anyhow` in them.
 
 ### 1.3 — Case files (parse, don't validate)
 Case format in TOML. Two types: `RawCase` (what serde deserializes — permissive) and `Case` (validated — every `FactId` referenced actually exists, every suspect has ≥1 known fact). Bridge them with `impl TryFrom<RawCase> for Case`. After that conversion, the rest of the codebase can never see an invalid case.
 
 Write **two** real case files. One is not enough to find the abstraction.
+
+*(Amended 2026-08-27, issued as Stage 6. Format settled: `[[suspects]]` / `[[facts]]` arrays of tables, ids as plain integers, `known_by` a list of integers, `is_ground_truth_only` optional. The raw types hold `u32` and `String` only — the id newtypes appear on the far side of the conversion, because `SuspectId` means "an id that exists in this case" and that is precisely what has not been checked yet. Four validation rules: no repeated suspect id, no repeated fact id, every `known_by` entry is a suspect in this case, and every suspect has ≥1 **visible** fact — the last defined through `Case::suspect_facts`, so §3.2's rule keeps one owner. Three new `AppError` variants carry the offending id. **The filesystem read is not part of this section** — it moved to Stage 8 with the `Io` / `CaseNotFound` variants and a shell-side `storage.rs`, so `case_file.rs` stays a pure domain module; the tests reach the two real files with `include_str!`. Reasoning in `DECISIONS.md`.)*
 
 ### 1.4 — Managed state
 `AppState { session: Mutex<Option<Session>> }`, registered with `.manage()`, read in commands via `tauri::State<'_, AppState>`.
@@ -123,7 +138,7 @@ pub trait InferenceEngine: Send + Sync {
 ```
 Implement `MockEngine` returning canned, deterministic lines with an artificial delay. This unblocks Phases 3 and 4 entirely and keeps your test suite fast forever.
 
-**Exit criterion:** app loads a case from disk, renders the intro screen, and you can "interrogate" the mock suspect through a real chat UI. No LLM involved. All domain logic unit-tested with `cargo test -p interrogator-core`.
+**Exit criterion:** app loads a case from disk, renders the intro screen, and you can "interrogate" the mock suspect through a real chat UI. No LLM involved. All domain logic unit-tested with `cargo test`, run from `src-tauri/`, without launching Tauri.
 
 ---
 
@@ -159,15 +174,15 @@ Reuse the KV cache across turns rather than re-prompting the whole transcript. D
 
 ---
 
-## Phase 3 — Case engine, knowledge gating & scoring (8–10 sessions)
+## Phase 3 — Case engine, knowledge gating & scoring (10–13 sessions)
 
 **Rust concepts:** trait objects vs. generics, iterators and closures, snapshot testing, state machines via enums.
 
 ### 3.1 — Prompt assembly in Rust
-`fn build_prompt(case: &Case, suspect: &Suspect, difficulty: Difficulty, transcript: &Transcript) -> Prompt`, living in `crates/core`, pure and synchronous. Snapshot-test the rendered string (`insta`). Prompts are code; regressions in them are bugs, and they must show up in a diff.
+`fn build_prompt(case: &Case, suspect: &Suspect, difficulty: Difficulty, transcript: &Transcript) -> Prompt`, living in `src-tauri/src/prompt.rs` as a domain module, pure and synchronous. Snapshot-test the rendered string (`insta`). Prompts are code; regressions in them are bugs, and they must show up in a diff.
 
 ### 3.2 — Knowledge gating, enforced by types
-*(Confirmed 2026-08-25 over the split-storage alternative. Scheduled as Stage 6; `Case::suspect_facts` is its Phase-1 ancestor. Reasoning in the decisions log in `PROGRESS.md`.)*
+*(Confirmed 2026-08-25 over the split-storage alternative. **Scheduled as Stage 7** — amended 2026-08-27, when Stage 6 went to case files instead; `Case::suspect_facts` is its Phase-1 ancestor and remains the single owner of the rule until then. Reasoning in `DECISIONS.md`.)*
 
 `build_prompt` accepts only `&[VisibleFact]`, produced solely by `case.visible_to(suspect_id)`. There is no path by which a hidden fact reaches the context window, because there is no function that accepts one. Do not rely on "the system prompt tells it not to reveal X" — that is not enforcement.
 
@@ -183,7 +198,30 @@ Reuse the KV cache across turns rather than re-prompting the whole transcript. D
 ### 3.5 — Difficulty tuning
 Map `Difficulty` → temperature, evasiveness instructions, facts volunteered per turn, whether the suspect lies outright and how consistently, number of red herrings in the case.
 
-**Exit criterion:** end-to-end playthrough — intro → interrogation → report → score + critique — on at least two cases at two difficulties.
+### 3.6 — Case generation *(added 2026-08-29)*
+**Rust builds the skeleton; the model writes the words.** Same rule as §1, applied to authoring
+instead of dialogue.
+
+`generator.rs` is a domain module: given a `Difficulty` and a seed, it picks a suspect count, elects
+a culprit, assigns each fact a role (incriminating, alibi, corroborating, red herring) and
+distributes `known_by` so the case is **solvable by construction** — the visible facts, cross-
+referenced, identify exactly one culprit. Seeded RNG, so a seed always yields the same skeleton and
+the tests are reproducible.
+
+`is_solvable(&CaseSkeleton) -> bool` lives here and **only** here. It is not a `parse_case` rule:
+those four checks are structural and apply to every case, while solvability is the generator's
+proof obligation about its own output. One owner — see the 2026-08-25 duplication in
+`MENTOR-NOTES.md` for why this line is drawn explicitly.
+
+The model then skins the skeleton: names, occupations, voice, and each fact rendered as something a
+person would actually say. Output is constrained by a GBNF grammar (the same mechanism as §3.4
+Tier 1) and then goes through the ordinary `parse_case` path. Generated content gets no privileged
+route in. Fails validation → regenerate, bounded retries.
+
+**Hand-authored cases stay.** Two or three per difficulty, not ten: they are the quality bar, the
+tuning reference, and the test fixtures. Tests never depend on generated content.
+
+**Exit criterion:** end-to-end playthrough — intro → interrogation → report → score + critique — on at least two cases at two difficulties, plus one generated case played to a score.
 
 ---
 
@@ -224,9 +262,11 @@ React Three Fiber, blend shapes, expressions driven by sentiment/pressure from t
 |---|---|
 | `llama-cpp-rs` won't build on Windows/CUDA | Isolated session, no feature work alongside it. Document exact versions. Fallback: `llama-server` sidecar over HTTP for one phase — same `InferenceEngine` trait, so the swap is contained. |
 | Blocking FFI on the async runtime | Dedicated thread + channels (§2.3). Non-negotiable. |
-| Everything ends up in `lib.rs` | Workspace split in Phase 0 makes this structurally hard. |
+| Everything ends up in `lib.rs` | One module per concept from Stage 1, and the domain/shell split above. Reviewed each stage — there is no crate boundary to catch it. |
 | Prompt-engineering rabbit hole | Snapshot-tested prompts; time-box tuning sessions. |
 | 3D scope creep | Phase 5 is gated on Phase 3 being finished. |
+| Generated cases are atmospheric but unsolvable | Structure first: Rust elects the culprit and distributes knowledge, the model only writes prose (§3.6). `is_solvable` gates every skeleton before a word is generated. |
+| Case generation becomes its own project | It is §3.6, after scoring works. Two or three hand-authored cases per difficulty ship first and remain the fixtures. |
 | Model weights in git | `.gitignore` entry in Phase 0 + documented download script. |
 | 2–4 h/week fragmentation | Every session ends at a commit, with the next action written down. Never stop mid-refactor. |
 
@@ -234,9 +274,13 @@ React Three Fiber, blend shapes, expressions driven by sentiment/pressure from t
 
 ## Next three actions
 
-1. Phase 0 in one sitting: `.gitattributes` + renormalize, pick the package manager, delete the demo code.
-2. Convert to a Cargo workspace with an empty `crates/core`.
-3. Write `Case`, `Suspect`, `Fact`, `Difficulty` and one real case file in TOML — before any inference code exists.
+*(Superseded 2026-08-29 — the live queue is the stage table in `PROGRESS.md`. Kept for the record:
+items 1 and 3 are done, item 2 was rejected.)*
+
+1. ~~Phase 0 in one sitting~~ — done, apart from the leftovers listed in `PROGRESS.md`.
+2. ~~Convert to a Cargo workspace with an empty `crates/core`~~ — rejected, see `DECISIONS.md`.
+3. ~~Write `Case`, `Suspect`, `Fact`, `Difficulty` and one real case file in TOML~~ — done, Stages
+   1–3, with two case files landing in Stage 6.
 
 ---
 
