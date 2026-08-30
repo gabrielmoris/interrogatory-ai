@@ -73,63 +73,56 @@ while everything else public in `case.rs` does. Raise once, as tidying, not as a
 
 ### Stage 6 — case files — **withdrawn and re-cut 2026-08-29**
 
-Issued 2026-08-27 as a single 657-line brief teaching ten new concepts. Withdrawn 2026-08-29 and
-re-cut into four stages, each inside the concept budget and each ending green:
+Issued 2026-08-27 as a single 657-line brief teaching ten new concepts. Withdrawn and re-cut into
+four stages, each inside the concept budget and each ending green. The old 16-test
+`tests/case_file.rs` is in `archive/`. Reasoning in `DECISIONS.md`, 2026-08-29.
 
-| | Stage | Spec | New concepts |
-|---|---|---|---|
-| **6a** ✅ | the file's own vocabulary | `tests/case_raw.rs`, 6 tests | `Deserialize`, `#[serde(default)]`, raw vocabulary |
-| **6b** ✅ | the one road | `tests/case_convert.rs`, 6 tests | `TryFrom`, associated types, `*` deref |
-| **6c** ✅ | the four checks | `tests/case_checks.rs`, 8 tests | validation at the boundary, order as behaviour |
-| **6d** | the front door | `tests/case_parse.rs`, 4 tests | `.map_err`, why `?` cannot convert |
+### Stage 6a — `RawCase` and `Deserialize` ✅ 2026-08-29
 
-The old 16-test `tests/case_file.rs` is in `archive/`. **He had already written 6a's implementation**
-and stubbed 6b and 6d before the re-cut, so 6a needs only a test run and a review. Reasoning in
-`DECISIONS.md`, 2026-08-29.
-
-### Stage 6c — the four checks ✅ 2026-08-29
-
-**Built.** All four checks inside `try_from`: duplicate suspect, duplicate fact, `require_suspect?`
-on every `known_by` entry, and a third loop asking `suspect_facts(id).next().is_none()`. 8/8.
-**Headline concept.** Validation at the boundary — one place, and after it a `Case` is proof.
-**One note given, taken.** His duplicate-fact check first used `require_fact_mut(..).is_ok()`,
-building and discarding an `AppError` on every non-duplicate fact. Swapped to `fact_mut(..).is_some()`
-after one explanation: **`Option` when absence is a normal answer, `Result` when absence is a
-failure.** Check 3 is the same rule pointing the other way, which made a clean pair.
-**Two mentor defects.** (1) The checkpoint table was guessed again — said the stage starts at 2/8,
-it starts at 3/8. (2) Correction seven, on check 4: a reply full of reasons and Rust names that never
-stated the instruction. See `MENTOR-NOTES.md`; it produced the first bullet of Rule 3b.
-**He also asked, twice, *which function* the work goes in.** "Inside your suspects loop" was not
-enough — he could not tell whether 6c meant `try_from` or `parse_case`. **Name the function and the
-file every time, not just the loop.**
+**Built.** `src/case_file.rs`: `RawCase`, `RawSuspect`, `RawFact`, `#[derive(Debug, Deserialize)]`,
+`#[serde(default)]` on `known_by` and `is_ground_truth_only`. Spec `tests/case_raw.rs`, 6 tests.
+**Headline concept.** `Deserialize` — text in, Rust value out; raw types speak the file's vocabulary.
+**Outcome.** Pass, first submission, 6/6. Written ahead of the brief, unprompted and correct.
+**One note given.** `#[serde(default)]` also sits on `RawCase::facts` while `suspects` is required;
+both are the same kind of thing and both should be required. Cosmetic — no test changes, because
+6c's "every suspect has something to say" catches an empty file anyway. **Still open.**
 
 ### Stage 6b — `TryFrom` and the one road ✅ 2026-08-29
 
 **Built.** The `try_from` body: two loops, an inner loop revealing each `known_by` id, the
-ground-truth flag carried across. 6/6.
-**Headline concept.** `TryFrom` and its associated type. He wrote `for x in &raw.suspects` with the
-`&` unprompted, so **`E0382` never fired** — the brief's rule 4 assumed it would. Move that error to
-a stage where it is unavoidable, or drop it.
-**Where he got stuck.** Two places, both one step each. (1) The empty loop body — he had the `for`
-line and no idea what went in it. (2) `SuspectId::new(raw_known_by)` on a `&u32`: *"this is bringing
-me some headache."* `*` had never been taught — `&` was introduced in Stage 4 and its other half was
-not. **Add the dereference to the Stage 4 material, or teach it the first time a borrowed number is
-passed by value.**
-**Mentor defect.** The checkpoint table said 5/6 after the `known_by` step; the real count is 3/6,
-because the three remaining tests each check `known_by` *and* the flag and flip together. Table
-corrected. This is exactly the failure the "measure, do not guess" rule exists to prevent — it was
-guessed.
-**One note given.** `&raw_suspect.name.to_string()` in his first draft — a needless second `String`.
-Fixed after one line of explanation.
+ground-truth flag carried across. Spec `tests/case_convert.rs`, 6 tests. 6/6.
+**Headline concept.** `TryFrom` and its associated type.
+**Where he got stuck.** Two places, one step each: the empty loop body, and
+`SuspectId::new(raw_known_by)` on a `&u32` — *"this is bringing me some headache."* `*` had never
+been taught; `&` was introduced in Stage 4 and its other half was not. **Produced the `Assumes:`
+line in Rule 1.**
+**Do differently.** He wrote `for x in &raw.suspects` unprompted, so the brief's planned `E0382`
+never fired. Move that error to a stage where it is unavoidable, or drop it.
 
-### Stage 6a — `RawCase` and `Deserialize` ✅ 2026-08-29
+### Stage 6c — the four checks ✅ 2026-08-29
 
-**Built.** `src/case_file.rs`: `RawCase`, `RawSuspect`, `RawFact`, all fields `pub`,
-`#[derive(Debug, Deserialize)]`, `#[serde(default)]` on `known_by` and `is_ground_truth_only`.
-**Outcome.** Pass, first submission, 6/6. Written ahead of the brief, unprompted and correct.
-**One note given.** `#[serde(default)]` also sits on `RawCase::facts` while `suspects` is required.
-Both are the same kind of thing and a case with neither is a bug, so both should be required. Cosmetic
-— it changes no test, because 6c's "every suspect has something to say" catches an empty file anyway.
-**Warnings are expected until 6d.** `unused_mut` from his in-progress `try_from`, and two
-`unused_variables` from `parse_case`'s `todo!()`. Told him not to run `clippy -D warnings` until 6d
-closes the stage — it cannot pass mid-flight, and chasing it would mean deleting the stubs.
+**Built.** All four checks inside `try_from`: duplicate suspect, duplicate fact, `require_suspect?`
+on every `known_by` entry, and a third loop asking `suspect_facts(id).next().is_none()`. Spec
+`tests/case_checks.rs`, 8 tests. 8/8.
+**Headline concept.** Validation at the boundary — one place, and after it a `Case` is proof.
+**One note given, taken.** His duplicate-fact check first used `require_fact_mut(..).is_ok()`,
+building and discarding an `AppError` per non-duplicate fact. Swapped to `fact_mut(..).is_some()`
+after one explanation: **`Option` when absence is a normal answer, `Result` when it is a failure.**
+Check 3 is the same rule pointing the other way, which made a clean pair.
+**Do differently.** He asked twice *which function* the work went in. Name `file.rs :: function()`,
+never "inside your suspects loop". Two mentor defects (guessed checkpoints, correction seven) are in
+`MENTOR-NOTES.md`.
+
+### Stage 6d — the front door ✅ 2026-08-30
+
+**Built.** `parse_case`: `toml::from_str` with `.map_err` into `AppError::Parse { path, message }`,
+then `raw.try_into()` as the last line. Spec `tests/case_parse.rs`, 4 tests. 4/4.
+**Headline concept.** `?` calls `From::from` on the error on its way out — invisible in Stage 5
+because both sides were `AppError`, and `E0277` the moment they differ.
+**Outcome.** Pass, first submission. **76 tests across eight files green, `fmt` and
+`clippy -D warnings` clean. Stage 6 and Phase 1 §1.3 closed.** He wrote `.map_err` in the right
+place — wrapping only the parser's failure, not the whole function, which is the mistake hint 4
+existed to catch.
+**Do differently.** Nothing on the teaching side. One cosmetic note carried forward: the `parse_case`
+doc comment reads "but it it fails", and `RawCase`'s is "Raw case" where the other public items say
+what the type *means*.

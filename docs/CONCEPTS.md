@@ -17,6 +17,17 @@ This file is the mentor's working memory for pitch and vocabulary. It exists bec
 **Finishing a stage:** add its new rows here, and bump the status of anything he used again without
 help. This is part of the review, not optional bookkeeping.
 
+**The `Assumes:` check.** Before writing a brief, list every concept the task *requires*, not only
+the ones it teaches, and look each one up here. Anything missing is a supporting concept or a split.
+This ledger tracks what was taught; the `Assumes:` line is what catches what was needed and never
+taught — 6b's `*` was needed because Stage 4 taught `&` without its other half.
+
+**How he works, so gaps are not misread as weakness.** He pushes back when he disagrees and is
+frequently right — engage the argument. He reaches for iterator chains unprompted, reads compiler
+errors rather than asking (`E0373`, Stage 4), and finds defensible answers that differ from the hint
+(a raw string for `CaseNotFound`'s quoted slug, Stage 5). What he does not have is Rust's machinery,
+and only that.
+
 **Status meanings:**
 
 | Status | Means |
@@ -136,15 +147,24 @@ help. This is part of the review, not optional bookkeeping.
 | `?` as the whole check — a line that stores nothing | `await` a rejecting promise for its side effect | used |
 | `.next().is_none()` — asking an iterator whether it has anything | no `.length` on a generator | defined |
 
-### Stage 6d — scheduled, not yet taught
+### Stage 6d — `parse_case` and the front door ✅
 
-Nothing below is `defined` until the stage that owns it has been reviewed.
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`?` calls `From::from` on the error on its way out** (`E0277`) | nothing — `await` rethrows the same object | defined |
+| `.map_err` — `.map` for the failure side | `.catch(e => { throw new MyError(e) })` | defined |
+| Parse-don't-validate as a named pattern | a zod schema at the edge, typed everywhere after | defined |
+| Only the caller knows the context, so only the caller builds the error | — | defined |
+
+### Stage 7 — scheduled, not yet taught
+
+Nothing below is `defined` until the stage has been reviewed.
 
 | Concept | Owning stage |
 |---|---|
-| Parse-don't-validate as a named pattern | 6d |
-| `.map_err` — `.map` for the failure side | 6d |
-| Why `?` cannot convert an error it has no `From` for | 6d |
+| A struct that holds a borrow — the lifetime parameter on a type | 7 |
+| `impl<'a>` — introducing the name on the block as well | 7 |
+| A tuple struct's name is also a function (`.map(VisibleFact)`), via `clippy::redundant_closure` | 7 |
 
 ---
 
@@ -154,7 +174,8 @@ Nothing below is `defined` until the stage that owns it has been reviewed.
 
 trait, derive, impl block, variant, field, module, borrow, move, own, closure, iterator,
 lifetime, elision, match arm, associated constant, associated type, newtype, attribute,
-crate, stub, guard clause, dereference (`*`).
+crate, stub, guard clause, dereference (`*`), deserialize, early return, the `?` operator's
+conversion, `.map_err`, parse-don't-validate.
 
 ### Banned until defined in the same sentence
 
@@ -165,14 +186,9 @@ internally tagged representation · `&dyn std::error::Error` · monomorphisation
 interior mutability · zero-cost abstraction · trait object · blanket impl *(named in Stage 2 —
 still needs the one-line refresher)*
 
-### Phrasings that have failed
+**Due next, so plan the sentence now:** *interior mutability* and *trait object* come off this list
+in Stages 9b and 11 respectively — they are those stages' headline concepts, not asides. Do not use
+either word before then, including in a roadmap pointer he might read.
 
-| Said | Why it failed | Say instead |
-|---|---|---|
-| "a line that keeps nothing" | reads as "a line that does nothing" | "`?` does two jobs: stop and return the error, and hand back the value. Here only job one matters." |
-| "one boolean in your filter closure" | jargon stacked three deep, though he'd written the closure | point at the line and name the missing `!` |
-| "add one line above the enum" | he could not place it | show the two or three surrounding lines of the real file |
-| a "two-line step" containing a `let` annotation, `?` on a foreign error, and `try_into()` | three untaught things in two lines — short is not small | one of them, alone, named first |
-| four headed sections in answer to "what have I done wrong?" | he asked about one error and got a diagnosis of everything | answer the error, stop |
-| opening a stuck-reply with why the check matters, then the method name, then iterator mechanics | eight items, none of them the instruction | "Go through the suspects again. For each one ask: can this person say anything? If not, stop and return the error." |
-| a checkpoint row labelled "check 4 (nothing to say)" | he read the table as the spec | label rows with the section that explains them |
+*(Phrasings that have already failed moved to `CLAUDE.md`, Rule 4 — they are a
+teaching rule, not a concept ledger.)*

@@ -16,3 +16,9 @@ Superseded documents, kept only so a git blame or an old link still resolves.
 - `2026-08-27-stage-06-case-files.md` — the single 657-line Stage 6 brief, ten new concepts in one
   stage. Superseded by `stage-06a` … `stage-06d`. Kept as the worked example of what the concept
   budget in `CLAUDE.md` Rule 1 exists to prevent.
+- `2026-08-30-teaching-audit.md` — the audit of the doc set and the teaching rules, executed the same
+  day. Its findings are now `CLAUDE.md` Rules 1–4, the stage queue in `PROGRESS.md`, and two entries
+  in `DECISIONS.md`. Kept for the measurements, which are not recorded anywhere else.
+- `2026-08-30-roadmap-stale-sections.md` — `ROADMAP.md` §0, its Phase 0 checklist and its "next three
+  actions", removed by that audit.
+

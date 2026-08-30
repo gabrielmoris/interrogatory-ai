@@ -9,6 +9,35 @@ thing before you consider it recorded.
 
 ---
 
+### 2026-08-30 — The brief ceiling counts prose, not lines; and the stuck-reply gets a template
+
+**Decided.** Rule 2's ceiling is **90 lines of prose** — code blocks, blank lines and `<details>`
+tags excluded — replacing "200 lines total". Rule 3 is now a five-slot template for mid-stage help
+replies. `CLAUDE.md` carries both, plus the `Assumes:` header line and the four-rung hint ladder.
+**Why.** Measured across nine briefs: everything at or under ~90 prose lines landed
+(1, 6a–6d: 57–87); everything over 130 produced a correction (2–5: 137–235). Total line count does
+not separate them, because code volume is uncorrelated with the failures — he has asked twice for
+*more* code in place. And three of the seven corrections came from chat replies, which had no
+template at all.
+**Rejected.** Keeping a total-line ceiling and trying harder — Stage 7's brief hit 90 prose lines at
+221 total, so the old rule would have forced cutting the scaffolding and hints he asks for.
+**Costs.** One measurement step before issuing a brief. Evidence in `MENTOR-NOTES.md`; the audit that
+produced it is in `archive/2026-08-30-teaching-audit.md`.
+
+### 2026-08-30 — The doc set is pruned to what teaches
+
+**Decided.** `ROADMAP.md` loses its stale repo audit, its duplicate Phase 0 checklist and its
+superseded action list, and its six inline amendment footnotes become pointers to this file.
+`MENTOR-NOTES.md` keeps the quotes and drops the reconstructions. The failed-phrasings table moves
+to `CLAUDE.md` Rule 4. `PROGRESS.md` stops repeating the file map. 1160 → ~830 doc lines, resume
+path 600 → ~380.
+**Why.** Four files stated the same things in different words, two of them disagreeing about Phase 0.
+Every line on the resume path is read before any teaching happens.
+**Rejected.** Deleting `MENTOR-NOTES.md` outright — the verbatim quotes are the only thing that stops
+a rule being softened by a session that never saw the failure.
+**Costs.** Phase 2–5 detail is now compressed in the roadmap; it expands into the stage brief when
+reached.
+
 ### 2026-08-29 — Cases are generated structure-first, and solvability is not a parse rule
 
 **Decided.** Rust generates the case skeleton from a `Difficulty` and a seed — culprit, fact roles,

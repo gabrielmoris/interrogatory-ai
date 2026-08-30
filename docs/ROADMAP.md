@@ -1,246 +1,157 @@
 # Interrogator — Engineering & Learning Roadmap
 
-**Owner:** Gabriel Chamorro Moris
-**Budget:** 2–4 h/week. At that rate this is a **9–12 month build**. Plan accordingly; do not compress it by skipping Phase 1.
-**Target hardware:** Windows + NVIDIA GPU, 8 GB+ VRAM.
-**Inference backend:** `llama-cpp-rs` (llama.cpp bindings), in-process, CUDA offload.
+**Budget:** 2–4 h/week — a **9–12 month build**. Do not compress it by skipping Phase 1.
+**Target:** Windows + NVIDIA GPU, 8 GB+ VRAM. Android is Phase 2.5.
+**Inference:** `llama-cpp-2` in-process, CUDA offload — `adr/ADR-0001-cross-platform-inference.md`.
+
+The live queue is the stage table in `PROGRESS.md`. This file is the **plan**; `DECISIONS.md` is the
+**why**. When they overlap, this file carries a pointer and nothing more.
+
+*(Phase 0 is finished; its leftovers live in `PROGRESS.md`. §0 "current state", the Phase 0
+checklist and "next three actions" were removed 2026-08-30 — `archive/2026-08-30-roadmap-stale-
+sections.md`.)*
 
 ---
 
-## 0. Current state of the repo (as audited)
-
-`interrogatory-ai` is an unmodified `create-tauri-app` scaffold: Tauri v2, React 19, Vite 7, TypeScript 5.8. One commit (`0d27598 init commit`). `src-tauri/src/lib.rs` contains only the `greet` demo command. There is no module structure, no error type, no managed state, no domain model.
-
-Three defects to clear before any feature work:
-
-1. **CRLF churn.** `git status` shows all 20 files modified; `git diff --stat` is `2479 insertions(+), 2479 deletions(-)`. Every file was committed with LF and checked out as CRLF. There is no `.gitattributes` and `core.autocrlf` is unset. Every future diff will be unreadable until this is fixed.
-2. **Package-manager mismatch.** `tauri.conf.json` runs `bun run dev` / `bun run build`, but the repo has `package-lock.json` and no bun lockfile. Pick one, delete the other's lockfile.
-3. **Demo code still present.** `greet`, the Vite/React/Tauri logo page, `src/assets/react.svg`. Delete it in Phase 0 — leaving it invites cargo-culting its shape.
-
----
-
-## 1. The architectural decision that matters most
+## 1. The decision that matters most
 
 > **Ground truth lives in Rust. The LLM is a constrained actor, never the source of truth.**
 
-The case's real facts, who knows what, and the scoring rubric are Rust data. The model is handed a *filtered view* of that data and a persona, and its output is treated as untrusted text. Everything else in this design follows from that one rule:
+The case's real facts, who knows what, and the scoring rubric are Rust data. The model is handed a
+*filtered view* and a persona, and its output is untrusted text. Everything follows from that:
 
-- Scoring is reproducible, because the deterministic tier runs on `FactId`s, not on model opinion.
-- The suspect cannot leak what it was never given, because hidden facts never enter the context window — enforced at the type level, not by prompt wording.
-- Phases 1, 3 and 4 can be built and tested with **zero inference**, because a mock engine satisfies the same trait.
+- Scoring is reproducible — the deterministic tier runs on `FactId`s, not on model opinion.
+- The suspect cannot leak what it was never given, because hidden facts never enter the context
+  window. Enforced at the type level, not by prompt wording.
+- Phases 1, 3 and 4 build and test with **zero inference**, because a mock engine satisfies the
+  same trait.
 
-The second decision enforces the first by layering. *(Amended 2026-08-21: a Cargo workspace split
-into a pure `interrogator-core` crate was proposed and **rejected**. Everything lives in `src-tauri`
-as a single crate. Reasoning, and the tripwire for revisiting, in `DECISIONS.md`.)*
-
-> **Domain modules are pure. Shell modules may touch the outside world.** The separation is a
-> convention enforced by review, not by a crate boundary — which is the price of not splitting.
+> **Domain modules are pure. Shell modules may touch the outside world.** A convention enforced by
+> review, not a crate boundary — the price of not splitting (`DECISIONS.md`, 2026-08-21).
 
 ```
-interrogatory-ai/
-└─ src-tauri/
-   ├─ Cargo.toml               # the only crate. Run cargo from here.
-   └─ src/
-      ├─ main.rs               # entry only
-      ├─ lib.rs                # tauri::Builder wiring + module declarations
-      │
-      │  # ---- domain modules: no tauri::, no tokio::, no std::fs ----
-      ├─ difficulty.rs         # Difficulty, Tuning                        (Stage 1)
-      ├─ ids.rs                # SuspectId, FactId                         (Stage 2)
-      ├─ case.rs               # Case, Suspect, Fact                       (Stages 3-4)
-      ├─ error.rs              # AppError (thiserror) + Serialize          (Stage 5)
-      ├─ case_file.rs          # RawCase -> TryFrom -> Case                (Stage 6)
-      ├─ transcript.rs         # Turn, Speaker, Transcript                 (Phase 3)
-      ├─ prompt.rs             # deterministic String assembly             (Phase 3)
-      ├─ scoring.rs            # Report, Verdict, ScoreBreakdown           (Phase 3)
-      │
-      │  # ---- shell modules: allowed to touch Tauri, tokio, the filesystem ----
-      ├─ storage.rs            # reads case files from disk                (Stage 8)
-      ├─ state.rs              # AppState, managed via tauri::State        (Stage 9)
-      ├─ session/              # stateful interrogation orchestration
-      ├─ llm/
-      │  ├─ mod.rs             # trait InferenceEngine
-      │  ├─ llama.rs           # llama-cpp-rs implementation
-      │  └─ mock.rs            # deterministic engine — build this FIRST
-      └─ ipc/                  # #[tauri::command] wrappers, nothing else
+src-tauri/src/
+  main.rs           entry only
+  lib.rs            tauri::Builder wiring + module declarations
+  # ---- domain: no tauri::, no tokio::, no std::fs ----
+  difficulty.rs     Difficulty, Tuning                      Stage 1
+  ids.rs            SuspectId, FactId                       Stage 2
+  case.rs           Case, Suspect, Fact                     Stages 3–4, 7
+  error.rs          AppError (thiserror) + Serialize        Stage 5
+  case_file.rs      RawCase -> TryFrom -> Case              Stage 6
+  transcript.rs     Turn, Speaker, Transcript, Phase        Stage 10
+  prompt.rs         deterministic String assembly           Stage 20
+  scoring.rs        Report, Verdict, ScoreBreakdown         Stage 21
+  generator.rs      seeded case skeletons + is_solvable     Stage 22
+  # ---- shell: allowed Tauri, tokio, the filesystem ----
+  storage.rs        reads case files from disk              Stage 8
+  state.rs          AppState, managed via tauri::State      Stage 9b
+  session/          stateful interrogation orchestration
+  llm/              trait InferenceEngine · llama.rs · mock.rs (build mock FIRST)
+  ipc/              #[tauri::command] wrappers, nothing else
 ```
 
-**Invariants to hold for the whole project:**
+**Invariants for the whole project:**
 
-- If a **domain module** ever needs `tauri`, `tokio`, or `std::fs`, the boundary has leaked. Fix the
-  boundary, not the import. If the split is ever revisited, these are the files that move.
-- `ipc/` functions deserialize, delegate, and map errors. Nothing else. Commands are the least
-  interesting code in the app.
-- No `unwrap()` or `expect()` in domain modules. `main.rs`, `lib.rs`'s Tauri wiring and
-  `#[cfg(test)]` are exempt. *(The `#![deny(clippy::unwrap_used, clippy::expect_used)]` attribute
-  originally specified here is not in force: `lib.rs`'s `run()` needs `.expect()` on
-  `generate_context!`. Add it per-module when the module list settles.)*
-- Every phase ends with `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, and a
-  commit.
+- A domain module that needs `tauri`, `tokio` or `std::fs` means the boundary has leaked. Fix the
+  boundary, not the import.
+- `ipc/` functions deserialize, delegate, map errors. Nothing else.
+- No `unwrap()` / `expect()` in domain modules. `main.rs`, `lib.rs` wiring and tests are exempt.
+- Every stage ends on `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, commit.
 
 ---
 
-## Phase 0 — Repo hygiene (1 session, ~2 h)
+## Phase 1 — Rust core & Tauri foundations — Stages 1–10
 
-No Rust learning here. This is removing friction that would otherwise tax every future session.
+Ownership, borrowing, lifetimes, structs, enums with data, `Option`/`Result`, `?`, custom errors,
+traits, `TryFrom`, the IPC boundary, interior mutability.
 
-- [ ] Add `.gitattributes`: `* text=auto eol=lf`, plus `*.png binary`, `*.ico binary`, `*.icns binary`. Then `git add --renormalize . && git commit`.
-- [ ] Choose npm **or** bun. Align `tauri.conf.json`'s `beforeDevCommand`/`beforeBuildCommand` with the lockfile you keep.
-- [ ] Delete `greet`, the demo `App.tsx`, `src/assets/react.svg`, `public/vite.svg`.
-- [x] ~~Convert to a Cargo workspace~~ — proposed and rejected 2026-08-21, see `DECISIONS.md`.
-- [ ] Add deps: `thiserror`, `tracing`, `tracing-subscriber`, `serde`, `toml`.
-- [ ] Add `rust-toolchain.toml` pinning a stable version, and `rustfmt.toml`.
-- [ ] `.gitignore`: `*.gguf`, `models/`. Model weights never enter git.
-- [ ] Rewrite `README.md` to describe Interrogator, not the Tauri template.
+- **1.1 Domain model** — `Case`, `Suspect`, `Fact`, newtype ids, `Difficulty`. Stages 1–4. ✅
+- **1.2 Error handling** — `AppError` via `thiserror`, `Serialize` for IPC. Stage 5 ✅.
+  Settled: owned serializable fields only, wire format `#[serde(tag = "kind")]`, `Io`/`Parse` carry
+  `{ path, message }` — `DECISIONS.md`, 2026-08-25 (two entries).
+- **1.3 Case files, parse-don't-validate** — `RawCase` → `TryFrom` → `Case`, four structural checks,
+  no filesystem. Stages 6a–6d ✅. Format and the reasons: `DECISIONS.md`, 2026-08-27.
+- **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
+  Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
+- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); first `#[tauri::command]` (9a);
+  `AppState` behind a `Mutex`, `.manage()`, `State<'_, T>` (9b).
+- **1.6 Transcript and phase** — `enum Phase { Intro, Interrogating { turns }, Reporting, Scored }`.
+  Illegal transitions unrepresentable. Stage 10.
 
-**Exit criterion:** `git status` is clean, `cargo clippy -D warnings` passes, `bun run tauri dev` opens a blank window with your own title.
+**Concept to internalize before Phase 2:** `std::sync::MutexGuard` is not `Send` across `.await`.
+Stage 15 makes you feel it; 9b is where the habit forms.
 
----
+**Exit:** a case loads from disk, one command returns it to React, illegal phase transitions do not
+compile, all domain logic tested without launching Tauri.
 
-## Phase 1 — Rust core & Tauri foundations (6–8 sessions)
+## Phase 2 — Async Rust & local LLM — Stages 11–19 *(the hard phase)*
 
-**Rust concepts:** ownership vs. borrowing, move semantics, structs, enums with data, pattern matching, `Option`/`Result`, `?`, custom errors, traits, `TryFrom`, interior mutability.
+`async`/`await`, the tokio runtime, `Send`/`Sync`, `Arc`, channels, `spawn_blocking`, cancellation,
+FFI lifetimes.
 
-### 1.1 — Domain model (`src-tauri/src`)
-Model `Case`, `Suspect`, `Fact`, `FactId`, `Difficulty`. Design decisions to make deliberately, not by accident:
-- `FactId` as a newtype (`struct FactId(u32)` or a `&'static str` wrapper) — not a bare `String`. This is your first taste of making illegal states unrepresentable.
-- `Fact { id, statement, known_by: Vec<SuspectId>, is_ground_truth_only: bool }` — visibility is *data*, so it can be filtered mechanically. *(Amended: `known_by` is a `HashSet<SuspectId>`, and the accessor is `Case::suspect_facts` — see `DECISIONS.md`, 2026-08-21 and 2026-08-25.)*
-- `Difficulty` as an enum with associated data or an `impl` returning a tuning struct. *(Amended: built in Stage 1 as `Tuning { temperature, facts_volunteered_per_turn, will_lie }` — the `evasiveness` field sketched here became `will_lie`.)*
+- **2.1 The engine trait, mock first** — `trait InferenceEngine`, `MockEngine` with canned
+  deterministic lines. Unblocks Phases 3–4 and keeps the suite fast forever. Stage 11.
+- **2.2 Async inside Tauri** — Tauri v2 already runs tokio. `spawn` vs `spawn_blocking`.
+  Stages 12–13.
+- **2.3 The threading model** — *the most important lesson in the project.* llama.cpp decoding is
+  blocking FFI and must not run on a tokio worker. One dedicated OS thread owns the `LlamaContext`;
+  work in over a channel, tokens out over another; the async side only ever talks to channels.
+  `LlamaModel` behind an `Arc`, loaded once. **Do it wrong once on purpose, watch the UI freeze,
+  then fix it.** Stages 13–15, 19.
+- **2.4 Streaming** — `mpsc` → `app_handle.emit("interrogation://token", …)` → `listen()`. Every
+  event carries a session/turn id so late tokens from a cancelled generation are discarded.
+  Stage 16.
+- **2.5 Cancellation** — `CancellationToken` checked inside the decode loop; `select!`, drop
+  semantics, cleanup order. Stage 17.
+- **2.6 The build** — MSVC, CMake, CUDA toolkit, the `cuda` feature flag. **A session of its own,
+  zero feature work alongside it.** Record the working toolchain versions in `docs/BUILD.md` the
+  moment it compiles. 8B instruct at Q4_K_M (~4.7 GB) fits 8 GB VRAM. Weights in `models/`,
+  gitignored. Stage 18.
+- **2.7 KV cache** — reuse across turns rather than re-prompting the transcript. Truncation:
+  system prompt + first N + last M, summarize the middle.
 
-**Drill:** write `fn suspect_facts<'a>(case: &'a Case, s: SuspectId) -> impl Iterator<Item = &'a Fact>`. Explain to yourself why the lifetime is needed and what happens if you return `Vec<Fact>` instead.
+**Exit:** real local model, token-by-token streaming, cancellable mid-sentence, UI never blocks,
+`MockEngine` still passes the same tests.
 
-### 1.2 — Error handling (`src-tauri/src/error.rs`)
-`AppError` via `thiserror`, with `Serialize` so it can cross the IPC boundary as a structured object rather than a string. Variants for `CaseNotFound`, `Io`, `Parse`, `Inference`, `InvalidState`. Every command returns `Result<T, AppError>`.
+## Phase 3 — Case engine, gating & scoring — Stages 20–23
 
-*(Amended 2026-08-25, issued as Stage 5. Three points settled — reasoning in `DECISIONS.md`. (a) `Serialize` is **derived**, not hand-written: every variant holds owned, serializable fields, so `std::io::Error` never goes inside the enum — the `Io` and `Parse` variants carry `{ path, message }` and the conversion is one `.map_err` at the filesystem call site in §1.3. Our failures are structured; foreign diagnostics are text. (b) The wire format is `#[serde(tag = "kind", rename_all = "camelCase")]`, and the `Display` message is deliberately **not** on the wire — React branches on `kind` and writes its own copy. Every variant therefore uses named fields; internal tagging cannot serialize a newtype variant holding an integer. (c) Two extra variants beyond the five listed: `SuspectNotFound { id }` and `FactNotFound { id }`, because "not found" needs to say which.)*
+- **3.1 Prompt assembly** — `build_prompt(...) -> Prompt` in `prompt.rs`, pure and synchronous,
+  snapshot-tested with `insta`. Prompts are code; regressions in them are bugs and must show in a
+  diff. Stage 20.
+- **3.2 Gating enforced by types** — `build_prompt` accepts only `&[VisibleFact]`. There is no path
+  by which a hidden fact reaches the context window because there is no function that accepts one.
+  "The system prompt tells it not to" is not enforcement. Type lands in Stage 7; the gate closes
+  here.
+- **3.3 Interrogation state machine** — per-suspect pressure and consistency. The game logic that
+  makes it a game rather than a chat window.
+- **3.4 Two-tier scoring** — tier 1 deterministic: extract claimed `FactId`s from the report,
+  precision/recall against ground truth → the number. Tier 2: a separate call writes the critique
+  given tier 1's result. **Never let the model own the number.** Stages 21, 23.
+- **3.5 Difficulty tuning** — `Difficulty` → temperature, evasiveness, facts volunteered per turn,
+  whether the suspect lies and how consistently, red herrings per case.
+- **3.6 Case generation** — Rust builds the skeleton, the model writes the words. `generator.rs`
+  elects a culprit, assigns fact roles, distributes `known_by` so the case is solvable by
+  construction; seeded RNG. `is_solvable` lives there and **only** there — not a `parse_case` rule.
+  Generated cases enter through the ordinary `parse_case` path; no privileged route in. Two or three
+  hand-authored cases per difficulty stay as fixtures and quality bar. `DECISIONS.md`, 2026-08-29.
+  Stage 22.
 
-**Rule:** `anyhow` is for binaries and prototypes; `thiserror` is for library boundaries. The domain modules get `thiserror`. Do not reach for `anyhow` in them.
+**Exit:** end-to-end playthrough — intro → interrogation → report → score + critique — on two cases
+at two difficulties, plus one generated case played to a score.
 
-### 1.3 — Case files (parse, don't validate)
-Case format in TOML. Two types: `RawCase` (what serde deserializes — permissive) and `Case` (validated — every `FactId` referenced actually exists, every suspect has ≥1 known fact). Bridge them with `impl TryFrom<RawCase> for Case`. After that conversion, the rest of the codebase can never see an invalid case.
+## Phase 4 — React UI & typed boundary
 
-Write **two** real case files. One is not enough to find the abstraction.
+His home turf. **No Rust teaching budget — keep it tight, it is the phase most likely to expand to
+fill the space.** One typed IPC module (`src/lib/ipc.ts`); nothing calls `invoke` directly. Types
+generated from the Rust structs with `ts-rs`/`specta`, never hand-written. Four screens. Handle the
+states that exist only because inference is real: model loading, first-token latency, cancelled
+generation, inference error.
 
-*(Amended 2026-08-27, issued as Stage 6. Format settled: `[[suspects]]` / `[[facts]]` arrays of tables, ids as plain integers, `known_by` a list of integers, `is_ground_truth_only` optional. The raw types hold `u32` and `String` only — the id newtypes appear on the far side of the conversion, because `SuspectId` means "an id that exists in this case" and that is precisely what has not been checked yet. Four validation rules: no repeated suspect id, no repeated fact id, every `known_by` entry is a suspect in this case, and every suspect has ≥1 **visible** fact — the last defined through `Case::suspect_facts`, so §3.2's rule keeps one owner. Three new `AppError` variants carry the offending id. **The filesystem read is not part of this section** — it moved to Stage 8 with the `Io` / `CaseNotFound` variants and a shell-side `storage.rs`, so `case_file.rs` stays a pure domain module; the tests reach the two real files with `include_str!`. Reasoning in `DECISIONS.md`.)*
+## Phase 5 — 3D suspect faces *(deferred)*
 
-### 1.4 — Managed state
-`AppState { session: Mutex<Option<Session>> }`, registered with `.manage()`, read in commands via `tauri::State<'_, AppState>`.
-
-**Concept to internalize now, because Phase 2 will punish you for it:** `std::sync::Mutex` guards are not `Send` across `.await`. Understand why before you write your first async command.
-
-### 1.5 — Mock inference engine
-```rust
-#[async_trait]
-pub trait InferenceEngine: Send + Sync {
-    async fn stream(&self, prompt: Prompt, tx: Sender<Token>, cancel: CancellationToken)
-        -> Result<Completion, AppError>;
-}
-```
-Implement `MockEngine` returning canned, deterministic lines with an artificial delay. This unblocks Phases 3 and 4 entirely and keeps your test suite fast forever.
-
-**Exit criterion:** app loads a case from disk, renders the intro screen, and you can "interrogate" the mock suspect through a real chat UI. No LLM involved. All domain logic unit-tested with `cargo test`, run from `src-tauri/`, without launching Tauri.
-
----
-
-## Phase 2 — Async Rust & local LLM (10–14 sessions — the hard phase)
-
-**Rust concepts:** `async`/`await`, tokio runtime, `Send`/`Sync`, `Arc`, channels (`mpsc`, `broadcast`), `spawn_blocking`, dedicated threads, cancellation, FFI lifetimes.
-
-### 2.1 — Async inside Tauri
-Tauri v2 already runs a tokio runtime. Learn what `async fn` commands actually do, and when to use `tauri::async_runtime::spawn` vs. `spawn_blocking`.
-
-### 2.2 — Get `llama-cpp-rs` to build on Windows *(budget a full session for this alone)*
-MSVC build tools, CMake, CUDA toolkit, the crate's `cuda` feature flag. This will fight you. It is a separate task from writing any inference code — do not schedule feature work in the same session. Record the exact working toolchain versions in `docs/BUILD.md` the moment it compiles.
-
-Model to start with: an 8B instruct model at Q4_K_M (~4.7 GB) fits 8 GB VRAM with room for context. Keep weights in `models/`, gitignored, with a documented download step.
-
-### 2.3 — The threading model *(the most important lesson in the project)*
-llama.cpp decoding is CPU/GPU-bound blocking FFI. It must **not** run on a tokio worker.
-
-Correct shape: one dedicated OS thread owns the `LlamaContext`; it receives work over a channel and emits tokens over another channel; the async side only ever talks to channels. `LlamaModel` behind an `Arc`, loaded once at startup; contexts created per session.
-
-Do this wrong and you get a UI that freezes and an async runtime that starves — which is exactly the lesson. Consider deliberately doing it wrong once, observing the freeze, then fixing it.
-
-### 2.4 — Streaming to React
-`mpsc::channel` → `app_handle.emit("interrogation://token", payload)` → `listen()` on the React side. Include a session/turn ID in every event so a late token from a cancelled generation can be discarded by the frontend.
-
-### 2.5 — Cancellation
-`tokio_util::sync::CancellationToken`, checked inside the decode loop. Required behaviour: user sends a new question mid-generation, or hits stop. Teaches `select!`, drop semantics, and cleanup ordering.
-
-### 2.6 — Context & KV cache
-Reuse the KV cache across turns rather than re-prompting the whole transcript. Decide and document the truncation strategy when the transcript exceeds the context window (recommendation: keep system prompt + first N turns + last M turns, summarize the middle).
-
-**Exit criterion:** real local model, streaming token-by-token into the chat UI, cancellable mid-sentence, UI never blocks, `MockEngine` still passes the same tests.
-
----
-
-## Phase 3 — Case engine, knowledge gating & scoring (10–13 sessions)
-
-**Rust concepts:** trait objects vs. generics, iterators and closures, snapshot testing, state machines via enums.
-
-### 3.1 — Prompt assembly in Rust
-`fn build_prompt(case: &Case, suspect: &Suspect, difficulty: Difficulty, transcript: &Transcript) -> Prompt`, living in `src-tauri/src/prompt.rs` as a domain module, pure and synchronous. Snapshot-test the rendered string (`insta`). Prompts are code; regressions in them are bugs, and they must show up in a diff.
-
-### 3.2 — Knowledge gating, enforced by types
-*(Confirmed 2026-08-25 over the split-storage alternative. **Scheduled as Stage 7** — amended 2026-08-27, when Stage 6 went to case files instead; `Case::suspect_facts` is its Phase-1 ancestor and remains the single owner of the rule until then. Reasoning in `DECISIONS.md`.)*
-
-`build_prompt` accepts only `&[VisibleFact]`, produced solely by `case.visible_to(suspect_id)`. There is no path by which a hidden fact reaches the context window, because there is no function that accepts one. Do not rely on "the system prompt tells it not to reveal X" — that is not enforcement.
-
-### 3.3 — Interrogation state machine
-`enum Phase { Intro, Interrogating { turns: u32 }, Reporting, Scored }`. Illegal transitions are unrepresentable. Track per-suspect pressure/consistency here — the game logic that makes it a game rather than a chat window.
-
-### 3.4 — Two-tier scoring
-- **Tier 1, deterministic:** extract claimed `FactId`s from the player's report (structured output from a constrained LLM call, or keyword/embedding match) and compare against ground truth. Precision/recall over facts → the numeric score. Reproducible and unit-testable.
-- **Tier 2, narrative:** a separate LLM call generates the written critique, given the Tier-1 result.
-
-**Never let the model own the number.** A score you cannot reproduce is a score you cannot test or balance.
-
-### 3.5 — Difficulty tuning
-Map `Difficulty` → temperature, evasiveness instructions, facts volunteered per turn, whether the suspect lies outright and how consistently, number of red herrings in the case.
-
-### 3.6 — Case generation *(added 2026-08-29)*
-**Rust builds the skeleton; the model writes the words.** Same rule as §1, applied to authoring
-instead of dialogue.
-
-`generator.rs` is a domain module: given a `Difficulty` and a seed, it picks a suspect count, elects
-a culprit, assigns each fact a role (incriminating, alibi, corroborating, red herring) and
-distributes `known_by` so the case is **solvable by construction** — the visible facts, cross-
-referenced, identify exactly one culprit. Seeded RNG, so a seed always yields the same skeleton and
-the tests are reproducible.
-
-`is_solvable(&CaseSkeleton) -> bool` lives here and **only** here. It is not a `parse_case` rule:
-those four checks are structural and apply to every case, while solvability is the generator's
-proof obligation about its own output. One owner — see the 2026-08-25 duplication in
-`MENTOR-NOTES.md` for why this line is drawn explicitly.
-
-The model then skins the skeleton: names, occupations, voice, and each fact rendered as something a
-person would actually say. Output is constrained by a GBNF grammar (the same mechanism as §3.4
-Tier 1) and then goes through the ordinary `parse_case` path. Generated content gets no privileged
-route in. Fails validation → regenerate, bounded retries.
-
-**Hand-authored cases stay.** Two or three per difficulty, not ten: they are the quality bar, the
-tuning reference, and the test fixtures. Tests never depend on generated content.
-
-**Exit criterion:** end-to-end playthrough — intro → interrogation → report → score + critique — on at least two cases at two difficulties, plus one generated case played to a score.
-
----
-
-## Phase 4 — React UI & typed boundary (6–8 sessions)
-
-This is where your existing seniority pays off; keep it tight and do not let it expand to fill the space.
-
-- One typed IPC module (`src/lib/ipc.ts`). Every `invoke` and `listen` in the app goes through it. Nothing calls `invoke` directly.
-- Generate TS types from the Rust structs with `ts-rs` or `specta` so the boundary cannot silently drift. Do this rather than hand-writing interfaces.
-- Screens: Case Intro → Interrogation (streaming chat, cancel button, turn counter) → Report submission → Scoring/critique.
-- Handle the states that only exist because inference is real: model loading, first-token latency, cancelled generation, inference error.
-
----
-
-## Phase 5 — 3D suspect faces (deferred)
-
-React Three Fiber, blend shapes, expressions driven by sentiment/pressure from the Rust side.
-
-**Do not start this before Phase 3 is stable.** It is the most visible and least load-bearing part of the app, which makes it the single largest scope-creep risk in the project.
+React Three Fiber, blend shapes, expressions driven by pressure from the Rust side. **Gated on Phase
+3 being stable.** Most visible, least load-bearing, largest scope-creep risk in the project.
 
 ---
 
@@ -248,42 +159,20 @@ React Three Fiber, blend shapes, expressions driven by sentiment/pressure from t
 
 | Practice | Why |
 |---|---|
-| `cargo clippy --all-targets -- -D warnings` every session | Clippy is the cheapest Rust tutor you have. Read the lint names, not just the fixes. |
+| `cargo clippy --all-targets -- -D warnings` every stage | The cheapest Rust tutor you have. Read the lint names, not just the fixes. |
 | Domain tests run without launching Tauri | If scoring can't be tested headlessly, the layering is wrong. |
-| `MockEngine` stays working forever | It is your fast test path and your offline dev path. |
+| `MockEngine` stays working forever | The fast test path and the offline dev path. |
 | `tracing` from day one, not `println!` | Async token streams are unreadable in `println!`. |
-| One-paragraph log per session in `docs/LEARNING-LOG.md` | Name the Rust concept the session actually taught. Ownership lessons are learned by being annoyed by them and then articulating why. |
-
----
 
 ## Risk register
 
 | Risk | Mitigation |
 |---|---|
-| `llama-cpp-rs` won't build on Windows/CUDA | Isolated session, no feature work alongside it. Document exact versions. Fallback: `llama-server` sidecar over HTTP for one phase — same `InferenceEngine` trait, so the swap is contained. |
+| `llama-cpp-2` won't build on Windows/CUDA | Isolated session, no feature work alongside. Document exact versions. Fallback: `llama-server` sidecar over HTTP for one phase — same trait, so the swap is contained. |
 | Blocking FFI on the async runtime | Dedicated thread + channels (§2.3). Non-negotiable. |
-| Everything ends up in `lib.rs` | One module per concept from Stage 1, and the domain/shell split above. Reviewed each stage — there is no crate boundary to catch it. |
-| Prompt-engineering rabbit hole | Snapshot-tested prompts; time-box tuning sessions. |
-| 3D scope creep | Phase 5 is gated on Phase 3 being finished. |
-| Generated cases are atmospheric but unsolvable | Structure first: Rust elects the culprit and distributes knowledge, the model only writes prose (§3.6). `is_solvable` gates every skeleton before a word is generated. |
-| Case generation becomes its own project | It is §3.6, after scoring works. Two or three hand-authored cases per difficulty ship first and remain the fixtures. |
-| Model weights in git | `.gitignore` entry in Phase 0 + documented download script. |
-| 2–4 h/week fragmentation | Every session ends at a commit, with the next action written down. Never stop mid-refactor. |
-
----
-
-## Next three actions
-
-*(Superseded 2026-08-29 — the live queue is the stage table in `PROGRESS.md`. Kept for the record:
-items 1 and 3 are done, item 2 was rejected.)*
-
-1. ~~Phase 0 in one sitting~~ — done, apart from the leftovers listed in `PROGRESS.md`.
-2. ~~Convert to a Cargo workspace with an empty `crates/core`~~ — rejected, see `DECISIONS.md`.
-3. ~~Write `Case`, `Suspect`, `Fact`, `Difficulty` and one real case file in TOML~~ — done, Stages
-   1–3, with two case files landing in Stage 6.
-
----
-
-## Phase 2.5 — Android bring-up (added 2026-08-21)
-
-Android is **not** a Phase 2 concern; it slots in after Phase 3, once the game works. Same engine (`llama-cpp-2`, built for `aarch64-linux-android` via the NDK), different model and memory budget. Full reasoning, constraints and the zero-cost design rules to follow now: **[docs/adr/ADR-0001-cross-platform-inference.md](adr/ADR-0001-cross-platform-inference.md)**.
+| Everything ends up in `lib.rs` | One module per concept, domain/shell split, reviewed each stage. There is no crate boundary to catch it. |
+| Prompt-engineering rabbit hole | Snapshot-tested prompts; time-box tuning. |
+| 3D scope creep | Phase 5 gated on Phase 3. |
+| Generated cases atmospheric but unsolvable | Structure first; `is_solvable` gates every skeleton before a word is generated (§3.6). |
+| Model weights in git | `.gitignore` + documented download step. |
+| 2–4 h/week fragmentation | Every session ends at a commit with the next action written down. Never stop mid-stage. |
