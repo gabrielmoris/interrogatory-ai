@@ -120,8 +120,12 @@ until then so this stage's test can run.
 | `todo!()` still in place | 0 passed, 6 failed |
 | title, briefing and the suspects loop | 2 passed, 4 failed |
 | the facts loop, without `known_by` or the flag | 3 passed, 3 failed |
-| `reveal_to` for each id in `known_by` | 5 passed, 1 failed |
+| `reveal_to` for each id in `known_by` | 3 passed, 3 failed |
 | the `is_ground_truth_only` flag carried across | 6 passed |
+
+The count does not move on the `known_by` step: the three remaining tests each check `known_by`
+**and** the flag, so all three flip together on the last line. Measured, not guessed — the first
+version of this table said 5 and was wrong.
 
 ---
 

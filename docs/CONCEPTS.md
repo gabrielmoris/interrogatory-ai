@@ -117,19 +117,25 @@ help. This is part of the review, not optional bookkeeping.
 | `#[serde(default)]` — an optional field with a fallback | an optional property with a default in a zod schema | defined |
 | Raw types speak the file's vocabulary (plain `u32`, not `SuspectId`) | the `unknown` you validate before trusting | defined |
 
-### Stage 6b–6d — scheduled, not yet taught
+### Stage 6b — `TryFrom` and the one road ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| `TryFrom` — `From` for a conversion that can fail | a parse function returning a result instead of throwing | defined |
+| Associated types (`type Error = …`) — a trait can ask for a *type*, not only functions | a generic parameter you fill in on the interface | defined |
+| `try_into()` arriving free once `TryFrom` exists | — | defined |
+| **`*` — reading the value out of a borrow** | nothing; references are invisible in TS | defined |
+| `E0382` from a `for` loop consuming a `Vec` without `&` | — | not met (he wrote the `&` unprompted) |
+
+### Stage 6c–6d — scheduled, not yet taught
 
 Nothing below is `defined` until the stage that owns it has been reviewed. Rows move up into the
 ledger proper at review time.
 
 | Concept | Owning stage |
 |---|---|
-| `TryFrom` — `From` for a conversion that can fail | 6b |
-| Associated types on a trait (`type Error = …`) — a trait asking for a *type* | 6b |
-| `try_into()` arriving free once `TryFrom` exists | 6b |
-| Parse-don't-validate as a named pattern | 6b |
-| `E0382` from a `for` loop consuming a `Vec` without `&` | 6b |
 | Validation at the boundary; check order as observable behaviour | 6c |
+| Parse-don't-validate as a named pattern | 6c |
 | `.map_err` — `.map` for the failure side | 6d |
 | Why `?` cannot convert an error it has no `From` for | 6d |
 
@@ -140,8 +146,8 @@ ledger proper at review time.
 ### Safe to use — introduced and defined
 
 trait, derive, impl block, variant, field, module, borrow, move, own, closure, iterator,
-lifetime, elision, match arm, associated constant, associated type *(6b)*, newtype, attribute,
-crate, stub, guard clause.
+lifetime, elision, match arm, associated constant, associated type, newtype, attribute,
+crate, stub, guard clause, dereference (`*`).
 
 ### Banned until defined in the same sentence
 

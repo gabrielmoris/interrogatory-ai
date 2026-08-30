@@ -79,13 +79,32 @@ re-cut into four stages, each inside the concept budget and each ending green:
 | | Stage | Spec | New concepts |
 |---|---|---|---|
 | **6a** ✅ | the file's own vocabulary | `tests/case_raw.rs`, 6 tests | `Deserialize`, `#[serde(default)]`, raw vocabulary |
-| **6b** | the one road | `tests/case_convert.rs`, 6 tests | `TryFrom`, associated types, `E0382` in a `for` loop |
+| **6b** ✅ | the one road | `tests/case_convert.rs`, 6 tests | `TryFrom`, associated types, `*` deref |
 | **6c** | the four checks | `tests/case_checks.rs`, 8 tests | validation at the boundary, order as behaviour |
 | **6d** | the front door | `tests/case_parse.rs`, 4 tests | `.map_err`, why `?` cannot convert |
 
 The old 16-test `tests/case_file.rs` is in `archive/`. **He had already written 6a's implementation**
 and stubbed 6b and 6d before the re-cut, so 6a needs only a test run and a review. Reasoning in
 `DECISIONS.md`, 2026-08-29.
+
+### Stage 6b — `TryFrom` and the one road ✅ 2026-08-29
+
+**Built.** The `try_from` body: two loops, an inner loop revealing each `known_by` id, the
+ground-truth flag carried across. 6/6.
+**Headline concept.** `TryFrom` and its associated type. He wrote `for x in &raw.suspects` with the
+`&` unprompted, so **`E0382` never fired** — the brief's rule 4 assumed it would. Move that error to
+a stage where it is unavoidable, or drop it.
+**Where he got stuck.** Two places, both one step each. (1) The empty loop body — he had the `for`
+line and no idea what went in it. (2) `SuspectId::new(raw_known_by)` on a `&u32`: *"this is bringing
+me some headache."* `*` had never been taught — `&` was introduced in Stage 4 and its other half was
+not. **Add the dereference to the Stage 4 material, or teach it the first time a borrowed number is
+passed by value.**
+**Mentor defect.** The checkpoint table said 5/6 after the `known_by` step; the real count is 3/6,
+because the three remaining tests each check `known_by` *and* the flag and flip together. Table
+corrected. This is exactly the failure the "measure, do not guess" rule exists to prevent — it was
+guessed.
+**One note given.** `&raw_suspect.name.to_string()` in his first draft — a needless second `String`.
+Fixed after one line of explanation.
 
 ### Stage 6a — `RawCase` and `Deserialize` ✅ 2026-08-29
 

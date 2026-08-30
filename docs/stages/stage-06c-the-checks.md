@@ -14,7 +14,7 @@ not in the cast, a witness with nothing to say. Right now your conversion accept
 
 You could load the file and then check it everywhere it gets used. You are going to do the other
 thing — **check it once, at the door.** After this stage, holding a `Case` is proof the checks
-already ran. Not "should have run": *did*.
+already ran. Not "should have run": _did_.
 
 ---
 
@@ -64,7 +64,7 @@ One line. The `?` returns `AppError::SuspectNotFound { id }` out of `try_from`, 
 precisely that. First time a Stage 5 method has been used in anger.
 
 **4. Every suspect has at least one thing to say.** Not "at least one entry in some `known_by` list"
-— one fact they are *allowed to talk about*. Those are different, and
+— one fact they are _allowed to talk about_. Those are different, and
 `knowing_only_the_solution_counts_as_knowing_nothing` exists to keep them apart: a suspect whose only
 fact is the solution still has nothing to say.
 
@@ -97,15 +97,17 @@ ones, and `the_real_case_files_still_pass_every_check` is here to catch that fro
 
 ## Checkpoints
 
-| After | `cargo test --test case_checks` |
-|---|---|
-| 6b's conversion, no checks | 2 passed, 6 failed |
-| check 1 (duplicate suspect) | 3 passed, 5 failed |
-| check 2 (duplicate fact) | 4 passed, 4 failed |
-| check 3 (`require_suspect`) | 6 passed, 2 failed |
-| check 4 (nothing to say) | 8 passed |
+| After                       | `cargo test --test case_checks` |
+| --------------------------- | ------------------------------- |
+| 6b's conversion, no checks  | 3 passed, 5 failed              |
+| check 1 (duplicate suspect) | 4 passed, 4 failed              |
+| check 2 (duplicate fact)    | 5 passed, 3 failed              |
+| check 3 (`require_suspect`) | 6 passed, 2 failed              |
+| check 4 (nothing to say)    | 8 passed                        |
 
-The two that pass from the start are the `AppError` ones. They are your proof the harness runs.
+Three pass from the start: the two `AppError` ones, and `the_real_case_files_still_pass_every_check`,
+which is trivially true while there are no checks to fail. Its job is to start green and _stay_ green
+— if it ever goes red, a check you added is rejecting a good file.
 
 ---
 
@@ -126,7 +128,7 @@ The two that pass from the start are the `AppError` ones. They are your proof th
 <details>
 <summary><b>Hint 1 — where each check goes</b></summary>
 
-Three of them go *inside* a loop you already have, just before the `add_` call. The fourth is a new
+Three of them go _inside_ a loop you already have, just before the `add_` call. The fourth is a new
 loop, after everything else. If you find yourself checking a suspect before the facts exist, you have
 put check 4 in the wrong place.
 

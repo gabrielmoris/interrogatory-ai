@@ -3,6 +3,7 @@ use crate::error::{AppError, AppResult};
 use crate::ids::{FactId, SuspectId};
 use serde::Deserialize;
 
+/// Raw case 
 #[derive(Debug, Deserialize)]
 pub struct RawCase {
     pub title: String,
