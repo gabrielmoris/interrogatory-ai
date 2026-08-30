@@ -3,7 +3,7 @@ use crate::error::{AppError, AppResult};
 use crate::ids::{FactId, SuspectId};
 use serde::Deserialize;
 
-/// Raw case 
+/// Raw case
 #[derive(Debug, Deserialize)]
 pub struct RawCase {
     pub title: String,
@@ -35,21 +35,40 @@ impl TryFrom<RawCase> for Case {
     fn try_from(raw: RawCase) -> AppResult<Self> {
         let mut case = Case::new(&raw.title, &raw.briefing);
         for raw_suspect in &raw.suspects {
-            case.add_suspect(Suspect::new(
-                SuspectId::new(raw_suspect.id),
-                &raw_suspect.name,
-            ));
+            let suspect_id = SuspectId::new(raw_suspect.id);
+
+            if case.suspect(suspect_id).is_some() {
+                return Err(AppError::DuplicateSuspect { id: suspect_id });
+            }
+
+            case.add_suspect(Suspect::new(suspect_id, &raw_suspect.name));
         }
 
         for raw_fact in &raw.facts {
-            let mut fact = Fact::new(FactId::new(raw_fact.id), &raw_fact.statement);
+            let fact_id = FactId::new(raw_fact.id);
+
+            if case.fact_mut(fact_id).is_some() {
+                return Err(AppError::DuplicateFact { id: fact_id });
+            }
+
+            let mut fact = Fact::new(fact_id, &raw_fact.statement);
             fact.is_ground_truth_only = raw_fact.is_ground_truth_only;
 
             for raw_known_by in &raw_fact.known_by {
-                fact.reveal_to(SuspectId::new(*raw_known_by));
+                let suspect_id = SuspectId::new(*raw_known_by);
+                case.require_suspect(suspect_id)?;
+                fact.reveal_to(suspect_id);
             }
 
             case.add_fact(fact);
+        }
+
+        for raw_suspect in &raw.suspects {
+            let suspect_id = SuspectId::new(raw_suspect.id);
+
+            if case.suspect_facts(suspect_id).next().is_none() {
+                return Err(AppError::SuspectKnowsNothing { id: suspect_id });
+            }
         }
 
         Ok(case)
