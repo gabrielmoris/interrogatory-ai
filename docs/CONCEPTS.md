@@ -127,15 +127,22 @@ help. This is part of the review, not optional bookkeeping.
 | **`*` — reading the value out of a borrow** | nothing; references are invisible in TS | defined |
 | `E0382` from a `for` loop consuming a `Vec` without `&` | — | not met (he wrote the `&` unprompted) |
 
-### Stage 6c–6d — scheduled, not yet taught
+### Stage 6c — the four checks ✅
 
-Nothing below is `defined` until the stage that owns it has been reviewed. Rows move up into the
-ledger proper at review time.
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| Validation at the boundary — check once, at the door | `schema.parse()` at the edge of the app | defined |
+| `Option` when absence is normal, `Result` when absence is a failure | `T \| undefined` vs throwing | defined |
+| `?` as the whole check — a line that stores nothing | `await` a rejecting promise for its side effect | used |
+| `.next().is_none()` — asking an iterator whether it has anything | no `.length` on a generator | defined |
+
+### Stage 6d — scheduled, not yet taught
+
+Nothing below is `defined` until the stage that owns it has been reviewed.
 
 | Concept | Owning stage |
 |---|---|
-| Validation at the boundary; check order as observable behaviour | 6c |
-| Parse-don't-validate as a named pattern | 6c |
+| Parse-don't-validate as a named pattern | 6d |
 | `.map_err` — `.map` for the failure side | 6d |
 | Why `?` cannot convert an error it has no `From` for | 6d |
 
@@ -167,3 +174,5 @@ still needs the one-line refresher)*
 | "add one line above the enum" | he could not place it | show the two or three surrounding lines of the real file |
 | a "two-line step" containing a `let` annotation, `?` on a foreign error, and `try_into()` | three untaught things in two lines — short is not small | one of them, alone, named first |
 | four headed sections in answer to "what have I done wrong?" | he asked about one error and got a diagnosis of everything | answer the error, stop |
+| opening a stuck-reply with why the check matters, then the method name, then iterator mechanics | eight items, none of them the instruction | "Go through the suspects again. For each one ask: can this person say anything? If not, stop and return the error." |
+| a checkpoint row labelled "check 4 (nothing to say)" | he read the table as the spec | label rows with the section that explains them |

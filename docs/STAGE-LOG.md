@@ -80,12 +80,28 @@ re-cut into four stages, each inside the concept budget and each ending green:
 |---|---|---|---|
 | **6a** ✅ | the file's own vocabulary | `tests/case_raw.rs`, 6 tests | `Deserialize`, `#[serde(default)]`, raw vocabulary |
 | **6b** ✅ | the one road | `tests/case_convert.rs`, 6 tests | `TryFrom`, associated types, `*` deref |
-| **6c** | the four checks | `tests/case_checks.rs`, 8 tests | validation at the boundary, order as behaviour |
+| **6c** ✅ | the four checks | `tests/case_checks.rs`, 8 tests | validation at the boundary, order as behaviour |
 | **6d** | the front door | `tests/case_parse.rs`, 4 tests | `.map_err`, why `?` cannot convert |
 
 The old 16-test `tests/case_file.rs` is in `archive/`. **He had already written 6a's implementation**
 and stubbed 6b and 6d before the re-cut, so 6a needs only a test run and a review. Reasoning in
 `DECISIONS.md`, 2026-08-29.
+
+### Stage 6c — the four checks ✅ 2026-08-29
+
+**Built.** All four checks inside `try_from`: duplicate suspect, duplicate fact, `require_suspect?`
+on every `known_by` entry, and a third loop asking `suspect_facts(id).next().is_none()`. 8/8.
+**Headline concept.** Validation at the boundary — one place, and after it a `Case` is proof.
+**One note given, taken.** His duplicate-fact check first used `require_fact_mut(..).is_ok()`,
+building and discarding an `AppError` on every non-duplicate fact. Swapped to `fact_mut(..).is_some()`
+after one explanation: **`Option` when absence is a normal answer, `Result` when absence is a
+failure.** Check 3 is the same rule pointing the other way, which made a clean pair.
+**Two mentor defects.** (1) The checkpoint table was guessed again — said the stage starts at 2/8,
+it starts at 3/8. (2) Correction seven, on check 4: a reply full of reasons and Rust names that never
+stated the instruction. See `MENTOR-NOTES.md`; it produced the first bullet of Rule 3b.
+**He also asked, twice, *which function* the work goes in.** "Inside your suspects loop" was not
+enough — he could not tell whether 6c meant `try_from` or `parse_case`. **Name the function and the
+file every time, not just the loop.**
 
 ### Stage 6b — `TryFrom` and the one road ✅ 2026-08-29
 

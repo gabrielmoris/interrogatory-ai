@@ -75,6 +75,12 @@ impl TryFrom<RawCase> for Case {
     }
 }
 
+/// Tries to parse, but it it fails the toml error would be mapped to the correct AppError::Parse
 pub fn parse_case(text: &str, path: &str) -> AppResult<Case> {
-    todo!()
+    let raw: RawCase = toml::from_str(text).map_err(|e| AppError::Parse {
+        path: path.to_string(),
+        message: e.to_string(),
+    })?;
+
+    raw.try_into()
 }

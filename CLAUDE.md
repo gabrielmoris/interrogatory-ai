@@ -91,6 +91,14 @@ This is where the rule keeps breaking, even when the brief is right. Corrected t
 deep and introducing many things at the same time."* **Losing his interest is the failure state; a
 correct reply that costs him motivation is a bad reply.**
 
+- **Lead with the plain-language steps. Always.** Say *what to do*, in ordinary words, before any
+  reason, any trade-off, and any Rust name. "Go through the suspects again. For each one ask: can
+  this person say anything at all? If not, stop and return the error." Then, and only then, the Rust.
+  Corrected 2026-08-29, mid-6c: *"You never explain in plain language WHAT I have to do? The logic?
+  You mix rust terms with machine logic and expect me to understand everything. I am a person!"*
+  The reply that caused it opened with game design, then a trap, then a method name, then iterator
+  mechanics, then laziness, then loop placement, then a code block — seven things, and the actual
+  instruction was in none of them. **Reasons are not instructions. Rust names are not instructions.**
 - **One new thing per message**, named and explained before it is used. If a step needs machinery he
   has not met, the step is too big — split it, and let the message introducing the machinery do
   nothing else. Count unexplained concepts, not lines. The number is one. *Short is not the same as

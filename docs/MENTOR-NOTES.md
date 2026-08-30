@@ -45,6 +45,34 @@ been amended.** Grep for the rejected thing before closing a decision.
 
 ---
 
+## 2026-08-29 — Correction seven: reasons are not instructions
+
+Mid-6c, on the last of the four checks:
+
+> "You never explain in plain language WHAT I have to do? The logic? You mix rust terms with machine
+> logic and expect me to understand everything. I am a person!"
+
+The reply that caused it had, in order: why the check matters for the game, the trap that makes a
+naive version wrong, which method answers the question, that iterators have no `.len()`, a line of
+`.next().is_none()`, a note on laziness, where the loop goes, and a parcel-depot code block. Eight
+items. **The instruction — "go through the suspects again and ask each one whether they can say
+anything" — was never stated.** Every sentence was about *why* or *with what*, none about *what*.
+
+The reply that worked, immediately after, was six lines: what to do, in ordinary words, as two
+bullets for the yes and no branches, then one sentence naming the function he already owned, then a
+handback. He wrote it correctly on the first try.
+
+Produced the first bullet of Rule 3b: **lead with the plain-language steps, always; reasons and Rust
+names come after.** Note this is a *different* failure from corrections four and five, which were
+about volume. This reply was not especially long. It was correctly ordered for a reference document
+and backwards for a person who is stuck.
+
+Also fixed the same day: the checkpoint table in the 6c brief labelled its rows "check 4 (nothing to
+say)", and he read the table as if it were the spec. Rows now name the section that explains them,
+with a line saying the label is a reminder and not the instruction.
+
+---
+
 ## 2026-08-27 — Corrections four and five: now it is the chat replies
 
 Mid-Stage 6, two in the same session:

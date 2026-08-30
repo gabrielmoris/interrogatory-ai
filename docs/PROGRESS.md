@@ -8,9 +8,9 @@
 |            |                                                                  |
 | ---------- | ---------------------------------------------------------------- |
 | Phase      | **1 — Rust core & Tauri foundations**                            |
-| Stage      | **6c, not started** — the four checks. Spec `src-tauri/tests/case_checks.rs`, 8 tests |
-| Last done  | Stage 6b, 2026-08-29. 6/6 |
-| Next       | He implements 6c and says "ready". Then 6d closes Stage 6. |
+| Stage      | **6d, not started** — `parse_case` and `.map_err`. Spec `src-tauri/tests/case_parse.rs`, 4 tests |
+| Last done  | Stage 6c, 2026-08-29. 8/8 |
+| Next       | He implements 6d. That closes Stage 6 — then `cargo fmt` and `clippy -D warnings`. |
 | Blocked on | nothing                                                          |
 
 **Standing note:** the three `Case` methods from Stage 5, both items in `error.rs` and the three raw
@@ -34,8 +34,8 @@ Each becomes one stage with its own failing test, inside the three-concept budge
 | ~~5~~ | ~~`AppError` and `Result`~~ | ~~`Result` and `?`~~ |
 | ~~6a~~ | ~~the file's own vocabulary~~ | ~~`Deserialize` — text in, Rust value out~~ |
 | ~~6b~~ | ~~the one road~~ | ~~`TryFrom`, a conversion that can fail~~ |
-| **6c** | the four checks | validation at the boundary |
-| 6d | the front door | why `?` cannot convert every error |
+| ~~6c~~ | ~~the four checks~~ | ~~validation at the boundary~~ |
+| **6d** | the front door | why `?` cannot convert every error |
 | 7 | `VisibleFact<'a>` newtype | a struct that holds a reference |
 | 8 | Loading a case from disk | `std::fs`, and the first shell module |
 | 9 | `tauri::State` and managed state | the first stage that touches Tauri |
