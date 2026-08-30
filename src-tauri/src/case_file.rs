@@ -1,6 +1,6 @@
-use crate::case::{Case, Suspect};
+use crate::case::{Case, Fact, Suspect};
 use crate::error::{AppError, AppResult};
-use crate::ids::SuspectId;
+use crate::ids::{FactId, SuspectId};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +38,17 @@ impl TryFrom<RawCase> for Case {
                 SuspectId::new(raw_suspect.id),
                 &raw_suspect.name,
             ));
+        }
+
+        for raw_fact in &raw.facts {
+            let mut fact = Fact::new(FactId::new(raw_fact.id), &raw_fact.statement);
+            fact.is_ground_truth_only = raw_fact.is_ground_truth_only;
+
+            for raw_known_by in &raw_fact.known_by {
+                fact.reveal_to(SuspectId::new(*raw_known_by));
+            }
+
+            case.add_fact(fact);
         }
 
         Ok(case)
