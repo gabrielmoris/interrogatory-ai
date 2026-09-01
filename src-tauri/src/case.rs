@@ -49,6 +49,24 @@ impl Fact {
     }
 }
 
+/// A fact one suspect is allowed to talk about, borrowed from the case it came from.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct VisibleFact<'a>(&'a Fact);
+
+impl<'a> VisibleFact<'a> {
+    pub fn id(&self) -> FactId {
+        self.0.id
+    }
+    pub fn statement(&self) -> &'a str {
+        &self.0.statement
+    }
+}
+
+/// The statements of some visible facts, in order.
+pub fn visible_statements<'a>(facts: &[VisibleFact<'a>]) -> Vec<&'a str> {
+    todo!()
+}
+
 /// One playable case: the briefing, the cast, and the ground truth.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Case {
@@ -120,6 +138,12 @@ impl Case {
         let fact = self.require_fact_mut(fact)?;
         fact.reveal_to(to);
         Ok(())
+    }
+
+    /// Every fact this suspect may talk about, wrapped so a prompt cannot be
+    /// handed anything else.
+    pub fn visible_to<'a>(&'a self, suspect: SuspectId) -> Vec<VisibleFact<'a>> {
+        todo!()
     }
 }
 
