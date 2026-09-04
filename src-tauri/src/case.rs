@@ -64,7 +64,7 @@ impl<'a> VisibleFact<'a> {
 
 /// The statements of some visible facts, in order.
 pub fn visible_statements<'a>(facts: &[VisibleFact<'a>]) -> Vec<&'a str> {
-    todo!()
+    facts.iter().map(|f| f.statement()).collect()
 }
 
 /// One playable case: the briefing, the cast, and the ground truth.
