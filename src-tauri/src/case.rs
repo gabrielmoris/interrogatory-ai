@@ -57,6 +57,7 @@ impl<'a> VisibleFact<'a> {
     pub fn id(&self) -> FactId {
         self.0.id
     }
+    
     pub fn statement(&self) -> &'a str {
         &self.0.statement
     }
@@ -143,7 +144,7 @@ impl Case {
     /// Every fact this suspect may talk about, wrapped so a prompt cannot be
     /// handed anything else.
     pub fn visible_to<'a>(&'a self, suspect: SuspectId) -> Vec<VisibleFact<'a>> {
-        todo!()
+        self.suspect_facts(suspect).map(VisibleFact).collect()
     }
 }
 
