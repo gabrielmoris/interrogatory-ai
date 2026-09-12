@@ -57,7 +57,6 @@ impl<'a> VisibleFact<'a> {
     pub fn id(&self) -> FactId {
         self.0.id
     }
-    
     pub fn statement(&self) -> &'a str {
         &self.0.statement
     }
