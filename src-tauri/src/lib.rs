@@ -4,6 +4,7 @@ pub mod case_file;
 pub mod difficulty;
 pub mod error;
 pub mod ids;
+pub mod storage;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
