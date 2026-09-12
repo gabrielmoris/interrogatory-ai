@@ -1,16 +1,16 @@
 # PROGRESS — where we are
 
 > Resume order: `CLAUDE.md` → this file → `CONCEPTS.md` → the current stage brief.
-> Last updated: 2026-08-30.
+> Last updated: 2026-09-12.
 
 ## Status
 
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last done | **Stage 6d, 2026-08-30. 4/4.** Stage 6 closed: 76 tests across eight files, `fmt` and `clippy -D warnings` clean. |
-| Stage | **7, issued 2026-08-30** — `VisibleFact<'a>`. Brief `docs/stages/stage-07-visible-fact.md`, spec `src-tauri/tests/visible_fact.rs`, 9 tests. |
-| Next action | **His.** Read the brief, write the four bodies in `case.rs`, say "ready". |
+| Last done | **Stage 7, 2026-09-01. 9/9.** 85 tests across nine files. Reviewed 2026-09-12; `fmt` and `clippy -D warnings` clean. |
+| Stage | **8, issued 2026-09-12** — `storage.rs`, the first shell module. Brief `docs/stages/stage-08-storage.md`, spec `src-tauri/tests/storage.rs`, 9 tests. |
+| Next action | **His.** Read the brief, write the three bodies in `storage.rs` and the one line in `lib.rs`, say "ready". |
 | Blocked on | nothing |
 
 A **session** is 2–3 stages, ending on a green suite and a commit. Stage estimates are minutes; the
@@ -35,8 +35,8 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~6b~~ | ~~the one road~~ | ~~`TryFrom`~~ | ✅ |
 | ~~6c~~ | ~~the four checks~~ | ~~validation at the boundary~~ | ✅ |
 | ~~6d~~ | ~~the front door~~ | ~~`?` converts the error with `From`~~ | ✅ |
-| **7** | `VisibleFact<'a>` | a struct that holds a borrow | 45 |
-| 8 | loading a case from disk | the domain / shell boundary | 50 |
+| ~~7~~ | ~~`VisibleFact<'a>`~~ | ~~a struct that holds a borrow~~ | ✅ |
+| **8** | `storage.rs` — a case off the disk | `Path` / `PathBuf`, and `io::ErrorKind` | 50 |
 | 9a | the first command | what crosses the IPC boundary | 40 |
 | 9b | managed state | interior mutability (`Mutex`) | 55 |
 | 10 | `Transcript` and `Phase` | a state machine as an enum with data | 50 |

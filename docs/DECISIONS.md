@@ -9,6 +9,22 @@ thing before you consider it recorded.
 
 ---
 
+### 2026-09-12 — `storage.rs` is two free functions over a `&Path`, and the slug is checked there
+
+**Decided.** `case_path(dir: &Path, slug: &str) -> PathBuf` and `load_case(dir: &Path, slug: &str)
+-> AppResult<Case>`, plus a private `is_slug`. A slug is `[a-z0-9-]+` and nothing else; anything
+else is `CaseNotFound` before a path is built. A missing file is `CaseNotFound`, every other read
+failure is `Io`.
+**Why.** The slug reaches Rust from React in Stage 9a, so the shell boundary is also the trust
+boundary — `dir.join(slug)` with an unchecked slug reads any file the process can reach. And the
+front end has to tell "no such case" apart from "the disk failed": they are different screens.
+**Rejected.** A `CaseStore { dir: PathBuf }` struct — the case directory belongs to `AppState` in
+Stage 9b, and putting it in two places now means moving it in three weeks. Also rejected:
+canonicalising the path and comparing prefixes, which is a filesystem round trip and symlink-shaped
+surprises in exchange for a check a character class already makes.
+**Costs.** Slugs are ASCII-only, so a case file can never be named in another script. Acceptable:
+slugs are identifiers, and titles are already a separate field inside the file.
+
 ### 2026-08-30 — The brief ceiling counts prose, not lines; and the stuck-reply gets a template
 
 **Decided.** Rule 2's ceiling is **90 lines of prose** — code blocks, blank lines and `<details>`

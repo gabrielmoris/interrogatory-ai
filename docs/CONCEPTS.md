@@ -93,7 +93,7 @@ and only that.
 | Non-lexical lifetimes — a borrow ends at its last use | no equivalent | defined |
 | `Option<&T>` as a return type, with no `null` and no `?.` | `T \| undefined` plus optional chaining | used |
 | `iter()` vs `iter_mut()`, and the `_mut` naming convention | one iterator; mutation is unrestricted | used |
-| **Lifetimes (`'a`) as a named region relating inputs to outputs**, not a duration | no equivalent | defined |
+| **Lifetimes (`'a`) as a named region relating inputs to outputs**, not a duration | no equivalent | used |
 | Lifetime elision, and why `&self` methods rarely need an annotation | no equivalent | defined |
 | `impl Trait` in return position | `ReturnType` inference / an opaque return type | defined |
 | Iterator laziness | generators — nothing runs until you pull | defined |
@@ -156,15 +156,23 @@ and only that.
 | Parse-don't-validate as a named pattern | a zod schema at the edge, typed everywhere after | defined |
 | Only the caller knows the context, so only the caller builds the error | — | defined |
 
-### Stage 7 — scheduled, not yet taught
+### Stage 7 — `VisibleFact<'a>` ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **A struct that holds a borrow — the lifetime parameter on a type** | a class field holding a reference, with nothing checking it | defined |
+| `impl<'a>` — introducing the name on the block as well | — | defined |
+| A tuple struct's name is also a function (`.map(VisibleFact)`) | a constructor used point-free | defined |
+| A private field as the thing that makes a type unforgeable | a factory function plus `#private`, but enforced | used |
+
+### Stage 8 — scheduled, not yet taught
 
 Nothing below is `defined` until the stage has been reviewed.
 
 | Concept | Owning stage |
 |---|---|
-| A struct that holds a borrow — the lifetime parameter on a type | 7 |
-| `impl<'a>` — introducing the name on the block as well | 7 |
-| A tuple struct's name is also a function (`.map(VisibleFact)`), via `clippy::redundant_closure` | 7 |
+| `Path` / `PathBuf` — the borrowed/owned pair for locations, and `.display()` | 8 |
+| `std::fs::read_to_string`, and `io::Error::kind()` telling failures apart | 8 |
 
 ---
 

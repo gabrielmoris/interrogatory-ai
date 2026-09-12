@@ -126,3 +126,17 @@ existed to catch.
 **Do differently.** Nothing on the teaching side. One cosmetic note carried forward: the `parse_case`
 doc comment reads "but it it fails", and `RawCase`'s is "Raw case" where the other public items say
 what the type *means*.
+
+### Stage 7 — `VisibleFact<'a>` ✅ 2026-09-01
+
+**Built.** In `src/case.rs`: `VisibleFact<'a>`, a tuple struct over `&'a Fact` with a private field,
+`id()` and `statement() -> &'a str`, `Case::visible_to`, and free `visible_statements`. Spec
+`tests/visible_fact.rs`, 9 tests. 9/9.
+**Headline concept.** A struct that holds a borrow — the lifetime parameter on the *type*, not only
+on a function signature.
+**Outcome.** Pass, first submission, no questions asked mid-stage. He wrote `.map(VisibleFact)`
+point-free, so the `clippy::redundant_closure` lint the brief was built around never fired — the
+second stage running whose planned error did not happen. Sources re-checked at Stage 8 issue time:
+`fmt` and `clippy --all-targets -D warnings` clean.
+**Do differently.** He committed and asked for Stage 8 without saying "ready", so the review and the
+ledger update ran a stage late. Check `git log` before issuing rather than waiting for the word.
