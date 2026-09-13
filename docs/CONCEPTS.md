@@ -5,36 +5,29 @@ This file is the mentor's working memory for pitch and vocabulary. It exists bec
 
 ## How to use it
 
-**Writing a stage brief:**
+The rules for *writing* a brief live in `CLAUDE.md`, Rules 1 and 2. This file answers one question:
+for a given concept, how much explaining does it get?
 
-- A concept **in this file** gets a *one-line refresher* and a pointer to the stage that defined it.
-  Never re-explain it from scratch. Example: "`?` returns early on an error — Stage 5 §4."
-- A concept **not in this file** either gets its own numbered section in the brief, or it does not
-  belong in this stage. There is no third option.
-- A Rust word not in this file and not in the Vocabulary section below must be **defined in the same
-  sentence it first appears**, or replaced with plain English.
+| Status | Means | What the brief gives it |
+|---|---|---|
+| *(absent)* | never taught | §1 in full: plain English, the TypeScript if one exists, how it actually works, and the shape in another domain — **printed in complete lines of code**, never named in prose alone. |
+| `defined` | explained once, in the stage named | §2, one line that recalls it **and says where**: "`?` returns early on an error — Stage 5 §4." |
+| `used` | applied again later without being re-taught | §2, shorter — the name and the stage number. |
+| `solid` | reached for unprompted, more than once | mention it and point at two or three places he has already used it. No explanation, no refresher. |
+| `shaky` | **he got it wrong again after a refresher** | back to the §1 treatment: reprint the earlier examples and explain it again from zero. A refresher line has already failed on this one; repeating it is the mistake. |
 
-**Finishing a stage:** add its new rows here, and bump the status of anything he used again without
-help. This is part of the review, not optional bookkeeping.
+`shaky` outranks everything else in the row. It is set at review time, from what actually went
+wrong in the stage, and it is cleared only when he uses the thing correctly without help.
 
-**The `Assumes:` check.** Before writing a brief, list every concept the task *requires*, not only
-the ones it teaches, and look each one up here. Anything missing is a supporting concept or a split.
-This ledger tracks what was taught; the `Assumes:` line is what catches what was needed and never
-taught — 6b's `*` was needed because Stage 4 taught `&` without its other half.
+A Rust word that is neither in this ledger nor in the Vocabulary section below must be **defined in
+the same sentence it first appears**, or replaced with plain English.
+
+**Finishing a stage** means adding its rows here, bumping anything he used again unaided, and
+marking anything he got wrong twice. Part of the review, not bookkeeping.
 
 **How he works, so gaps are not misread as weakness.** He pushes back when he disagrees and is
-frequently right — engage the argument. He reaches for iterator chains unprompted, reads compiler
-errors rather than asking (`E0373`, Stage 4), and finds defensible answers that differ from the hint
-(a raw string for `CaseNotFound`'s quoted slug, Stage 5). What he does not have is Rust's machinery,
-and only that.
-
-**Status meanings:**
-
-| Status | Means |
-|---|---|
-| `defined` | Explained once, in the stage named. Assume he needs a refresher line. |
-| `used` | Applied again in a later stage without it being re-taught. Refresher can be shorter. |
-| `solid` | Reached for unprompted, more than once. Use the term freely, no refresher needed. |
+frequently right — engage the argument. He reaches for iterator chains unprompted and reads compiler
+errors rather than asking. What he does not have is Rust's machinery, and only that.
 
 ---
 
@@ -112,6 +105,7 @@ and only that.
 | `Option::ok_or` as the bridge from `None` to an error | `?? Promise.reject(…)` | used |
 | `ok_or` vs `ok_or_else` — eager vs lazy construction | passing a value vs passing a thunk | defined |
 | `?` — early return, and that it calls `From::from` on the error | `await` on a rejected promise inside `try` | used |
+| A guard clause as the **shape of a function body** — return early, then carry straight on | an early `return` in TS, same idea | **shaky** (Stage 8: wrapped the rest in `else`, three attempts) |
 | `#[must_use]` on `Result` | `no-floating-promises` lint | defined |
 | The unit type `()` | `void` | used |
 | `cargo add` and feature flags | `npm i` plus opt-in build flags; no close analogy | defined |
@@ -152,7 +146,7 @@ and only that.
 | Concept | TypeScript anchor | Status |
 |---|---|---|
 | **`?` calls `From::from` on the error on its way out** (`E0277`) | nothing — `await` rethrows the same object | defined |
-| `.map_err` — `.map` for the failure side | `.catch(e => { throw new MyError(e) })` | defined |
+| `.map_err` — `.map` for the failure side, and the closure **hands back** a value rather than returning | `.catch(e => { throw new MyError(e) })` | **shaky** (Stage 8: wrote `Err(..)` inside it) |
 | Parse-don't-validate as a named pattern | a zod schema at the edge, typed everywhere after | defined |
 | Only the caller knows the context, so only the caller builds the error | — | defined |
 
@@ -165,14 +159,20 @@ and only that.
 | A tuple struct's name is also a function (`.map(VisibleFact)`) | a constructor used point-free | defined |
 | A private field as the thing that makes a type unforgeable | a factory function plus `#private`, but enforced | used |
 
-### Stage 8 — scheduled, not yet taught
+### Stage 8 — `storage.rs`, the first shell module ✅
 
-Nothing below is `defined` until the stage has been reviewed.
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`Path` / `PathBuf` — the borrowed/owned pair for locations** | one `string` for both | defined |
+| `.display()`, because a filename is not guaranteed to be text | `String(p)`, always valid | defined |
+| `std::fs::read_to_string` — the whole file, or `std::io::Error` | `readFile(p, 'utf8')`, which throws | defined |
+| `io::Error::kind()` / `ErrorKind::NotFound` — which failure it was | `err.code === 'ENOENT'` | defined |
+| `.all()` on an empty iterator is `true` | `[].every(…)` is `true` too | defined |
+| The shell / domain split as a rule about imports | — | defined |
 
-| Concept | Owning stage |
-|---|---|
-| `Path` / `PathBuf` — the borrowed/owned pair for locations, and `.display()` | 8 |
-| `std::fs::read_to_string`, and `io::Error::kind()` telling failures apart | 8 |
+**Three planned, six landed.** The two that were never meant to be concepts — `read_to_string` and
+`.display()` — were the ones he got stuck on, because they were named in prose and never printed as
+code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 2026-09-13.
 
 ---
 
@@ -183,7 +183,8 @@ Nothing below is `defined` until the stage has been reviewed.
 trait, derive, impl block, variant, field, module, borrow, move, own, closure, iterator,
 lifetime, elision, match arm, associated constant, associated type, newtype, attribute,
 crate, stub, guard clause, dereference (`*`), deserialize, early return, the `?` operator's
-conversion, `.map_err`, parse-don't-validate.
+conversion, `.map_err`, parse-don't-validate, `Path` / `PathBuf`, `.display()`, `ErrorKind`,
+shell module vs domain module.
 
 ### Banned until defined in the same sentence
 

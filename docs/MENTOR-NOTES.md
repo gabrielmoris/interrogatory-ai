@@ -6,6 +6,55 @@ has been cut — the rules carry it now.
 
 ---
 
+### 2026-09-13 — He set the explanation ladder himself *(correction 9)*
+
+> "1. New concept. you explain with typescript comparations if there are some and clearly explains
+> how it works
+> 2. Concept that we already touched: you recall it and explains where we saw it before
+> 3. Concept that we saw before many times, just mention it and tell that we saw it in 2 or 3
+> examples before
+> 4. Concept that I keep failing after recalling it? give the examples back and explain it again"
+
+Three of the four were already the rule. The fourth was **forbidden** by it: `CLAUDE.md` Rule 1 said
+a concept in the ledger gets one refresher line "never a second explanation", and `CONCEPTS.md` said
+"never re-explain it from scratch". So a concept he had met and not absorbed was guaranteed a
+refresher line — the treatment that had already failed on it. `.map_err` in Stage 8 is the case:
+`defined` since 6d, and he wrote `Err(..)` inside the closure.
+
+The ledger already had three statuses and no behaviour keyed to them; the statuses were decoration.
+
+→ `CONCEPTS.md`'s status table now carries the behaviour for all four tiers and gains **`shaky`**,
+set at review time from what actually went wrong. Rule 1 defers to it instead of stating a flat
+never-re-explain rule.
+
+### 2026-09-13 — Prose is not teaching *(correction 8)*
+
+> "I have never used rust to read a file, your explanation assumes i know because you never explain
+> me anything, just give me a boilerplate and expects me to find out from infuse science how to do
+> it."
+
+> "no, the two more lines are not mine because I suspect they have steps I have never touched."
+
+> "ok, I am L O S T"
+
+Stage 8, step 4, six exchanges. He was right all three times. The brief's §1b introduced the read as
+a shape with its middle commented out — `ErrorKind::NotFound => /* one error */` — so the only thing
+it taught was that a shape exists. `.display()` appeared in §1a as a sentence of prose and never once
+as a line of code. `fs::read_to_string` was named and never shown. Then §3.1 step 4 asked for all
+three in one statement, plus a closure that must *hand back* a value rather than return one.
+
+The `Assumes:` line did not catch it, because it lists concepts from the ledger and these were not
+concepts — they were calls. **A call he has never typed costs as much as a concept, and was being
+counted as free.**
+
+Made worse mid-stage twice. The unblocking reply told him to *paste a line I had given him*, which is
+copying, and left him unable to place the two lines that followed. And hint 4 — the rung that exists
+to end exactly this — contained step 5's `match`, so the ladder's last rung answered a question he
+had not reached.
+
+→ Rule 1 gains the **printed-line test**; Rule 2 gains the rung-4 constraint; Rule 3 gains the
+no-paste bullet.
+
 ### 2026-08-30 — The line ceiling was measuring the wrong thing
 
 Prose lines per brief, code blocks and `<details>` tags excluded:
@@ -138,5 +187,7 @@ built from zero — what a trait is → what `derive` generates → moves → `i
   with the "measure, do not guess" rule already in force. Now mechanical — Rule 2.
 - **Not naming the function.** In 6c he asked twice whether the work went in `try_from` or
   `parse_case`. "Inside your suspects loop" is not an address.
+- **Teaching by shape with the body left out.** Stage 8's `/* one error */` taught nothing but the
+  existence of a shape. Whatever the stage teaches must appear complete, in code, somewhere in §1.
 - **Prerequisites outside the ledger.** 6b's real blocker was `*`, needed because Stage 4 taught `&`
   without its other half. → the `Assumes:` line, Rule 1.

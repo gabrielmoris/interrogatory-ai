@@ -70,9 +70,10 @@ sessions. Nothing in Stages 6–9 changes.
 
 ### 2026-08-29 — Hard concept budget, and the docs split into four files
 
-**Decided.** Three new concepts per stage maximum, one of them the headline; a 200-line ceiling and
-fixed template for briefs; `PROGRESS.md` split into `PROGRESS` / `DECISIONS` / `STAGE-LOG`; a concept
-ledger at `docs/CONCEPTS.md`.
+**Decided.** Three new concepts per stage maximum, one of them the headline; ~~a 200-line ceiling~~
+and a fixed template for briefs; `PROGRESS.md` split into `PROGRESS` / `DECISIONS` / `STAGE-LOG`; a
+concept ledger at `docs/CONCEPTS.md`. *(The line ceiling here is superseded by the 2026-08-30 entry
+above: 90 lines of prose, code excluded. The rest stands.)*
 **Why.** Briefs grew 148 → 657 lines across six stages, teaching 9–13 concepts each, *after* two
 requests to slow down. Every existing rule governed wording, none governed volume.
 **Rejected.** Keeping the "near 300 lines" guidance and trying harder — it had already failed twice.

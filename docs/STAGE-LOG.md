@@ -140,3 +140,20 @@ second stage running whose planned error did not happen. Sources re-checked at S
 `fmt` and `clippy --all-targets -D warnings` clean.
 **Do differently.** He committed and asked for Stage 8 without saying "ready", so the review and the
 ledger update ran a stage late. Check `git log` before issuing rather than waiting for the word.
+
+### Stage 8 — `storage.rs`, the first shell module ✅ 2026-09-13
+
+**Built.** New `src/storage.rs`: `case_path`, a private `is_slug`, and `load_case` — slug guard, the
+read, and the `ErrorKind::NotFound` split — plus one line in `lib.rs`. Spec `tests/storage.rs`,
+9 tests. 9/9; 94 tests across ten files green, `fmt` and `clippy -D warnings` clean.
+**Headline concept.** `Path` / `PathBuf`, and telling one kind of read failure from all the others.
+**Where he got stuck.** Step 4, six exchanges, ending in *"ok, I am L O S T"*. Three mentor defects
+of one shape: `fs::read_to_string`, `.display()` and a value-returning `map_err` closure were named
+in prose, never printed as code, then asked for in a single step. Account in `MENTOR-NOTES.md`,
+2026-09-13; it produced Rule 1's printed-line test, Rule 2's rung-4 constraint and Rule 3's no-paste
+bullet.
+**Outcome.** Once the body was reset to four straight-line steps he wrote the rest himself, including
+the empty-name hole in `is_slug` (`.all()` on nothing is `true`) and the whole of step 5.
+**Do differently.** He diagnosed the defect before I did — *"the two more lines are not mine because I
+suspect they have steps I have never touched"* — and was right. When he says a step contains
+something untaught, check the brief before answering the error.

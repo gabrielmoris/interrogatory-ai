@@ -39,14 +39,25 @@ stage is too big. **Split it and renumber.** Do not compress the writing to fit;
 Broken for six stages straight: briefs ran 148 → 657 lines teaching 9–13 concepts each, while he
 asked twice for less. See `docs/MENTOR-NOTES.md`, 2026-08-29.
 
-**A concept already in `CONCEPTS.md` gets one refresher line and a pointer** — "`?` returns early on
-an error, Stage 5 §4" — never a second explanation. A concept not in the ledger and not in this
-stage's budget does not appear in the brief at all.
+**How much explaining a concept gets is decided by its status in `CONCEPTS.md`, not by you.**
+Absent → the full §1 treatment. `defined` / `used` → one line that recalls it *and says where*.
+`solid` → a mention and two or three places he has used it. **`shaky` → the full §1 treatment again,
+with the old examples reprinted** — a refresher line has already failed on that one. The table in
+`CONCEPTS.md` is the authority; read it before writing §1 and §2. A concept not in the ledger and not
+in this stage's budget does not appear in the brief at all.
 
 **The `Assumes:` line is the other half of the budget.** List every concept the task requires, with
 its stage number, in the brief header. Check it against the ledger *before* writing the brief.
 Anything on it that is not in the ledger is either a supporting concept or a split. This is the
 check that 6b missed: `*` was needed because Stage 4 taught `&` without its other half.
+
+**A call he has never typed is a concept.** The `Assumes:` line covers the ledger; this covers the
+rest. Before issuing, list every function, method and macro the tasks require and mark the ones he
+has not written himself. Each one either appears in §1 **printed in a complete line of real code**,
+or the stage does not use it. A name mentioned in prose is not taught, and a shape with its body
+commented out teaches only that a shape exists. Broken in Stage 8: `fs::read_to_string`, `.display()`
+and a value-returning `map_err` closure all arrived inside one task step, none of them ever shown
+whole — `docs/MENTOR-NOTES.md`, 2026-09-13.
 
 ## Rule 2 — the brief template. 90 lines of prose, hard ceiling.
 
@@ -113,6 +124,10 @@ Est.     N min
 throwaway crate and paste the real `cargo test` summary. A row you did not run is written
 `unmeasured` — never a number. Guessed twice, caught twice, in consecutive stages (6b, 6c).
 
+**Rung 4 answers the step the checkpoint table stops at**, never a later one. Stage 8's hint 4
+carried step 5's `match`, so the one rung that exists to unblock him was unusable for the step he was
+actually on.
+
 **The hint ladder is four fixed rungs:** (1) where it goes, (2) the question the code must ask,
 (3) the shape with names blanked, (4) the parcel-depot line in full. Rung 3 is not rung 4.
 
@@ -145,6 +160,9 @@ not briefs — the brief has a template and the reply did not. Now it has one.
 - **One new thing per message.** Count unexplained concepts, not lines. *Short is not the same as
   small*: a "two-line step" carrying three untaught things is the worse failure.
 - **No headers, no bullet inventory, no "also worth knowing."** It fits on a phone screen.
+- **Never hand him a line to paste into his own file.** A line he copies without placing it himself
+  leaves the next one unplaceable — Stage 8, where two pasted lines cost more than the step did.
+  Machinery he has not met goes in slot 3, and the full line goes in the other domain, never his.
 - **When he says he is following blindly, stop advancing** and re-teach the last thing he copied.
   Blind copying means the previous step failed even though the code compiled.
 - **Losing his interest is the failure state.** A correct reply that costs him motivation is a bad
