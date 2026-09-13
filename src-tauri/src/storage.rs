@@ -11,11 +11,12 @@ pub fn case_path(dir: &Path, slug: &str) -> PathBuf {
     dir.join(format!("{slug}.toml"))
 }
 
-/// A case slug is a plain name: ASCII lowercase letters, digits and `-`.
+/// A case slug is a plain name: ASCII lowercase letters, digits and `-`, not empty.
 fn is_slug(slug: &str) -> bool {
-    slug.bytes()
-        .all(|b| matches!(b, b'a'..=b'z' | b'0'..=b'9' | b'-'))
-        && !slug.is_empty()
+    !slug.is_empty()
+        && slug
+            .bytes()
+            .all(|b| matches!(b, b'a'..=b'z' | b'0'..=b'9' | b'-'))
 }
 
 /// Reads the case called `slug` out of `dir` and parses it.

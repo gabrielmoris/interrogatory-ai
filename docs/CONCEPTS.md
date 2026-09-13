@@ -169,6 +169,8 @@ errors rather than asking. What he does not have is Rust's machinery, and only t
 | `io::Error::kind()` / `ErrorKind::NotFound` — which failure it was | `err.code === 'ENOENT'` | defined |
 | `.all()` on an empty iterator is `true` | `[].every(…)` is `true` too | defined |
 | The shell / domain split as a rule about imports | — | defined |
+| `matches!` — "does this value fit this pattern", as a `bool` | a regex/`switch` test collapsed to one expression | used (reached for unprompted) |
+| Byte scanning (`.bytes()`) as a safe way to ask an ASCII-only question | no equivalent — JS strings decode either way | used (his choice, not the brief's) |
 
 **Three planned, six landed.** The two that were never meant to be concepts — `read_to_string` and
 `.display()` — were the ones he got stuck on, because they were named in prose and never printed as
