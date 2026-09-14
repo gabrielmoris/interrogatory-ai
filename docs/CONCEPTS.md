@@ -198,7 +198,7 @@ interior mutability · zero-cost abstraction · trait object · blanket impl *(n
 still needs the one-line refresher)*
 
 **Due next, so plan the sentence now:** *interior mutability* and *trait object* come off this list
-in Stages 9b and 11 respectively — they are those stages' headline concepts, not asides. Do not use
+in Stages 10 and 11 respectively — they are those stages' headline concepts, not asides. Do not use
 either word before then, including in a roadmap pointer he might read.
 
 *(Phrasings that have already failed moved to `CLAUDE.md`, Rule 4 — they are a

@@ -9,6 +9,20 @@ thing before you consider it recorded.
 
 ---
 
+### 2026-09-14 — `AppState` starts immutable, and the lock waits for Stage 10
+
+**Decided.** Stage 9's `AppState` holds one field, `cases_dir: PathBuf`, and no lock. `Mutex` and
+interior mutability move out of Phase 1 §1.5 and into **Stage 10**, arriving with `Transcript` — the
+first thing in this app that changes while it runs. Stage 9 is now 9a (the wire types) + 9b (the
+command) + 9c (`.manage()`) + 9d (`State<'_, T>`), one new thing each.
+**Why.** A lock around a value that is only ever read teaches the syntax and none of the reason, and
+the reason is the whole lesson. Sequenced this way `Mutex` shows up the first time two things want to
+change one value, which is also where `MutexGuard` not crossing `.await` starts to matter (Stage 15).
+**Rejected.** `AppState { cases_dir: Mutex<PathBuf> }` now, to "get the habit in early". That is the
+pattern he has objected to five times: machinery first, motivation later.
+**Costs.** Stage 10 grows by one topic and will itself need splitting. `ROADMAP.md` §1.5 and §1.6
+amended; the "9c is where the habit forms" line now points at Stage 10.
+
 ### 2026-09-13 — What crosses to React is a screen-shaped type, built in `ipc.rs`
 
 **Decided.** `src/ipc.rs` holds the wire types and the `#[tauri::command]` wrappers, and nothing
@@ -21,10 +35,10 @@ the file's vocabulary, wire types speak the screen's, and `Case` in the middle s
 **Rejected.** `Serialize` on `Case` with `#[serde(skip)]` on the facts — one forgotten attribute
 ships the solution, and the skip list grows a branch per screen. Also rejected: borrowing in the
 wire type, since what crosses must outlive the call.
-**Costs.** One small type per screen, each with a `From` and a `clone` per field. The Stage 9a
-command's directory is a placeholder `const CASES_DIR: &str = "cases"`; **9b owns the real one**,
-via `AppState`, and brings the shipped `cases/` directory and the command's success-path test with
-it. Until then `case_intro` is only tested on its two failure paths.
+**Costs.** One small type per screen, each with a `From` and a `clone` per field. The command's
+directory is a placeholder `const CASES_DIR: &str = "cases"`; **9c owns the real one**, via
+`AppState`, and 9d hands it to the command. The shipped `cases/` directory and the command's
+success-path test arrive with 9c. *(`ipc.rs`'s doc comment says 9b; correct it in 9c.)*
 
 ### 2026-09-12 — `storage.rs` is two free functions over a `&Path`, and the slug is checked there
 
@@ -36,7 +50,7 @@ failure is `Io`.
 boundary — `dir.join(slug)` with an unchecked slug reads any file the process can reach. And the
 front end has to tell "no such case" apart from "the disk failed": they are different screens.
 **Rejected.** A `CaseStore { dir: PathBuf }` struct — the case directory belongs to `AppState` in
-Stage 9b, and putting it in two places now means moving it in three weeks. Also rejected:
+Stage 9c, and putting it in two places now means moving it in three weeks. Also rejected:
 canonicalising the path and comparing prefixes, which is a filesystem round trip and symlink-shaped
 surprises in exchange for a check a character class already makes.
 **Costs.** Slugs are ASCII-only, so a case file can never be named in another script. Acceptable:

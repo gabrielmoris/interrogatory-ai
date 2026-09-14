@@ -6,6 +6,61 @@ has been cut — the rules carry it now.
 
 ---
 
+### 2026-09-14 — He set the budget himself, and it is one *(correction 11)*
+
+> "how can I know which shape ahs `CaseIntro` if I dont know what is it for???"
+
+> "I want you to split the tasks in small chunks that I can do EASY introducing MAXIUMUM 1 new topic
+> and reviewing something, but not more than 2 topics. Split the tasks and explain then much more
+> basically so I, a rust NEWBIE can I uncerstand."
+
+Both in the same sitting as correction 10, on the already re-cut 9a — the one that was down to two
+concepts and 73 prose lines. So cutting the stage in half was not enough; **three was never the right
+number and two is not either.** → Rule 1 is now **one new thing, plus at most one recalled thing.**
+
+The first quote is the more useful one. `CaseIntro` was a name I invented, and the brief explained
+what it *was* — a second, smaller type — without ever showing what it was *for*. He could not derive
+the fields because he had never seen the screen. What unblocked it in one message: a sketch of the
+briefing screen, and a pointer to the test that already held the finished value as JSON. → Rule 4
+gains **show the artifact before naming the type**, and the standing habit worth teaching him with
+it: *when you do not know the shape, read the test.* That is the premise of this whole format and it
+had never been said out loud.
+
+Note what did not work, twice running: cutting scope while leaving the explanation abstract. 9a's
+§1 was shorter than Stage 8's and still opened on "a hatch between two worlds" and "being sendable is
+a capability a type is given". Nothing concrete until §1d, and by then he had stopped.
+
+→ Stage 9 re-cut a second time into 9a (done) + three stages of one topic each; `Mutex` moved out of
+Phase 1 §1.5 to Stage 10, where there is finally something that changes — `DECISIONS.md`, 2026-09-14.
+
+### 2026-09-14 — Two concepts on paper, ten new things in the document *(correction 10)*
+
+> "I am a bit lsot. Can you please ecxplain less rust advanced and more LERNING RUST??????"
+
+Stage 9a, sent the day before. He had already done steps 1 and 2 correctly and stopped at step 3.
+
+The brief passed every check. Two concepts against the ledger, 89 prose lines, an `Assumes:` line
+that held, checkpoints measured against a reference build. It was still too much, because the stage
+was three files and five steps: an accessor, a new module, two new types, a conversion, a command,
+and two lines of handler wiring. **The ledger counts concepts; it does not count how many unfamiliar
+things are in the document.** Ten, here.
+
+Worse, the rule added the day before made it heavier. The printed-line test says every call he has
+never typed appears in §1 printed whole — so a stage that pulls in `Path::new`, `#[tauri::command]`,
+`generate_handler!` and a `From` that walks a collection forces §1 to print, between them, the
+finished answer. → **The printed-line test is also a sizing test.** If §1 has to print that much to
+satisfy it, the stage is too big; split it, do not print less.
+
+Second failure, and the one that stopped him exactly where it stopped him. Step 3 read: *"fill in the
+fields of the two screen types. For each candidate field ask: does the briefing screen draw it? If
+not, it does not belong."* That is a thing to weigh up, not a thing to do. What unblocked him was
+five seconds of plain English: the small box holds one person, their number and their name; the big
+box holds the title, the opening paragraph, and a list of small boxes. → **Rule 3 slot 1 governs
+§3.1 too.** A task step says what to do. Criteria, if they are worth stating, go in §4.
+
+→ 9a re-cut mid-stage to the four steps he was already on, Tauri moved whole to 9b. One concept,
+73 prose lines. Steps 1–4 kept their numbers so nothing he had written was invalidated.
+
 ### 2026-09-13 — He set the explanation ladder himself *(correction 9)*
 
 > "1. New concept. you explain with typescript comparations if there are some and clearly explains
@@ -191,3 +246,5 @@ built from zero — what a trait is → what `derive` generates → moves → `i
   existence of a shape. Whatever the stage teaches must appear complete, in code, somewhere in §1.
 - **Prerequisites outside the ledger.** 6b's real blocker was `*`, needed because Stage 4 taught `&`
   without its other half. → the `Assumes:` line, Rule 1.
+- **A task step that names a criterion instead of a job.** "Ask whether the screen draws it" stopped
+  him for a day in 9a. Say what to write.

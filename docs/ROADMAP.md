@@ -45,10 +45,10 @@ src-tauri/src/
   generator.rs      seeded case skeletons + is_solvable     Stage 22
   # ---- shell: allowed Tauri, tokio, the filesystem ----
   storage.rs        reads case files from disk              Stage 8
-  state.rs          AppState, managed via tauri::State      Stage 9b
+  state.rs          AppState, managed via tauri::State      Stages 9c–9d
   session/          stateful interrogation orchestration
   llm/              trait InferenceEngine · llama.rs · mock.rs (build mock FIRST)
-  ipc.rs            #[tauri::command] wrappers + wire types      Stages 9a+
+  ipc.rs            wire types (9a) + #[tauri::command] wrappers (9b)
                     (a directory when it holds a second command group — DECISIONS, 2026-09-13)
 ```
 
@@ -75,14 +75,16 @@ traits, `TryFrom`, the IPC boundary, interior mutability.
   no filesystem. Stages 6a–6d ✅. Format and the reasons: `DECISIONS.md`, 2026-08-27.
 - **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
   Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
-- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); first `#[tauri::command]` and the
-  screen-shaped wire types (9a — `DECISIONS.md`, 2026-09-13);
-  `AppState` behind a `Mutex`, `.manage()`, `State<'_, T>` (9b).
+- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); the screen-shaped wire types (9a);
+  `#[tauri::command]` and the handler list (9b); `AppState` and `.manage()` (9c); `State<'_, T>` as
+  a command parameter (9d). **No lock here** — `AppState` is read-only until Stage 10.
+  `DECISIONS.md`, 2026-09-13 and 2026-09-14.
 - **1.6 Transcript and phase** — `enum Phase { Intro, Interrogating { turns }, Reporting, Scored }`.
-  Illegal transitions unrepresentable. Stage 10.
+  Illegal transitions unrepresentable. **Also where `Mutex` lands**, because the transcript is the
+  first thing that changes while the app runs. Two topics: split before issuing. Stage 10.
 
 **Concept to internalize before Phase 2:** `std::sync::MutexGuard` is not `Send` across `.await`.
-Stage 15 makes you feel it; 9b is where the habit forms.
+Stage 15 makes you feel it; Stage 10 is where the habit forms.
 
 **Exit:** a case loads from disk, one command returns it to React, illegal phase transitions do not
 compile, all domain logic tested without launching Tauri.

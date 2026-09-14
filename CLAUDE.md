@@ -31,10 +31,16 @@ session boundary is the commit. Never end a session mid-stage.
 
 ## Rule 1 — the concept budget
 
-**One headline concept per stage. At most two supporting ones. Three total, ever.**
+**One new thing per stage. At most one recalled thing alongside it. Two total, ever.**
 
-Before issuing a brief, list its new concepts against `docs/CONCEPTS.md`. Longer than three → the
+*Tightened 2026-09-14, at his request: "MAXIMUM 1 new topic and reviewing something, but not
+more than 2 topics." This replaces the earlier budget of one headline plus two supporting.
+Three was still too many — Stage 9a passed the old budget at two and still lost him.*
+
+Before issuing a brief, list its new concepts against `docs/CONCEPTS.md`. More than one → the
 stage is too big. **Split it and renumber.** Do not compress the writing to fit; cut the scope.
+Count the *document*, not the ledger rows: a call, an attribute, a macro and a new file are each
+a thing he has to hold, whether or not they are ledger concepts.
 
 Broken for six stages straight: briefs ran 148 → 657 lines teaching 9–13 concepts each, while he
 asked twice for less. See `docs/MENTOR-NOTES.md`, 2026-08-29.
@@ -58,6 +64,12 @@ or the stage does not use it. A name mentioned in prose is not taught, and a sha
 commented out teaches only that a shape exists. Broken in Stage 8: `fs::read_to_string`, `.display()`
 and a value-returning `map_err` closure all arrived inside one task step, none of them ever shown
 whole — `docs/MENTOR-NOTES.md`, 2026-09-13.
+
+**The printed-line test is also a sizing test.** If satisfying it would take §1 to something close to
+the finished answer, the stage is too big — split it, do not print less. Stage 9a needed `Path::new`,
+`#[tauri::command]`, `generate_handler!` and a `From` over a collection in one brief; between them
+they printed the solution. Two concepts by the ledger, ten unfamiliar things in the document. The
+ledger counts concepts, so count the document yourself — `docs/MENTOR-NOTES.md`, 2026-09-14.
 
 ## Rule 2 — the brief template. 90 lines of prose, hard ceiling.
 
@@ -109,6 +121,9 @@ Est.     N min
 ## 3. Tasks
    3.1 Step-by-step plain logic — numbered, ordinary words, each step naming
        file.rs :: function(). This is the section he reads when stuck.
+       **Rule 3 slot 1 applies here: a step says what to do, never what to weigh up.**
+       "Ask whether the screen draws it" stopped him for a day in 9a; "the small box
+       holds one person, their number and their name" did not. Criteria go in §4.
    3.2 Scaffolding — full signatures, bodies `todo!()`.
    3.3 Checkpoints — measured, one row per step.
    3.4 Cold call — the one step reaching back ≥2 stages, pointer only, no refresher.
@@ -170,6 +185,11 @@ not briefs — the brief has a template and the reply did not. Now it has one.
 
 ## Rule 4 — how to explain. Applies to briefs and chat equally.
 
+- [ ] **Show the artifact before naming the type.** He asked, mid-9a, *"how can I know which shape
+      has CaseIntro if I dont know what is it for???"* — and he was right: the brief named a type and
+      never showed the screen it stands for. Draw the screen, print the JSON, point at the test that
+      contains the finished value. A type is explained by what it is *for*, shown, before it is
+      explained by what it *is*.
 - [ ] **Calibrate to "first month of Rust."** He is senior in TypeScript: do not explain hash maps,
       sorting, or type systems. Do explain *Rust's* machinery from the ground up — what a trait is,
       what `derive` generates, what a move is, what an error code means.

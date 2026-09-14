@@ -145,6 +145,11 @@ impl Case {
     pub fn visible_to<'a>(&'a self, suspect: SuspectId) -> Vec<VisibleFact<'a>> {
         self.suspect_facts(suspect).map(VisibleFact).collect()
     }
+
+    /// Every suspect in this case, in the order the case file listed them.
+    pub fn suspects(&self) -> impl Iterator<Item = &Suspect> {
+        self.suspects.iter()
+    }
 }
 
 /// Whichever of the two facts has the longer statement; `a` on a tie.

@@ -4,6 +4,7 @@ pub mod case_file;
 pub mod difficulty;
 pub mod error;
 pub mod ids;
+pub mod ipc;
 pub mod storage;
 
 #[tauri::command]

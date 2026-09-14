@@ -1,7 +1,7 @@
 # PROGRESS — where we are
 
 > Resume order: `CLAUDE.md` → this file → `CONCEPTS.md` → the current stage brief.
-> Last updated: 2026-09-13.
+> Last updated: 2026-09-14.
 
 ## Status
 
@@ -9,10 +9,10 @@
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
 | Last done | **Stage 8, 2026-09-13. 9/9.** 94 tests across ten files, `fmt` and `clippy -D warnings` clean, committed. Phase 1 §1.5 half done. |
-| Stage | **9a issued 2026-09-13** — `stages/stage-09a-the-first-command.md`. Spec `tests/commands.rs`, 9 tests, 89 prose lines, two concepts. |
-| Next action | **His.** Write `Case::suspects`, `src/ipc.rs` and the two `lib.rs` lines, then say "ready". |
+| Stage | **9a, last step.** Both structs' fields are written and correct; `CaseIntro::from` is still `todo!()`. Suite 1/6. |
+| Next action | **His.** Step 4 — the `From` body — then "ready". Hints §5 are aimed at exactly that step. |
 | Blocked on | nothing |
-| Carried | Printed-line test applied to 9a: `#[tauri::command]`, `generate_handler!`, `Path::new(..)`, `.clone()` and a `From` that walks a collection are each printed whole in §1. Reference implementation built and the checkpoint table measured against it, `tauri` compiled. |
+| Carried | **Budget is now one new thing + one recall, his words, 2026-09-14** — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
 
 A **session** is 2–3 stages, ending on a green suite and a commit. Stage estimates are minutes; the
 session boundary is the commit.
@@ -38,9 +38,14 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~6d~~ | ~~the front door~~ | ~~`?` converts the error with `From`~~ | ✅ |
 | ~~7~~ | ~~`VisibleFact<'a>`~~ | ~~a struct that holds a borrow~~ | ✅ |
 | ~~8~~ | ~~`storage.rs` — a case off the disk~~ | ~~`Path` / `PathBuf`, `io::ErrorKind`~~ | ✅ |
-| 9a | the first command | what crosses the IPC boundary | 45 |
-| 9b | managed state | interior mutability (`Mutex`) | 55 |
-| 10 | `Transcript` and `Phase` | a state machine as an enum with data | 50 |
+| 9a | the box the screen gets, and filling it | a type of your own that can be sent out | 25 |
+| 9b | a function React can call | `#[tauri::command]` and the handler list | 25 |
+| 9c | the app holds the case folder | `.manage()` | 25 |
+| 9d | a command that asks for it | `State<'_, T>` | 20 |
+| 10 | `Transcript` and `Phase` | a state machine as an enum with data, **and the lock** | 50+ |
+
+One new thing each, plus at most one recall — Rule 1, as amended 2026-09-14. Stage 10 carries two
+and will be split before it is issued.
 
 ### Phase 2 — async and inference (Stages 11–19, the hard phase)
 
@@ -81,5 +86,6 @@ Phases 4–5 are his home turf and carry no Rust teaching budget — `ROADMAP.md
       `src/assets/react.svg`.
 - [ ] Rewrite `README.md` — it still describes the Tauri template.
 - [ ] Add `rust-toolchain.toml` pinning a stable version.
-- [ ] `src-tauri/cases/` — the shipped case files the app actually reads. Lands in 9b with
-      `AppState`, which is also where `CASES_DIR` stops being a constant.
+- [ ] `src-tauri/cases/` — the shipped case files the app actually reads. Lands in 9c with
+      `AppState`, which is also where `CASES_DIR` stops being a constant. Its doc comment in
+      `ipc.rs` says 9b; correct it when you touch the file.
