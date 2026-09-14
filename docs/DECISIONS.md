@@ -9,6 +9,23 @@ thing before you consider it recorded.
 
 ---
 
+### 2026-09-13 — What crosses to React is a screen-shaped type, built in `ipc.rs`
+
+**Decided.** `src/ipc.rs` holds the wire types and the `#[tauri::command]` wrappers, and nothing
+else: `CaseIntro { title, briefing, suspects }`, `SuspectSummary { id, name }`, and
+`impl From<&Case> for CaseIntro`. `Case`, `Fact` and `Suspect` never derive `Serialize`. One file,
+not the `ipc/` directory the roadmap drew — it becomes one when it holds a second command group.
+**Why.** A hidden fact must have no route to the front end, and the only enforcement that survives
+a tired afternoon is the absence of the trait. It is also 6a's rule pointed outward: raw types speak
+the file's vocabulary, wire types speak the screen's, and `Case` in the middle speaks neither.
+**Rejected.** `Serialize` on `Case` with `#[serde(skip)]` on the facts — one forgotten attribute
+ships the solution, and the skip list grows a branch per screen. Also rejected: borrowing in the
+wire type, since what crosses must outlive the call.
+**Costs.** One small type per screen, each with a `From` and a `clone` per field. The Stage 9a
+command's directory is a placeholder `const CASES_DIR: &str = "cases"`; **9b owns the real one**,
+via `AppState`, and brings the shipped `cases/` directory and the command's success-path test with
+it. Until then `case_intro` is only tested on its two failure paths.
+
 ### 2026-09-12 — `storage.rs` is two free functions over a `&Path`, and the slug is checked there
 
 **Decided.** `case_path(dir: &Path, slug: &str) -> PathBuf` and `load_case(dir: &Path, slug: &str)
@@ -90,7 +107,8 @@ earned. Ids appear on the far side of the conversion and nowhere else.
 and hands React a sentence to regex. Also rejected: reading the file here.
 **Costs.** The filesystem read moves to Stage 8 with `Io` / `CaseNotFound` and a shell-side
 `storage.rs`; tests reach the two real files with `include_str!`, so `case_file.rs` stays pure.
-`SuspectId` / `FactId` get `Deserialize` at Stage 9, when IPC commands take ids as arguments.
+`SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument.
+*(Amended 2026-09-13: 9a's command takes a slug, so that is now Stage 10, not Stage 9.)*
 
 ### 2026-08-25 — `AppError` holds owned, serializable data; `std::io::Error` never goes inside it
 

@@ -8,11 +8,11 @@
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last done | **Stage 8, 2026-09-13. 9/9.** 94 tests across ten files, `fmt` and `clippy -D warnings` clean. Phase 1 §1.5 half done. |
-| Stage | **none issued.** 9a is next — the first `#[tauri::command]`. |
-| Next action | **His.** Commit the stage. |
+| Last done | **Stage 8, 2026-09-13. 9/9.** 94 tests across ten files, `fmt` and `clippy -D warnings` clean, committed. Phase 1 §1.5 half done. |
+| Stage | **9a issued 2026-09-13** — `stages/stage-09a-the-first-command.md`. Spec `tests/commands.rs`, 9 tests, 89 prose lines, two concepts. |
+| Next action | **His.** Write `Case::suspects`, `src/ipc.rs` and the two `lib.rs` lines, then say "ready". |
 | Blocked on | nothing |
-| Carried | Stage 8 cost three mentor defects of one shape — `CLAUDE.md` Rules 1–3 amended 2026-09-13. Apply the printed-line test to 9a before issuing. |
+| Carried | Printed-line test applied to 9a: `#[tauri::command]`, `generate_handler!`, `Path::new(..)`, `.clone()` and a `From` that walks a collection are each printed whole in §1. Reference implementation built and the checkpoint table measured against it, `tauri` compiled. |
 
 A **session** is 2–3 stages, ending on a green suite and a commit. Stage estimates are minutes; the
 session boundary is the commit.
@@ -38,7 +38,7 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~6d~~ | ~~the front door~~ | ~~`?` converts the error with `From`~~ | ✅ |
 | ~~7~~ | ~~`VisibleFact<'a>`~~ | ~~a struct that holds a borrow~~ | ✅ |
 | ~~8~~ | ~~`storage.rs` — a case off the disk~~ | ~~`Path` / `PathBuf`, `io::ErrorKind`~~ | ✅ |
-| 9a | the first command | what crosses the IPC boundary | 40 |
+| 9a | the first command | what crosses the IPC boundary | 45 |
 | 9b | managed state | interior mutability (`Mutex`) | 55 |
 | 10 | `Transcript` and `Phase` | a state machine as an enum with data | 50 |
 
@@ -81,3 +81,5 @@ Phases 4–5 are his home turf and carry no Rust teaching budget — `ROADMAP.md
       `src/assets/react.svg`.
 - [ ] Rewrite `README.md` — it still describes the Tauri template.
 - [ ] Add `rust-toolchain.toml` pinning a stable version.
+- [ ] `src-tauri/cases/` — the shipped case files the app actually reads. Lands in 9b with
+      `AppState`, which is also where `CASES_DIR` stops being a constant.

@@ -48,14 +48,15 @@ src-tauri/src/
   state.rs          AppState, managed via tauri::State      Stage 9b
   session/          stateful interrogation orchestration
   llm/              trait InferenceEngine · llama.rs · mock.rs (build mock FIRST)
-  ipc/              #[tauri::command] wrappers, nothing else
+  ipc.rs            #[tauri::command] wrappers + wire types      Stages 9a+
+                    (a directory when it holds a second command group — DECISIONS, 2026-09-13)
 ```
 
 **Invariants for the whole project:**
 
 - A domain module that needs `tauri`, `tokio` or `std::fs` means the boundary has leaked. Fix the
   boundary, not the import.
-- `ipc/` functions deserialize, delegate, map errors. Nothing else.
+- `ipc` functions deserialize, delegate, map errors. Nothing else.
 - No `unwrap()` / `expect()` in domain modules. `main.rs`, `lib.rs` wiring and tests are exempt.
 - Every stage ends on `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, commit.
 
@@ -74,7 +75,8 @@ traits, `TryFrom`, the IPC boundary, interior mutability.
   no filesystem. Stages 6a–6d ✅. Format and the reasons: `DECISIONS.md`, 2026-08-27.
 - **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
   Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
-- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); first `#[tauri::command]` (9a);
+- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); first `#[tauri::command]` and the
+  screen-shaped wire types (9a — `DECISIONS.md`, 2026-09-13);
   `AppState` behind a `Mutex`, `.manage()`, `State<'_, T>` (9b).
 - **1.6 Transcript and phase** — `enum Phase { Intro, Interrogating { turns }, Reporting, Scored }`.
   Illegal transitions unrepresentable. Stage 10.
