@@ -1,18 +1,18 @@
 # PROGRESS — where we are
 
 > Resume order: `CLAUDE.md` → this file → `CONCEPTS.md` → the current stage brief.
-> Last updated: 2026-09-14.
+> Last updated: 2026-09-15.
 
 ## Status
 
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last done | **Stage 9a, 2026-09-14. 6/6.** 100 tests across twelve files, `fmt` clean. Cost two corrections — the budget is now one new thing per stage. |
-| Stage | **9b issued 2026-09-14** — `stages/stage-09b-a-function-react-can-call.md`. Spec `tests/commands.rs`, now 11 tests. 69 prose lines, one new thing. |
-| Next action | **His.** Two lines in `case_intro`, one name on the handler list, then §3.4 in the browser. |
+| Last done | **Stage 9b, 2026-09-15. 11/11.** 105 tests across twelve files, `fmt` and `clippy -D warnings` clean. First stage since 7 to land in one sitting. |
+| Stage | **none issued.** 9c is next — the app holds the case folder (`.manage()`). |
+| Next action | **His.** Commit 9a and 9b — that is a session. |
 | Blocked on | nothing |
-| Carried | **Budget is now one new thing + one recall, his words, 2026-09-14** — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
+| Carried | **The re-cut format works — his words, 2026-09-15: *"This way works for me, I learned."*** Keep it: one new thing, the artifact shown before the type is named, and defects named flat out with the why when he asks. Budget set 2026-09-14 — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
 
 A **session** is 2–3 stages, ending on a green suite and a commit. Stage estimates are minutes; the
 session boundary is the commit.
@@ -39,7 +39,7 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~7~~ | ~~`VisibleFact<'a>`~~ | ~~a struct that holds a borrow~~ | ✅ |
 | ~~8~~ | ~~`storage.rs` — a case off the disk~~ | ~~`Path` / `PathBuf`, `io::ErrorKind`~~ | ✅ |
 | ~~9a~~ | ~~the box the screen gets~~ | ~~a type of your own that can be sent out~~ | ✅ |
-| 9b | a function React can call | `#[tauri::command]` and the handler list | 25 |
+| ~~9b~~ | ~~a function React can call~~ | ~~`#[tauri::command]` and the handler list~~ | ✅ |
 | 9c | the app holds the case folder | `.manage()` | 25 |
 | 9d | a command that asks for it | `State<'_, T>` | 20 |
 | 10 | `Transcript` and `Phase` | a state machine as an enum with data, **and the lock** | 50+ |
@@ -82,7 +82,8 @@ Phases 4–5 are his home turf and carry no Rust teaching budget — `ROADMAP.md
       everything else public in `case.rs` does. `parse_case`'s says "but it it fails". Tidying.
 - [ ] `#[serde(default)]` on `RawCase::facts` should come off — `suspects` is required and both are
       the same kind of thing. Changes no test.
-- [ ] Delete the `greet` demo command, the template `App.tsx`, `public/vite.svg`,
+- [ ] `greet` was deleted in 9b but `App.tsx` still calls it, so the template UI now rejects with
+      "command not found". Finish the job: the template `App.tsx`, `public/vite.svg`,
       `src/assets/react.svg`.
 - [ ] Rewrite `README.md` — it still describes the Tauri template.
 - [ ] Add `rust-toolchain.toml` pinning a stable version.

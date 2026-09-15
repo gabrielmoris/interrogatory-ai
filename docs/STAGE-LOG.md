@@ -141,6 +141,25 @@ second stage running whose planned error did not happen. Sources re-checked at S
 **Do differently.** He committed and asked for Stage 8 without saying "ready", so the review and the
 ledger update ran a stage late. Check `git log` before issuing rather than waiting for the word.
 
+### Stage 9b — a function React can call ✅ 2026-09-15
+
+**Built.** `case_intro`'s body — `load_case(Path::new(CASES_DIR), &slug)?` then
+`Ok(CaseIntro::from(&case))` — and the command on the handler list in `lib.rs`. Spec
+`tests/commands.rs`, now 11 tests. **105 tests across twelve files green, `fmt` and
+`clippy -D warnings` clean.**
+**Headline concept.** `#[tauri::command]` plus the list, as two halves of one idea: marked but
+unlisted is unreachable, silently.
+**Where he got stuck.** One place, one message: `generate_handler![case_intro]` with no path.
+`pub mod ipc;` declares the module without bringing its items into `lib.rs`. He took
+rust-analyzer's suggestion — `use ipc::case_intro;` — rather than the path form the brief
+recommended. Both compile; his is fine.
+**Outcome.** Pass. First stage since 7 to land in one sitting with one question. His verdict on the
+re-cut format: *"This way works for me, I learned."*
+**Do differently.** He also deleted `greet` while he was in there, and `App.tsx` still calls it — so
+the template UI now rejects with "command not found". Not a defect, and a good accidental
+demonstration of the stage's own point, but the brief should have said what else touches a command
+before inviting him to remove one.
+
 ### Stage 9a — the box the screen gets ✅ 2026-09-14
 
 **Built.** New `src/ipc.rs`: `SuspectSummary`, `CaseIntro`, both deriving `Serialize`, and

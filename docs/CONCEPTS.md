@@ -188,6 +188,18 @@ code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 20
 | `.map(closure)` where Stage 7 used `.map(TypeName)` — named fields need a closure | — | used |
 
 
+### Stage 9b — the command, and the list ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`#[tauri::command]`** — marks a function and writes a second one beside it; yours is untouched, so tests call it directly | a route handler, with the request/response wiring generated | defined |
+| **`generate_handler![…]`** — the list the app actually consults. Marked but unlisted is unreachable, and nothing warns you | the router's route table | defined |
+| `pub mod ipc;` declares the module; it does **not** put its items in scope. `ipc::case_intro`, or `use crate::ipc::case_intro` | `import './ipc'` vs a named import | defined |
+| Uniform paths — `use ipc::case_intro;` resolves a local module without `crate::` | — | used *(his choice, via rust-analyzer)* |
+| `Ok` resolves the promise on the React side, `Err` rejects it with `AppError` as JSON | `resolve` / `reject` | defined |
+| `Path::new("some text")` — a borrowed path from a string | — | used |
+
+
 ---
 
 ## Vocabulary

@@ -3,13 +3,18 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
+type Case = {
+  title: string;
+  briefing: string;
+  suspects: any;
+};
+
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [greetMsg, setGreetMsg] = useState<Case>();
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+    setGreetMsg(await invoke("case_intro", { slug: "the-ledger" }));
   }
 
   return (
@@ -36,14 +41,9 @@ function App() {
           greet();
         }}
       >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
         <button type="submit">Greet</button>
       </form>
-      <p>{greetMsg}</p>
+      <p>{greetMsg?.title}</p>
     </main>
   );
 }
