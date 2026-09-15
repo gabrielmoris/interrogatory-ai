@@ -40,5 +40,6 @@ impl From<&Case> for CaseIntro {
 
 #[tauri::command]
 pub fn case_intro(slug: String) -> AppResult<CaseIntro> {
-    todo!()
+    let case = load_case(Path::new(CASES_DIR), &slug)?;
+    Ok(CaseIntro::from(&case))
 }
