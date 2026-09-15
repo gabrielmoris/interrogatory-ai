@@ -8,9 +8,9 @@
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last done | **Stage 8, 2026-09-13. 9/9.** 94 tests across ten files, `fmt` and `clippy -D warnings` clean, committed. Phase 1 §1.5 half done. |
-| Stage | **9a, last step.** Both structs' fields are written and correct; `CaseIntro::from` is still `todo!()`. Suite 1/6. |
-| Next action | **His.** Step 4 — the `From` body — then "ready". Hints §5 are aimed at exactly that step. |
+| Last done | **Stage 9a, 2026-09-14. 6/6.** 100 tests across twelve files, `fmt` clean. Cost two corrections — the budget is now one new thing per stage. |
+| Stage | **9b issued 2026-09-14** — `stages/stage-09b-a-function-react-can-call.md`. Spec `tests/commands.rs`, now 11 tests. 69 prose lines, one new thing. |
+| Next action | **His.** Two lines in `case_intro`, one name on the handler list, then §3.4 in the browser. |
 | Blocked on | nothing |
 | Carried | **Budget is now one new thing + one recall, his words, 2026-09-14** — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
 
@@ -38,7 +38,7 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~6d~~ | ~~the front door~~ | ~~`?` converts the error with `From`~~ | ✅ |
 | ~~7~~ | ~~`VisibleFact<'a>`~~ | ~~a struct that holds a borrow~~ | ✅ |
 | ~~8~~ | ~~`storage.rs` — a case off the disk~~ | ~~`Path` / `PathBuf`, `io::ErrorKind`~~ | ✅ |
-| 9a | the box the screen gets, and filling it | a type of your own that can be sent out | 25 |
+| ~~9a~~ | ~~the box the screen gets~~ | ~~a type of your own that can be sent out~~ | ✅ |
 | 9b | a function React can call | `#[tauri::command]` and the handler list | 25 |
 | 9c | the app holds the case folder | `.manage()` | 25 |
 | 9d | a command that asks for it | `State<'_, T>` | 20 |
@@ -86,6 +86,8 @@ Phases 4–5 are his home turf and carry no Rust teaching budget — `ROADMAP.md
       `src/assets/react.svg`.
 - [ ] Rewrite `README.md` — it still describes the Tauri template.
 - [ ] Add `rust-toolchain.toml` pinning a stable version.
-- [ ] `src-tauri/cases/` — the shipped case files the app actually reads. Lands in 9c with
-      `AppState`, which is also where `CASES_DIR` stops being a constant. Its doc comment in
-      `ipc.rs` says 9b; correct it when you touch the file.
+- [x] `src-tauri/cases/` — shipped with 9b, so the command has something real to find.
+- [ ] `CASES_DIR` stops being a constant in 9c, when `AppState` owns the folder. Its doc comment in
+      `ipc.rs` says 9b; correct it then.
+- [ ] `withGlobalTauri` was turned on in 9b to make the console demo possible. Turn it off before
+      any release build — it exposes the whole API surface to any script in the page.

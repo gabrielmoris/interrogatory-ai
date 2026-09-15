@@ -1,0 +1,42 @@
+# The Lighthouse — a second case, deliberately a different shape from the first.
+
+title = "The Lighthouse"
+briefing = "The keeper fell from the gallery on the night the lamp failed."
+
+[[suspects]]
+id = 1
+name = "Ines Ferrer"
+
+[[suspects]]
+id = 2
+name = "Duncan Mabry"
+
+[[suspects]]
+id = 3
+name = "Sofia Kalm"
+
+[[facts]]
+id = 1
+statement = "The lamp failed at 02:10."
+known_by = [1, 2, 3]
+
+[[facts]]
+id = 2
+statement = "Ines took the boat out before midnight."
+known_by = [1]
+
+[[facts]]
+id = 3
+statement = "Duncan had been drinking in the boathouse."
+known_by = [2, 3]
+
+# Nobody witnessed this one. It is true, and no suspect can be asked about it.
+[[facts]]
+id = 4
+statement = "A rope was cut clean through at the gallery rail."
+
+[[facts]]
+id = 9
+statement = "Sofia cut the rope and waited for the lamp to fail."
+known_by = [3]
+is_ground_truth_only = true

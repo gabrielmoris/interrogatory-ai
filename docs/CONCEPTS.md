@@ -172,9 +172,21 @@ errors rather than asking. What he does not have is Rust's machinery, and only t
 | `matches!` — "does this value fit this pattern", as a `bool` | a regex/`switch` test collapsed to one expression | used (reached for unprompted) |
 | Byte scanning (`.bytes()`) as a safe way to ask an ASCII-only question | no equivalent — JS strings decode either way | used (his choice, not the brief's) |
 
-**Three planned, six landed.** The two that were never meant to be concepts — `read_to_string` and
+**Stage 8: three planned, six landed.** The two that were never meant to be concepts — `read_to_string` and
 `.display()` — were the ones he got stuck on, because they were named in prose and never printed as
 code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 2026-09-13.
+
+### Stage 9a — `CaseIntro`, the type built to be handed out ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **A type whose only job is to be sent** — small, owned, built by copying across | the API response type that is not the database row | defined |
+| `derive(Serialize)` on a type of his own, and `Case` deliberately never getting it | — | used |
+| `impl From<&T>` — the same trait as Stage 2, with a borrow as the source | a mapper that takes an object it does not own | defined |
+| **A struct literal must name its struct** — Rust has no anonymous objects (`error: struct literal body without path`) | `{ id, name }` is enough; the shape *is* the type | defined *(wrong once, fixed in one message)* |
+| An id is already a `SuspectId` by the time it is inside a `Suspect` — the conversion happened at the door | — | defined |
+| `.map(closure)` where Stage 7 used `.map(TypeName)` — named fields need a closure | — | used |
+
 
 ---
 

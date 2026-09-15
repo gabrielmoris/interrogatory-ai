@@ -1,4 +1,4 @@
-use crate::case::{Case, Suspect};
+use crate::case::Case;
 use crate::error::AppResult;
 use crate::ids::SuspectId;
 use crate::storage::load_case;

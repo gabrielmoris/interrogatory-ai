@@ -1,0 +1,33 @@
+# The Ledger — the case the Stage 3–5 tests build by hand, now as a file.
+
+title = "The Ledger"
+briefing = "A bookkeeper is dead and the safe is short 40,000."
+
+[[suspects]]
+id = 1
+name = "Marta Reyes"
+
+[[suspects]]
+id = 2
+name = "Viktor Lang"
+
+[[facts]]
+id = 1
+statement = "The safe was opened at 21:40."
+known_by = [1, 2]
+
+[[facts]]
+id = 2
+statement = "Marta argued with the victim on Tuesday."
+known_by = [1]
+
+[[facts]]
+id = 3
+statement = "Viktor's key card opened the service door at 21:38."
+known_by = [2]
+
+[[facts]]
+id = 9
+statement = "Marta forged the second signature in the ledger."
+known_by = [1]
+is_ground_truth_only = true

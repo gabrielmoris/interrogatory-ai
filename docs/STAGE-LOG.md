@@ -141,6 +141,26 @@ second stage running whose planned error did not happen. Sources re-checked at S
 **Do differently.** He committed and asked for Stage 8 without saying "ready", so the review and the
 ledger update ran a stage late. Check `git log` before issuing rather than waiting for the word.
 
+### Stage 9a — the box the screen gets ✅ 2026-09-14
+
+**Built.** New `src/ipc.rs`: `SuspectSummary`, `CaseIntro`, both deriving `Serialize`, and
+`impl From<&Case> for CaseIntro`. Plus `Case::suspects()` in `case.rs` and `pub mod ipc;`. Spec
+`tests/commands.rs`, 6 tests. 6/6; **100 tests across twelve files green, `fmt` clean.**
+**Headline concept.** A second, smaller type built only to be handed out — and `Case` having no
+`Serialize` as the thing that makes a leak impossible rather than merely unlikely.
+**Where he got stuck.** All of it, and twice it was the brief rather than the code — corrections 10
+and 11, `MENTOR-NOTES.md`, 2026-09-14. The stage was issued three files wide and had to be cut down
+mid-flight, then cut again to one topic. He ended at *"no fucking idea, dude"* on the conversion.
+**In the code itself, two real slips, each fixed in one message.** He wrote `{id: …, name: …}` with
+no struct name — the TypeScript reflex, same one as Stage 1's array literal. And
+`SuspectId::new(suspect.id)`, wrapping an id that `case_file.rs` had already converted at the door.
+**Outcome.** Pass. Offered the loop-and-push version as an escape hatch; he went back to the
+`.map().collect()` chain and landed it himself, `cargo fmt` layout and all.
+**Do differently.** When one line takes four exchanges, the line is not the problem — stop
+correcting it token by token and change the medium. What finally worked was naming both defects flat
+out, with the why, when he asked for exactly that. Leftover: an unused `Suspect` import in `ipc.rs`,
+handed to 9b as a tidy-up.
+
 ### Stage 8 — `storage.rs`, the first shell module ✅ 2026-09-13
 
 **Built.** New `src/storage.rs`: `case_path`, a private `is_slug`, and `load_case` — slug guard, the
