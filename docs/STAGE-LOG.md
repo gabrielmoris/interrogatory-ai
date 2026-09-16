@@ -40,7 +40,7 @@ shapes-vs-behaviour.
 **Hints reached.** Needed the full signature skeleton handed over after failing to derive signatures
 from the test's call sites — the correction that made skeletons standard from Stage 4 on. Wrote every
 body himself and reached for the iterator chain in `facts_known_by` unprompted.
-**Outcome.** Pass, 9/9, clippy and fmt clean. Doc comments now say what the type *means*; the polish
+**Outcome.** Pass, 9/9, clippy and fmt clean. Doc comments now say what the type _means_; the polish
 note open since Stage 1 closed here. Notable: with `!` missing from the ground-truth condition **both**
 visibility tests failed in opposite directions — every case inverted rather than some cases wrong is
 the tell for a missing negation.
@@ -93,7 +93,7 @@ both are the same kind of thing and both should be required. Cosmetic — no tes
 ground-truth flag carried across. Spec `tests/case_convert.rs`, 6 tests. 6/6.
 **Headline concept.** `TryFrom` and its associated type.
 **Where he got stuck.** Two places, one step each: the empty loop body, and
-`SuspectId::new(raw_known_by)` on a `&u32` — *"this is bringing me some headache."* `*` had never
+`SuspectId::new(raw_known_by)` on a `&u32` — _"this is bringing me some headache."_ `*` had never
 been taught; `&` was introduced in Stage 4 and its other half was not. **Produced the `Assumes:`
 line in Rule 1.**
 **Do differently.** He wrote `for x in &raw.suspects` unprompted, so the brief's planned `E0382`
@@ -109,7 +109,7 @@ on every `known_by` entry, and a third loop asking `suspect_facts(id).next().is_
 building and discarding an `AppError` per non-duplicate fact. Swapped to `fact_mut(..).is_some()`
 after one explanation: **`Option` when absence is a normal answer, `Result` when it is a failure.**
 Check 3 is the same rule pointing the other way, which made a clean pair.
-**Do differently.** He asked twice *which function* the work went in. Name `file.rs :: function()`,
+**Do differently.** He asked twice _which function_ the work went in. Name `file.rs :: function()`,
 never "inside your suspects loop". Two mentor defects (guessed checkpoints, correction seven) are in
 `MENTOR-NOTES.md`.
 
@@ -125,14 +125,14 @@ place — wrapping only the parser's failure, not the whole function, which is t
 existed to catch.
 **Do differently.** Nothing on the teaching side. One cosmetic note carried forward: the `parse_case`
 doc comment reads "but it it fails", and `RawCase`'s is "Raw case" where the other public items say
-what the type *means*.
+what the type _means_.
 
 ### Stage 7 — `VisibleFact<'a>` ✅ 2026-09-01
 
 **Built.** In `src/case.rs`: `VisibleFact<'a>`, a tuple struct over `&'a Fact` with a private field,
 `id()` and `statement() -> &'a str`, `Case::visible_to`, and free `visible_statements`. Spec
 `tests/visible_fact.rs`, 9 tests. 9/9.
-**Headline concept.** A struct that holds a borrow — the lifetime parameter on the *type*, not only
+**Headline concept.** A struct that holds a borrow — the lifetime parameter on the _type_, not only
 on a function signature.
 **Outcome.** Pass, first submission, no questions asked mid-stage. He wrote `.map(VisibleFact)`
 point-free, so the `clippy::redundant_closure` lint the brief was built around never fired — the
@@ -154,7 +154,7 @@ unlisted is unreachable, silently.
 rust-analyzer's suggestion — `use ipc::case_intro;` — rather than the path form the brief
 recommended. Both compile; his is fine.
 **Outcome.** Pass. First stage since 7 to land in one sitting with one question. His verdict on the
-re-cut format: *"This way works for me, I learned."*
+re-cut format: _"This way works for me, I learned."_
 **Do differently.** He also deleted `greet` while he was in there, and `App.tsx` still calls it — so
 the template UI now rejects with "command not found". Not a defect, and a good accidental
 demonstration of the stage's own point, but the brief should have said what else touches a command
@@ -169,7 +169,7 @@ before inviting him to remove one.
 `Serialize` as the thing that makes a leak impossible rather than merely unlikely.
 **Where he got stuck.** All of it, and twice it was the brief rather than the code — corrections 10
 and 11, `MENTOR-NOTES.md`, 2026-09-14. The stage was issued three files wide and had to be cut down
-mid-flight, then cut again to one topic. He ended at *"no fucking idea, dude"* on the conversion.
+mid-flight, then cut again to one topic. He ended at _"no idea, dude"_ on the conversion.
 **In the code itself, two real slips, each fixed in one message.** He wrote `{id: …, name: …}` with
 no struct name — the TypeScript reflex, same one as Stage 1's array literal. And
 `SuspectId::new(suspect.id)`, wrapping an id that `case_file.rs` had already converted at the door.
@@ -186,13 +186,13 @@ handed to 9b as a tidy-up.
 read, and the `ErrorKind::NotFound` split — plus one line in `lib.rs`. Spec `tests/storage.rs`,
 9 tests. 9/9; 94 tests across ten files green, `fmt` and `clippy -D warnings` clean.
 **Headline concept.** `Path` / `PathBuf`, and telling one kind of read failure from all the others.
-**Where he got stuck.** Step 4, six exchanges, ending in *"ok, I am L O S T"*. Three mentor defects
+**Where he got stuck.** Step 4, six exchanges, ending in _"ok, I am L O S T"_. Three mentor defects
 of one shape: `fs::read_to_string`, `.display()` and a value-returning `map_err` closure were named
 in prose, never printed as code, then asked for in a single step. Account in `MENTOR-NOTES.md`,
 2026-09-13; it produced Rule 1's printed-line test, Rule 2's rung-4 constraint and Rule 3's no-paste
 bullet.
 **Outcome.** Once the body was reset to four straight-line steps he wrote the rest himself, including
 the empty-name hole in `is_slug` (`.all()` on nothing is `true`) and the whole of step 5.
-**Do differently.** He diagnosed the defect before I did — *"the two more lines are not mine because I
-suspect they have steps I have never touched"* — and was right. When he says a step contains
+**Do differently.** He diagnosed the defect before I did — _"the two more lines are not mine because I
+suspect they have steps I have never touched"_ — and was right. When he says a step contains
 something untaught, check the brief before answering the error.

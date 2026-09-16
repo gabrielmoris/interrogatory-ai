@@ -45,6 +45,9 @@ a thing he has to hold, whether or not they are ledger concepts.
 Broken for six stages straight: briefs ran 148 → 657 lines teaching 9–13 concepts each, while he
 asked twice for less. See `docs/MENTOR-NOTES.md`, 2026-08-29.
 
+**Status in `CONCEPTS.md` decides two things, not one:** how much explaining a concept gets, *and*
+how much of the code he is handed — the fading table in Rule 2. Check both, every time.
+
 **How much explaining a concept gets is decided by its status in `CONCEPTS.md`, not by you.**
 Absent → the full §1 treatment. `defined` / `used` → one line that recalls it *and says where*.
 `solid` → a mention and two or three places he has used it. **`shaky` → the full §1 treatment again,
@@ -71,18 +74,104 @@ the finished answer, the stage is too big — split it, do not print less. Stage
 they printed the solution. Two concepts by the ledger, ten unfamiliar things in the document. The
 ledger counts concepts, so count the document yourself — `docs/MENTOR-NOTES.md`, 2026-09-14.
 
-## Rule 2 — the brief template. 90 lines of prose, hard ceiling.
+## Rule 2 — the brief is an example–problem pair
 
-**Prose only** — blank lines, fenced code blocks and `<details>` tags do not count. Code is not the
-problem; he has asked twice for *more* of it ("show me the surrounding lines"). Explanation is the
-problem. Measured, not judged:
+This is the rule he asked for, in his words, 2026-09-16: **"The task MUST match the explanation."**
+It is also the best-evidenced finding in instructional design. Novices learn from a *fully worked
+example* followed by a problem **of the same type**; an example that does not match the problem is
+not teaching, it is extra load. Evidence and sources: `docs/TEACHING-EVIDENCE.md`.
 
-| Brief | 1 | 2 | 3 | 4 | 5 | 6a | 6b | 6c | 6d |
+### The match test — run it before every brief
+
+Put §2d (the worked example) and §3.2 (the code he writes) side by side.
+
+1. **Every construct the task requires appears in the worked example.** A call, an attribute, a
+   macro, a field-init shorthand, a closure shape — if he has to produce it and the example never
+   showed it, the brief is broken.
+2. **Every construct in the worked example is required by the task.** Anything extra is noise that
+   spends working memory he needs for the task.
+
+Either direction fails → **fix the example, never the task.** If matching the example to the task
+would mean printing the whole solution, the stage is too big: split it (Rule 1).
+
+### Holes, not blanks
+
+§3.2 is a **completion problem**: the shape is there, one or two pieces are missing. That is the
+documented middle step between a worked example and independent work, and it is the thing whose
+absence cost 9a four exchanges on one line. A bare `todo!()` is allowed only where he has already
+written the same body before.
+
+A blank is worth having only if he has every piece needed to fill it. If the step needs a call he has
+never typed, the blank is not a challenge, it is a wall — give him the piece and put the difficulty
+where he can win.
+
+### Fading, keyed to `docs/CONCEPTS.md`
+
+Support that helps a novice actively harms once the pattern is known. The ledger's status decides
+the scaffolding, not just the word count:
+
+| Status | Worked example | What he gets to write |
+|---|---|---|
+| *(absent)* | full, every line, §2d | completion problem, 2–3 holes |
+| `defined` | one line of code, in place | completion problem, 1 hole |
+| `used` | none — a pointer to where he did it | the bare task |
+| `solid` | none, no mention | the bare task |
+| `shaky` | full again, old examples reprinted | completion problem, 2–3 holes |
+
+### Recall is spaced retrieval, not a paragraph
+
+§1 asks **two questions he answers from memory**, answers folded into `<details>`, plus **one
+prediction** he commits to before reading §2. Retrieving beats re-reading; a refresher list *is*
+re-reading. Never more than two questions.
+
+**Which two — the 1–2–4 schedule.** A concept taught in stage N comes back at **N+1, N+3 and N+7**:
+gaps of one, two and four stages, which at 2–4 h/week is about a week, a fortnight and a month. The
+due list lives in `CONCEPTS.md`. He works in long gaps already — that spacing is free and the system
+has to spend it on retrieval instead of wasting it on a refresher paragraph.
+
+- One question comes from the schedule. One comes from what *this* task needs. If the same concept
+  satisfies both, take the second from the schedule too.
+- He gets it wrong → status drops to `shaky`, the schedule resets to N+1, and Rule 2's fading table
+  puts the full worked example back.
+
+**The prediction.** One line before §2: a guess he commits to, answered by §2 itself. Attempting an
+answer before being told improves learning even when the guess is wrong, as long as the correction
+follows immediately.
+
+**Re-reading is the illusion, not the remedy.** When he is stuck, never send him back up the page.
+Attempt, run it, read the error. Familiarity with a brief feels like understanding and is not.
+
+### Adjacency
+
+The explanation of a step sits **next to** that step. Explanation in §2 and its task forty lines
+down in §3, with unrelated material in between, splits his attention across the page and costs him
+the thing you just explained.
+
+**When a reprinted line needs adapting, put the substitutions in the hole's own comment, not in a
+sentence beside it.** He copied `PathBuf::from("manifests")` — the depot's folder — straight into
+`lib.rs` in 9c, from under a sentence saying "two substitutions: your state type, your folder name".
+The concrete string wins against a description of it every time. Write the hole as
+`// <- .manage(…) with YOUR type and "cases"`, naming the value that differs.
+
+**Every hole reprints its own answer-shaped line, right beside it. "Same shape as the depot's" is
+not adjacency — it is a scroll instruction.** Broken in 9c step 3, in the first brief written under
+this rule: the step was a bare `____` with a pointer sixty lines up, and it was the one step he
+could not start. A hole also names every import, type and call the filled line will need, in place.
+If reprinting the answer-shaped line next to the hole gives the answer away, the hole is in the
+wrong spot — move it, do not make him scroll.
+
+---
+
+**90 lines of prose, hard ceiling.** Blank lines, fenced code blocks and `<details>` tags do not
+count. Code is not the problem — he has asked three times for *more* of it. Explanation is.
+Measured, not judged:
+
+| Brief | 1 | 2 | 3 | 4 | 5 | 6a–6d | 8 | 9a | 9b |
 |---|---|---|---|---|---|---|---|---|---|
-| Prose lines | 57 | 137 | 195 | 205 | 235 | 75 | 85 | 87 | 75 |
-| Landed well | ✅ | ✗ | ✗ | ✗ | ✗ | ✅ | ✅ | ✅ | ✅ |
+| Prose lines | 57 | 137 | 195 | 205 | 235 | 75–87 | ~90 | 89 → 73 | 69 |
+| Landed well | ✅ | ✗ | ✗ | ✗ | ✗ | ✅ | ✗ | ✗ → ✗ | ✅ |
 
-Everything at or under ~90 worked. Everything over 130 produced a correction. Count before issuing:
+Count before issuing:
 
 ```bash
 python3 -c "
@@ -94,7 +183,10 @@ for l in open(sys.argv[1],encoding='utf-8'):
 print(n)" docs/stages/stage-NN-*.md
 ```
 
-Fixed order. Nothing else.
+Note what 9a proves: **73 prose lines and two concepts still failed**, because the example and the
+task did not match. Volume was never the whole story.
+
+### Fixed order. Nothing else.
 
 ```
 # Stage NN — <plain-English name, no Rust words>
@@ -102,38 +194,50 @@ Fixed order. Nothing else.
 Test:    src-tauri/tests/<file>.rs — N tests
 Run:     cd src-tauri && cargo test --test <file>
 Writes:  src-tauri/src/<file>.rs :: <function>()
-Assumes: <concept (Stage n)>, <concept (Stage n)>, …
+New:     the one new thing
+Recall:  the one thing being recalled (Stage n)
 Est.     N min
 
 ## 0. What this has to do, in ordinary words       [MAX 6 LINES. NO RUST TOKENS.]
    The gameplay reason, then the algorithm as instructions to a person.
 
-## 1. Concept introduction                         [1 headline + max 2 supporting]
-   Per concept, in this order:
+## 1. Recall                                       [2 questions from the 1-2-4 schedule +
+                                                    1 prediction. Answers in <details>.]
+
+## 2. The worked example                           [the ONE new thing]
      a. Plain English — what it is, no Rust names.
      b. The TypeScript you would write.
      c. What Rust does differently, and the sentence where the analogy breaks.
-     d. The shape, in the parcel-depot / weather domain. Never the detective game.
+     d. The example IN FULL, in the parcel-depot domain. Never the detective game.
+        Every line present. Nothing elided, nothing commented out, no `…` in a body.
 
-## 2. Refresher                                    [one line each, pointer only]
-   Never a second explanation. If it needs one, it belongs in §1 and the budget is blown.
-
-## 3. Tasks
+## 3. The same problem, in your code
    3.1 Step-by-step plain logic — numbered, ordinary words, each step naming
        file.rs :: function(). This is the section he reads when stuck.
        **Rule 3 slot 1 applies here: a step says what to do, never what to weigh up.**
        "Ask whether the screen draws it" stopped him for a day in 9a; "the small box
        holds one person, their number and their name" did not. Criteria go in §4.
-   3.2 Scaffolding — full signatures, bodies `todo!()`.
+   3.2 The code, with holes — same shape as §2d, each hole beside the step that fills it.
    3.3 Checkpoints — measured, one row per step.
-   3.4 Cold call — the one step reaching back ≥2 stages, pointer only, no refresher.
+   3.4 The interleaved step — name the one step that uses a pattern from a NON-ADJACENT
+       earlier stage. Pointer only, no refresher. Mixing kinds of problem feels worse
+       than practising one kind in a block, and retains better; every stage carries one.
 
-## 4. Rules — numbered, ≤6, one line each.
+## 4. Rules — numbered, ≤5, one line each.
 
-## 5. Hints — exactly 4 <details>, the fixed ladder below, parcel-depot domain.
+## 5. If you are stuck — exactly 4 <details>, the fixed ladder, parcel-depot domain.
 ```
 
-**Shapes are scaffolding; bodies are the exercise.** Always issue the signatures.
+**A struct's fields are part of the shape, unless choosing them is the lesson.** 9a hid
+`CaseIntro`'s fields on purpose — deciding what may cross was the whole stage. 9c hid `AppState`'s
+by reflex, and there is exactly one field it could have; that is friction, not teaching. His test,
+2026-09-16: *"is it just a waste of time because it adds cognitive load and actually doesn't bring
+me any new knowledge?"* Ask it of every hole before issuing.
+
+**When a stage moves code he already wrote, show the move as a before/after, never a fresh
+`todo!()`.** A signature he has filled in once, re-issued empty, reads as "throw it away and start
+again" — 9c, twice, and the second time he was angry. Print his own lines where they are going and
+mark the ones that change.
 
 **Checkpoints are measured, never guessed.** Build the reference implementation stub-by-stub in a
 throwaway crate and paste the real `cargo test` summary. A row you did not run is written
@@ -175,6 +279,10 @@ not briefs — the brief has a template and the reply did not. Now it has one.
 - **One new thing per message.** Count unexplained concepts, not lines. *Short is not the same as
   small*: a "two-line step" carrying three untaught things is the worse failure.
 - **No headers, no bullet inventory, no "also worth knowing."** It fits on a phone screen.
+- **Unblock with a hole, not a correction.** When he is stuck on a line, the fastest honest move is
+  to hand back *his own line* with the one wrong piece blanked out, rather than describing the defect
+  in prose. Four exchanges went into one line in 9a because every reply named a defect instead of
+  showing the shape with the gap in it.
 - **Never hand him a line to paste into his own file.** A line he copies without placing it himself
   leaves the next one unplaceable — Stage 8, where two pasted lines cost more than the step did.
   Machinery he has not met goes in slot 3, and the full line goes in the other domain, never his.
@@ -218,6 +326,19 @@ not briefs — the brief has a template and the reply did not. Now it has one.
 | "inside your suspects loop" | he could not tell which function — asked twice | name `file.rs :: function()` every time |
 | a checkpoint row labelled "check 4 (nothing to say)" | he read the table as the spec | label rows with the section that explains them |
 
+## Rule 4a — three habits that are his, not yours
+
+Cheap, evidence-backed, and none of them is a section in a brief. Ask for them once each, then stop
+asking.
+
+- **The commit message carries one sentence, in his own words, saying what the new thing does.**
+  Elaboration plus retrieval at the moment the material is fresh, for thirty seconds' work. Not a
+  summary of the diff — what the thing *is*.
+- **Before opening a hint, say what he thinks the answer is.** The gap between that and what the
+  compiler says is calibration, and it is the only thing that corrects a false sense of knowing.
+- **When stuck: attempt, run, read the error. Never re-read the brief.** Re-reading produces
+  familiarity that feels like mastery. It is the most popular study strategy and one of the worst.
+
 ## Rule 5 — architecture decisions are yours. Rust is his.
 
 **Never leave a design question open as homework. Never ask him to "come back with a position."**
@@ -257,6 +378,7 @@ one — engage with his argument rather than restating your position.
 | `docs/STAGE-LOG.md` | Five lines per finished stage: built, stuck, do differently. Lookup. |
 | `docs/ROADMAP.md` | Phases 0–5 and the risk register. The plan of record. |
 | `docs/MENTOR-NOTES.md` | The corrections, verbatim. Open before changing a rule. |
+| `docs/TEACHING-EVIDENCE.md` | Why Rule 2 is shaped the way it is, with sources. Open before relaxing one. |
 | `docs/adr/ADR-0001-…` | Windows + Android LLM strategy. Read before any inference work. |
 | `docs/stages/stage-NN-*.md` | One brief per stage. |
 | `docs/archive/` | Superseded. Never act on it. |

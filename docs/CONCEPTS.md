@@ -31,6 +31,46 @@ errors rather than asking. What he does not have is Rust's machinery, and only t
 
 ---
 
+## Spaced recall — the 1–2–4 schedule
+
+Added 2026-09-16. Evidence in `docs/TEACHING-EVIDENCE.md` §7; the rule that consumes it is
+`CLAUDE.md` Rule 2.
+
+A concept taught in stage **N** comes back as a §1 recall question at **N+1, N+3 and N+7** — one,
+two and four stages later. At 2–4 hours a week that is roughly a week, a fortnight and a month, and
+the gaps are already there whether or not anything uses them. Counting is by position in the stage
+sequence, so 6a–6d each count as one.
+
+**Two questions per brief: one from this table, one from what the stage's task needs.** If a single
+concept satisfies both, take the second from the table as well — a question the task does not need
+is interleaving, which is the point.
+
+**He gets one wrong →** its status here drops to `shaky`, its schedule resets to N+1, and Rule 2's
+fading table puts the full worked example back in the next brief that touches it.
+
+| Writing stage | Ask about |
+|---|---|
+| 9c | **Stage 8** — `&Path` vs `PathBuf` · **Stage 9b** — what makes a command reachable |
+| 10 | **Stage 9a** — a type built only to be sent · **Stage 9c** — `.manage` / `State` |
+| 11 | **Stage 9b**, second pass · **Stage 10** |
+| 12 | **Stage 9c**, second pass |
+| 13 | **Stage 8**, third pass |
+| 14 | **Stage 9a**, third pass |
+
+**Anything `shaky` is due in every brief until he gets it right twice**, whether or not the stage
+touches it. That is the gap this schedule exists to close: the guard clause has been `shaky` since
+Stage 5 and `.map_err` since 6d, and neither has come up since, because no stage since happened to
+need them. Left alone, a `shaky` row never repairs itself.
+
+**Currently `shaky`, so due every stage:**
+
+- A guard clause as the shape of a function body — Stage 5, wrong again in Stage 8.
+- `.map_err`, and that its closure *hands back* a value rather than returning one — Stage 6d, wrong
+  again in Stage 8.
+
+
+---
+
 ## Ledger
 
 ### Stage 1 — `Difficulty` and `Tuning`

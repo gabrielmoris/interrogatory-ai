@@ -1,11 +1,11 @@
+use tauri::State;
+
 use crate::case::Case;
 use crate::error::AppResult;
 use crate::ids::SuspectId;
+use crate::state::AppState;
 use crate::storage::load_case;
 use std::path::Path;
-
-/// Where case files live, until Stage 9b lets the app choose the directory.
-const CASES_DIR: &str = "cases";
 
 /// One suspect as the briefing screen needs them.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -38,8 +38,12 @@ impl From<&Case> for CaseIntro {
     }
 }
 
-#[tauri::command]
-pub fn case_intro(slug: String) -> AppResult<CaseIntro> {
-    let case = load_case(Path::new(CASES_DIR), &slug)?;
+pub fn case_intro_from(cases_dir: &Path, slug: &str) -> AppResult<CaseIntro> {
+    let case = load_case(cases_dir, slug)?;
     Ok(CaseIntro::from(&case))
+}
+
+#[tauri::command]
+pub fn case_intro(state: State<'_, AppState>, slug: String) -> AppResult<CaseIntro> {
+    case_intro_from(&state.cases_dir, &slug)
 }

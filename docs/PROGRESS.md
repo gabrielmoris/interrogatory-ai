@@ -1,6 +1,7 @@
 # PROGRESS — where we are
 
 > Resume order: `CLAUDE.md` → this file → `CONCEPTS.md` → the current stage brief.
+> `TEACHING-EVIDENCE.md` is the why behind Rule 2 — read it before relaxing any of it.
 > Last updated: 2026-09-15.
 
 ## Status
@@ -9,10 +10,10 @@
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
 | Last done | **Stage 9b, 2026-09-15. 11/11.** 105 tests across twelve files, `fmt` and `clippy -D warnings` clean. First stage since 7 to land in one sitting. |
-| Stage | **9c issued 2026-09-15** — `stages/stage-09c-the-app-holds-the-folder.md`. Spec `tests/commands.rs`, now 12 tests. 74 prose lines, one new thing. **Last stage of 9.** |
+| Stage | **9c reissued 2026-09-16** — `stages/stage-09c-the-app-holds-the-folder.md`. Spec `tests/commands.rs`, now 12 tests. 69 prose lines, one new thing, match test passed. **Last stage of 9.** |
 | Next action | **His.** `state.rs`, split `case_intro` in two, one `.manage` line. Then Stage 9 is done. |
 | Blocked on | nothing |
-| Carried | **The re-cut format works — his words, 2026-09-15: *"This way works for me, I learned."*** Keep it: one new thing, the artifact shown before the type is named, and defects named flat out with the why when he asks. Budget set 2026-09-14 — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
+| Carried | **Rule 2 rewritten 2026-09-16 on the instructional-design evidence, at his instruction.** Brief = worked example + matching completion problem; the **match test** is mandatory before issuing; `CONCEPTS.md` status now sets scaffolding as well as prose. `docs/TEACHING-EVIDENCE.md`, `MENTOR-NOTES.md` correction 13. 9c reissued in the new shape. |
 
 A **session** is 2–3 stages, ending on a green suite and a commit. Stage estimates are minutes; the
 session boundary is the commit.
