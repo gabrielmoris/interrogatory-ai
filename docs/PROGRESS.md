@@ -9,8 +9,8 @@
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
 | Last done | **Stage 9b, 2026-09-15. 11/11.** 105 tests across twelve files, `fmt` and `clippy -D warnings` clean. First stage since 7 to land in one sitting. |
-| Stage | **none issued.** 9c is next — the app holds the case folder (`.manage()`). |
-| Next action | **His.** Commit 9a and 9b — that is a session. |
+| Stage | **9c issued 2026-09-15** — `stages/stage-09c-the-app-holds-the-folder.md`. Spec `tests/commands.rs`, now 12 tests. 74 prose lines, one new thing. **Last stage of 9.** |
+| Next action | **His.** `state.rs`, split `case_intro` in two, one `.manage` line. Then Stage 9 is done. |
 | Blocked on | nothing |
 | Carried | **The re-cut format works — his words, 2026-09-15: *"This way works for me, I learned."*** Keep it: one new thing, the artifact shown before the type is named, and defects named flat out with the why when he asks. Budget set 2026-09-14 — `CLAUDE.md` Rule 1 amended, and Rule 4 gains *show the artifact before naming the type*. Stage 9 re-cut a second time; `Mutex` moved to Stage 10. Corrections 10 and 11 in `MENTOR-NOTES.md`. |
 
@@ -40,12 +40,15 @@ One headline concept each, at most two supporting. Sized to the budget in `CLAUD
 | ~~8~~ | ~~`storage.rs` — a case off the disk~~ | ~~`Path` / `PathBuf`, `io::ErrorKind`~~ | ✅ |
 | ~~9a~~ | ~~the box the screen gets~~ | ~~a type of your own that can be sent out~~ | ✅ |
 | ~~9b~~ | ~~a function React can call~~ | ~~`#[tauri::command]` and the handler list~~ | ✅ |
-| 9c | the app holds the case folder | `.manage()` | 25 |
-| 9d | a command that asks for it | `State<'_, T>` | 20 |
+| 9c | the app holds the case folder | `.manage()` **and** `State<'_, T>` | 25 |
 | 10 | `Transcript` and `Phase` | a state machine as an enum with data, **and the lock** | 50+ |
 
 One new thing each, plus at most one recall — Rule 1, as amended 2026-09-14. Stage 10 carries two
 and will be split before it is issued.
+
+**9d folded into 9c, 2026-09-15.** `.manage()` and `State<'_, T>` are two halves of one idea, the way
+the attribute and the handler list were in 9b: neither half does anything observable alone, and a
+stage that ends on a suite it cannot move is not a stage. Stage 9 is three, not four.
 
 ### Phase 2 — async and inference (Stages 11–19, the hard phase)
 

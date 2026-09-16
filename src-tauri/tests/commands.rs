@@ -15,7 +15,8 @@
 use interrogatory_ai_lib::case::Case;
 use interrogatory_ai_lib::error::AppError;
 use interrogatory_ai_lib::ids::SuspectId;
-use interrogatory_ai_lib::ipc::{case_intro, CaseIntro, SuspectSummary};
+use interrogatory_ai_lib::ipc::{case_intro_from, CaseIntro, SuspectSummary};
+use interrogatory_ai_lib::state::AppState;
 use interrogatory_ai_lib::storage::load_case;
 use serde_json::json;
 use std::path::{Path, PathBuf};
@@ -25,6 +26,11 @@ fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("cases")
+}
+
+/// `src-tauri/cases` — the case files the app itself ships with.
+fn shipped() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("cases")
 }
 
 fn the_ledger() -> Case {
@@ -122,35 +128,42 @@ fn no_statement_ever_gets_out() {
 }
 
 // ---------------------------------------------------------------------------
-// Stage 9b — the command itself.
+// Stage 9c — the folder stops being hard-coded.
 //
-// `#[tauri::command]` does not change the function it sits on; it writes a
-// second one beside it for Tauri to call. So these tests just call yours,
-// with no app, no window and no front end running.
+// `AppState` is an ordinary struct the app hands to Tauri once, at startup.
+// The command asks Tauri for it and passes the folder on. Everything below
+// tests the part that has no Tauri in it, which is where the work lives.
 // ---------------------------------------------------------------------------
 
 #[test]
-fn the_command_finds_a_real_case() {
-    // `src-tauri/cases/the-ledger.toml` — the case files the app ships with,
-    // as opposed to the fixtures the other tests read.
-    let intro = case_intro("the-ledger".to_string()).expect("the-ledger ships with the app");
+fn the_app_state_holds_the_folder_it_was_given() {
+    let state = AppState::new(fixtures());
+
+    assert_eq!(state.cases_dir, fixtures());
+}
+
+#[test]
+fn a_case_comes_back_from_the_folder_it_was_told_to_look_in() {
+    let intro = case_intro_from(&fixtures(), "the-ledger").expect("the-ledger is in the fixtures");
 
     assert_eq!(intro.title, "The Ledger");
     assert_eq!(intro.suspects.len(), 2);
 }
 
 #[test]
-fn the_other_shipped_case_loads_too() {
-    let intro = case_intro("the-lighthouse".to_string()).expect("the-lighthouse ships too");
+fn the_folder_is_the_one_passed_in_and_nothing_else() {
+    // `the-lighthouse` is in both folders; `the-ledger` only proves the first.
+    // What this pins down is that the directory argument is what decides.
+    let from_shipped = case_intro_from(&shipped(), "the-lighthouse").expect("ships with the app");
 
-    assert_eq!(intro.title, "The Lighthouse");
-    assert_eq!(intro.suspects.len(), 3);
+    assert_eq!(from_shipped.title, "The Lighthouse");
+    assert_eq!(from_shipped.suspects.len(), 3);
 }
 
 #[test]
 fn a_slug_with_no_case_behind_it_is_case_not_found() {
     assert_eq!(
-        case_intro("the-missing-hour".to_string()),
+        case_intro_from(&fixtures(), "the-missing-hour"),
         Err(AppError::CaseNotFound {
             slug: "the-missing-hour".to_string()
         })
@@ -159,11 +172,10 @@ fn a_slug_with_no_case_behind_it_is_case_not_found() {
 
 #[test]
 fn a_slug_from_the_front_end_is_still_not_a_path() {
-    // Stage 8 put this check at the door of `storage.rs`. This is the stage
-    // where the slug genuinely arrives from outside, and that check is still
-    // the only thing between a web page and the filesystem.
+    // Stage 8 put this check at the door of `storage.rs`, and it is still the
+    // only thing between a web page and the filesystem.
     assert_eq!(
-        case_intro("../cases/the-ledger".to_string()),
+        case_intro_from(&fixtures(), "../cases/the-ledger"),
         Err(AppError::CaseNotFound {
             slug: "../cases/the-ledger".to_string()
         })
@@ -174,7 +186,7 @@ fn a_slug_from_the_front_end_is_still_not_a_path() {
 fn a_failure_comes_back_as_json_too() {
     // `Err` rejects the promise on the React side, and what it catches is
     // `AppError` turned into JSON — the shape settled back in Stage 5.
-    let failure = case_intro("the-missing-hour".to_string()).expect_err("there is no such case");
+    let failure = case_intro_from(&fixtures(), "the-missing-hour").expect_err("no such case");
 
     assert_eq!(
         serde_json::to_value(failure).expect("AppError turns into JSON"),
