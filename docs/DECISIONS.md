@@ -1,11 +1,7 @@
 # DECISIONS — architecture, newest first
 
-A lookup, not a read-through. Five lines per entry: what was decided, why, what was rejected, what
-it costs. Longer reasoning belongs nowhere — if an entry needs more than five lines, the decision
-was two decisions.
-
-**Closing a decision means amending every document that states the opposite.** Grep for the rejected
-thing before you consider it recorded.
+A lookup, not a read-through. Architecture only — teaching-process changes live in `MENTOR-NOTES.md`.
+Per entry: decided / why / rejected / costs. If an entry needs more, it was two decisions.
 
 ---
 
@@ -13,8 +9,8 @@ thing before you consider it recorded.
 
 **Decided.** Stage 9's `AppState` holds one field, `cases_dir: PathBuf`, and no lock. `Mutex` and
 interior mutability move out of Phase 1 §1.5 and into **Stage 10**, arriving with `Transcript` — the
-first thing in this app that changes while it runs. Stage 9 is now 9a (the wire types) + 9b (the
-command) + 9c (`.manage()`) + 9d (`State<'_, T>`), one new thing each.
+first thing in this app that changes while it runs. Stage 9 is 9a (the wire types) + 9b (the
+command) + 9c (`.manage()` and `State<'_, T>`).
 **Why.** A lock around a value that is only ever read teaches the syntax and none of the reason, and
 the reason is the whole lesson. Sequenced this way `Mutex` shows up the first time two things want to
 change one value, which is also where `MutexGuard` not crossing `.await` starts to matter (Stage 15).
@@ -35,10 +31,8 @@ the file's vocabulary, wire types speak the screen's, and `Case` in the middle s
 **Rejected.** `Serialize` on `Case` with `#[serde(skip)]` on the facts — one forgotten attribute
 ships the solution, and the skip list grows a branch per screen. Also rejected: borrowing in the
 wire type, since what crosses must outlive the call.
-**Costs.** One small type per screen, each with a `From` and a `clone` per field. The command's
-directory is a placeholder `const CASES_DIR: &str = "cases"`; **9c owns the real one**, via
-`AppState`, and 9d hands it to the command. The shipped `cases/` directory and the command's
-success-path test arrive with 9c. *(`ipc.rs`'s doc comment says 9b; correct it in 9c.)*
+**Costs.** One small type per screen, each with a `From` and a `clone` per field. The folder was a
+placeholder `const CASES_DIR` until 9c moved it into `AppState`.
 
 ### 2026-09-12 — `storage.rs` is two free functions over a `&Path`, and the slug is checked there
 
@@ -56,35 +50,6 @@ surprises in exchange for a check a character class already makes.
 **Costs.** Slugs are ASCII-only, so a case file can never be named in another script. Acceptable:
 slugs are identifiers, and titles are already a separate field inside the file.
 
-### 2026-08-30 — The brief ceiling counts prose, not lines; and the stuck-reply gets a template
-
-**Decided.** Rule 2's ceiling is **90 lines of prose** — code blocks, blank lines and `<details>`
-tags excluded — replacing "200 lines total". Rule 3 is now a five-slot template for mid-stage help
-replies. `CLAUDE.md` carries both, plus the `Assumes:` header line and the four-rung hint ladder.
-**Why.** Measured across nine briefs: everything at or under ~90 prose lines landed
-(1, 6a–6d: 57–87); everything over 130 produced a correction (2–5: 137–235). Total line count does
-not separate them, because code volume is uncorrelated with the failures — he has asked twice for
-*more* code in place. And three of the seven corrections came from chat replies, which had no
-template at all.
-**Rejected.** Keeping a total-line ceiling and trying harder — Stage 7's brief hit 90 prose lines at
-221 total, so the old rule would have forced cutting the scaffolding and hints he asks for.
-**Costs.** One measurement step before issuing a brief. Evidence in `MENTOR-NOTES.md`; the audit that
-produced it is in `archive/2026-08-30-teaching-audit.md`.
-
-### 2026-08-30 — The doc set is pruned to what teaches
-
-**Decided.** `ROADMAP.md` loses its stale repo audit, its duplicate Phase 0 checklist and its
-superseded action list, and its six inline amendment footnotes become pointers to this file.
-`MENTOR-NOTES.md` keeps the quotes and drops the reconstructions. The failed-phrasings table moves
-to `CLAUDE.md` Rule 4. `PROGRESS.md` stops repeating the file map. 1160 → ~830 doc lines, resume
-path 600 → ~380.
-**Why.** Four files stated the same things in different words, two of them disagreeing about Phase 0.
-Every line on the resume path is read before any teaching happens.
-**Rejected.** Deleting `MENTOR-NOTES.md` outright — the verbatim quotes are the only thing that stops
-a rule being softened by a session that never saw the failure.
-**Costs.** Phase 2–5 detail is now compressed in the roadmap; it expands into the stage brief when
-reached.
-
 ### 2026-08-29 — Cases are generated structure-first, and solvability is not a parse rule
 
 **Decided.** Rust generates the case skeleton from a `Difficulty` and a seed — culprit, fact roles,
@@ -99,17 +64,6 @@ difficulty; two or three, as fixtures and quality bar.
 generator's obligation about its own output, deliberately not a fifth rule. Phase 3 grows to 10–13
 sessions. Nothing in Stages 6–9 changes.
 
-### 2026-08-29 — Hard concept budget, and the docs split into four files
-
-**Decided.** Three new concepts per stage maximum, one of them the headline; ~~a 200-line ceiling~~
-and a fixed template for briefs; `PROGRESS.md` split into `PROGRESS` / `DECISIONS` / `STAGE-LOG`; a
-concept ledger at `docs/CONCEPTS.md`. *(The line ceiling here is superseded by the 2026-08-30 entry
-above: 90 lines of prose, code excluded. The rest stands.)*
-**Why.** Briefs grew 148 → 657 lines across six stages, teaching 9–13 concepts each, *after* two
-requests to slow down. Every existing rule governed wording, none governed volume.
-**Rejected.** Keeping the "near 300 lines" guidance and trying harder — it had already failed twice.
-**Costs.** More stages, each smaller. Stage 6 becomes 6a–6d. Evidence in `MENTOR-NOTES.md`.
-
 ### 2026-08-27 — Stage 6 is case files, and it does not touch the filesystem
 
 **Decided.** TOML with `[[suspects]]` / `[[facts]]`, ids as plain integers, `known_by` a list of
@@ -121,8 +75,8 @@ earned. Ids appear on the far side of the conversion and nowhere else.
 and hands React a sentence to regex. Also rejected: reading the file here.
 **Costs.** The filesystem read moves to Stage 8 with `Io` / `CaseNotFound` and a shell-side
 `storage.rs`; tests reach the two real files with `include_str!`, so `case_file.rs` stays pure.
-`SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument.
-*(Amended 2026-09-13: 9a's command takes a slug, so that is now Stage 10, not Stage 9.)*
+`SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument —
+Stage 10, since 9's command takes a slug.
 
 ### 2026-08-25 — `AppError` holds owned, serializable data; `std::io::Error` never goes inside it
 

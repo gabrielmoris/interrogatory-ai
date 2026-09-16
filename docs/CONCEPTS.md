@@ -1,73 +1,30 @@
 # CONCEPTS — what Gabriel has been taught, and when
 
-This file is the mentor's working memory for pitch and vocabulary. It exists because
-"don't use a term he hasn't been taught" is impossible to obey without a list.
+The ledger `CLAUDE.md` Rules 1–2 read from. A concept's status sets how much explanation **and** how
+much scaffolding it gets — the fading table in Rule 2 is the only copy of that rule.
 
-## How to use it
-
-The rules for *writing* a brief live in `CLAUDE.md`, Rules 1 and 2. This file answers one question:
-for a given concept, how much explaining does it get?
-
-| Status | Means | What the brief gives it |
-|---|---|---|
-| *(absent)* | never taught | §1 in full: plain English, the TypeScript if one exists, how it actually works, and the shape in another domain — **printed in complete lines of code**, never named in prose alone. |
-| `defined` | explained once, in the stage named | §2, one line that recalls it **and says where**: "`?` returns early on an error — Stage 5 §4." |
-| `used` | applied again later without being re-taught | §2, shorter — the name and the stage number. |
-| `solid` | reached for unprompted, more than once | mention it and point at two or three places he has already used it. No explanation, no refresher. |
-| `shaky` | **he got it wrong again after a refresher** | back to the §1 treatment: reprint the earlier examples and explain it again from zero. A refresher line has already failed on this one; repeating it is the mistake. |
-
-`shaky` outranks everything else in the row. It is set at review time, from what actually went
-wrong in the stage, and it is cleared only when he uses the thing correctly without help.
-
-A Rust word that is neither in this ledger nor in the Vocabulary section below must be **defined in
-the same sentence it first appears**, or replaced with plain English.
-
-**Finishing a stage** means adding its rows here, bumping anything he used again unaided, and
-marking anything he got wrong twice. Part of the review, not bookkeeping.
-
-**How he works, so gaps are not misread as weakness.** He pushes back when he disagrees and is
-frequently right — engage the argument. He reaches for iterator chains unprompted and reads compiler
-errors rather than asking. What he does not have is Rust's machinery, and only that.
+**At review time:** add the stage's rows, bump what he used again unaided, and mark `shaky` anything
+he got wrong after it had been recalled. `shaky` clears only when he uses it correctly without help.
 
 ---
 
-## Spaced recall — the 1–2–4 schedule
+## Recall due — the 1–2–4 schedule
 
-Added 2026-09-16. Evidence in `docs/TEACHING-EVIDENCE.md` §7; the rule that consumes it is
-`CLAUDE.md` Rule 2.
-
-A concept taught in stage **N** comes back as a §1 recall question at **N+1, N+3 and N+7** — one,
-two and four stages later. At 2–4 hours a week that is roughly a week, a fortnight and a month, and
-the gaps are already there whether or not anything uses them. Counting is by position in the stage
-sequence, so 6a–6d each count as one.
-
-**Two questions per brief: one from this table, one from what the stage's task needs.** If a single
-concept satisfies both, take the second from the table as well — a question the task does not need
-is interleaving, which is the point.
-
-**He gets one wrong →** its status here drops to `shaky`, its schedule resets to N+1, and Rule 2's
-fading table puts the full worked example back in the next brief that touches it.
+Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says how to use this table.
 
 | Writing stage | Ask about |
 |---|---|
-| 9c | **Stage 8** — `&Path` vs `PathBuf` · **Stage 9b** — what makes a command reachable |
 | 10 | **Stage 9a** — a type built only to be sent · **Stage 9c** — `.manage` / `State` |
 | 11 | **Stage 9b**, second pass · **Stage 10** |
 | 12 | **Stage 9c**, second pass |
 | 13 | **Stage 8**, third pass |
 | 14 | **Stage 9a**, third pass |
 
-**Anything `shaky` is due in every brief until he gets it right twice**, whether or not the stage
-touches it. That is the gap this schedule exists to close: the guard clause has been `shaky` since
-Stage 5 and `.map_err` since 6d, and neither has come up since, because no stage since happened to
-need them. Left alone, a `shaky` row never repairs itself.
-
-**Currently `shaky`, so due every stage:**
+**`shaky` — due in every brief until he gets it right twice:**
 
 - A guard clause as the shape of a function body — Stage 5, wrong again in Stage 8.
 - `.map_err`, and that its closure *hands back* a value rather than returning one — Stage 6d, wrong
   again in Stage 8.
-
 
 ---
 
@@ -212,10 +169,6 @@ need them. Left alone, a `shaky` row never repairs itself.
 | `matches!` — "does this value fit this pattern", as a `bool` | a regex/`switch` test collapsed to one expression | used (reached for unprompted) |
 | Byte scanning (`.bytes()`) as a safe way to ask an ASCII-only question | no equivalent — JS strings decode either way | used (his choice, not the brief's) |
 
-**Stage 8: three planned, six landed.** The two that were never meant to be concepts — `read_to_string` and
-`.display()` — were the ones he got stuck on, because they were named in prose and never printed as
-code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 2026-09-13.
-
 ### Stage 9a — `CaseIntro`, the type built to be handed out ✅
 
 | Concept | TypeScript anchor | Status |
@@ -227,7 +180,6 @@ code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 20
 | An id is already a `SuspectId` by the time it is inside a `Suspect` — the conversion happened at the door | — | defined |
 | `.map(closure)` where Stage 7 used `.map(TypeName)` — named fields need a closure | — | used |
 
-
 ### Stage 9b — the command, and the list ✅
 
 | Concept | TypeScript anchor | Status |
@@ -238,7 +190,6 @@ code. That is where Rule 1's printed-line test comes from: `MENTOR-NOTES.md`, 20
 | Uniform paths — `use ipc::case_intro;` resolves a local module without `crate::` | — | used *(his choice, via rust-analyzer)* |
 | `Ok` resolves the promise on the React side, `Err` rejects it with `AppError` as JSON | `resolve` / `reject` | defined |
 | `Path::new("some text")` — a borrowed path from a string | — | used |
-
 
 ---
 
@@ -265,5 +216,3 @@ still needs the one-line refresher)*
 in Stages 10 and 11 respectively — they are those stages' headline concepts, not asides. Do not use
 either word before then, including in a roadmap pointer he might read.
 
-*(Phrasings that have already failed moved to `CLAUDE.md`, Rule 4 — they are a
-teaching rule, not a concept ledger.)*

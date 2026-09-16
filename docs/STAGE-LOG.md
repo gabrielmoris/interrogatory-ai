@@ -1,198 +1,98 @@
 # STAGE-LOG — one entry per finished stage
 
-Five lines each: what he built, how it went, where he got stuck, what to do differently. Teaching
-lessons that generalise go to `MENTOR-NOTES.md` and become rules in `CLAUDE.md`; they are not
-repeated here.
-
-Concepts land in `CONCEPTS.md` at review time. That is part of the review.
+A lookup. What he built, where he got stuck, what to do differently. Lessons that became rules are in
+`MENTOR-NOTES.md`; open tidy-ups are in `PROGRESS.md`. Neither is repeated here.
 
 ---
 
 ### Stage 1 — `Difficulty` and `Tuning` ✅ 2026-08-21
 
-**Built.** `src/difficulty.rs`: four-variant enum, `Tuning` payload struct, `Difficulty::ALL`
-associated constant, `tuning()`. Spec `tests/difficulty.rs`, 7 tests.
-**Headline concept.** `E0507 cannot move out of *d which is behind a shared reference` — move
-semantics, and why `Difficulty` should be `Copy` while `Tuning` should not.
-**Hints reached.** Got to the `impl` skeleton with guidance; needed the array-literal correction
-(wrote TS object-literal syntax `Easy: "easy"` inside `[...]`).
-**Outcome.** Pass, with a polish pass requested: derives on `Tuning`, `Self` inside the `impl`, doc
-comments on public items.
+**Built.** `src/difficulty.rs`: four-variant enum, `Tuning`, `Difficulty::ALL`, `tuning()`. Spec
+`tests/difficulty.rs`, 7 tests. **Headline:** moves and `Copy` (`E0507`).
+**Stuck.** Wrote TS object-literal syntax `Easy: "easy"` inside an array. Pass after a polish pass
+(derives on `Tuning`, `Self` in the `impl`, doc comments).
 
 ### Stage 2 — `SuspectId` and `FactId` ✅ 2026-08-22
 
-**Built.** `src/ids.rs`: two tuple structs wrapping a private `u32`, `new` / `get`, eight derives,
-hand-written `Display` and `From<u32>`. Spec `tests/ids.rs`, 10 tests.
-**Headline concept.** The newtype pattern, and derive vs hand-written `impl` — why std ships no
-`derive(Display)`.
-**Hints reached.** Needed the concepts unpacked in chat rather than through the `<details>` hints.
-Wrote all four impl blocks himself.
-**Outcome.** Pass, 10/10, clippy and fmt clean. Notable: his first `Display` compiled and printed
-`"3 suspect #"` — the compiler had nothing to say, the test caught it. Good landing for
-shapes-vs-behaviour.
+**Built.** `src/ids.rs`: two tuple structs over a private `u32`, `new` / `get`, eight derives,
+hand-written `Display` and `From<u32>`. Spec `tests/ids.rs`, 10/10. **Headline:** the newtype pattern.
+**Stuck.** Needed the concepts unpacked in chat rather than through hints. His first `Display`
+compiled and printed `"3 suspect #"` — the test caught what the compiler could not.
 
 ### Stage 3 — `Fact`, `Suspect` and `Case` ✅ 2026-08-23
 
-**Built.** `src/case.rs`: `Suspect`, `Fact` with a `HashSet<SuspectId>` `known_by` and
-`reveal_to` / `is_known_by`, `Case` with private collections and `facts_known_by`. Spec
-`tests/case.rs`, 9 tests.
-**Headline concept.** `String` vs `&str` — structs own, parameters borrow, the constructor converts.
-**Hints reached.** Needed the full signature skeleton handed over after failing to derive signatures
-from the test's call sites — the correction that made skeletons standard from Stage 4 on. Wrote every
-body himself and reached for the iterator chain in `facts_known_by` unprompted.
-**Outcome.** Pass, 9/9, clippy and fmt clean. Doc comments now say what the type _means_; the polish
-note open since Stage 1 closed here. Notable: with `!` missing from the ground-truth condition **both**
-visibility tests failed in opposite directions — every case inverted rather than some cases wrong is
-the tell for a missing negation.
+**Built.** `src/case.rs`: `Suspect`, `Fact` with `HashSet<SuspectId>` `known_by`, `Case` with private
+collections. Spec `tests/case.rs`, 9/9. **Headline:** `String` vs `&str`.
+**Stuck.** Could not derive signatures from the test's call sites → skeletons are standard from Stage 4.
+Reached for the iterator chain unprompted. A missing `!` inverted both visibility tests at once — the
+tell for a missing negation.
 
 ### Stage 4 — borrowing, `Option<&T>` and lifetimes ✅ 2026-08-24
 
-**Built.** In `src/case.rs`: `suspect`, `fact_mut`, `suspect_facts -> impl Iterator<Item = &Fact>`,
-and free `longer_statement<'a>`. Spec `tests/borrowing.rs`, 12 tests.
-**Headline concept.** Lifetimes as a named region relating inputs to outputs, not a duration.
-**Rules that worked.** No `clone()` — cloning out of a borrow error is the habit the stage exists to
-prevent. Three errors reproduced before issuing: `E0502`, `E0106`, `E0373`.
-**Hints reached.** None. Hit `E0373` and read it rather than asking.
-**Outcome.** Pass on the second round. First submission 7/12 with two bugs, and he had not run the
-suite before saying he was done — told directly to run it before declaring. Second submission 12/12,
-clean.
+**Built.** `suspect`, `fact_mut`, `suspect_facts -> impl Iterator<Item = &Fact>`, free
+`longer_statement<'a>`. Spec `tests/borrowing.rs`, 12/12. **Headline:** lifetimes as regions.
+**Stuck.** No hints needed; read `E0373` himself. First submission 7/12 without having run the suite —
+told to run it before declaring done.
 
 ### Stage 5 — `AppError`, `thiserror` and `Result` ✅ 2026-08-25
 
-**Built.** New `src/error.rs`: `AppError` with seven named-field variants, `pub type AppResult<T>`,
-`Serialize` on both id newtypes; plus `require_suspect`, `require_fact_mut`, `reveal` on `Case`.
-Spec `tests/errors.rs`, 14 tests.
-**Headline concept.** `Result` as `Option` with a reason attached, and `?` as early return.
-**Where he got stuck.** Two places, both mentor defects — `self.require_suspect(to)?;` as a line that
-stores nothing, and where `#[serde(tag = ...)]` physically goes. Full account in `MENTOR-NOTES.md`.
-**Outcome.** Pass, first submission. 14/14 and all 52 tests across five files still green. Wrote every
-body himself; solved the quoted-slug message with a raw string rather than the `{slug:?}` the hint
-suggested.
-**Open polish.** The three new `Case` methods and both items in `error.rs` still have no doc comments,
-while everything else public in `case.rs` does. Raise once, as tidying, not as a rule.
+**Built.** `src/error.rs`: `AppError` (named-field variants), `AppResult<T>`, `Serialize` on the ids;
+`require_suspect`, `require_fact_mut`, `reveal` on `Case`. Spec `tests/errors.rs`, 14/14; 52 total.
+**Stuck.** Two mentor defects: `require_suspect(to)?;` as a line that stores nothing, and where
+`#[serde(tag = ...)]` goes. Pass on first submission.
 
-### Stage 6 — case files — **withdrawn and re-cut 2026-08-29**
-
-Issued 2026-08-27 as a single 657-line brief teaching ten new concepts. Withdrawn and re-cut into
-four stages, each inside the concept budget and each ending green. The old 16-test
-`tests/case_file.rs` is in `archive/`. Reasoning in `DECISIONS.md`, 2026-08-29.
+### Stage 6 — withdrawn 2026-08-29, re-cut into 6a–6d (657 lines, ten concepts in one brief).
 
 ### Stage 6a — `RawCase` and `Deserialize` ✅ 2026-08-29
 
-**Built.** `src/case_file.rs`: `RawCase`, `RawSuspect`, `RawFact`, `#[derive(Debug, Deserialize)]`,
-`#[serde(default)]` on `known_by` and `is_ground_truth_only`. Spec `tests/case_raw.rs`, 6 tests.
-**Headline concept.** `Deserialize` — text in, Rust value out; raw types speak the file's vocabulary.
-**Outcome.** Pass, first submission, 6/6. Written ahead of the brief, unprompted and correct.
-**One note given.** `#[serde(default)]` also sits on `RawCase::facts` while `suspects` is required;
-both are the same kind of thing and both should be required. Cosmetic — no test changes, because
-6c's "every suspect has something to say" catches an empty file anyway. **Still open.**
+**Built.** `RawCase`, `RawSuspect`, `RawFact` with `#[serde(default)]`. Spec `tests/case_raw.rs`, 6/6.
+Written ahead of the brief, unprompted and correct.
 
-### Stage 6b — `TryFrom` and the one road ✅ 2026-08-29
+### Stage 6b — `TryFrom` ✅ 2026-08-29
 
-**Built.** The `try_from` body: two loops, an inner loop revealing each `known_by` id, the
-ground-truth flag carried across. Spec `tests/case_convert.rs`, 6 tests. 6/6.
-**Headline concept.** `TryFrom` and its associated type.
-**Where he got stuck.** Two places, one step each: the empty loop body, and
-`SuspectId::new(raw_known_by)` on a `&u32` — _"this is bringing me some headache."_ `*` had never
-been taught; `&` was introduced in Stage 4 and its other half was not. **Produced the `Assumes:`
-line in Rule 1.**
-**Do differently.** He wrote `for x in &raw.suspects` unprompted, so the brief's planned `E0382`
-never fired. Move that error to a stage where it is unavoidable, or drop it.
+**Built.** The `try_from` body: two loops, `known_by` revealed, ground-truth flag carried. Spec
+`tests/case_convert.rs`, 6/6.
+**Stuck.** The empty loop body, and `SuspectId::new` on a `&u32` — `*` had never been taught. He wrote
+`for x in &raw.suspects` unprompted, so the planned `E0382` never fired.
 
 ### Stage 6c — the four checks ✅ 2026-08-29
 
-**Built.** All four checks inside `try_from`: duplicate suspect, duplicate fact, `require_suspect?`
-on every `known_by` entry, and a third loop asking `suspect_facts(id).next().is_none()`. Spec
-`tests/case_checks.rs`, 8 tests. 8/8.
-**Headline concept.** Validation at the boundary — one place, and after it a `Case` is proof.
-**One note given, taken.** His duplicate-fact check first used `require_fact_mut(..).is_ok()`,
-building and discarding an `AppError` per non-duplicate fact. Swapped to `fact_mut(..).is_some()`
-after one explanation: **`Option` when absence is a normal answer, `Result` when it is a failure.**
-Check 3 is the same rule pointing the other way, which made a clean pair.
-**Do differently.** He asked twice _which function_ the work went in. Name `file.rs :: function()`,
-never "inside your suspects loop". Two mentor defects (guessed checkpoints, correction seven) are in
-`MENTOR-NOTES.md`.
+**Built.** All four checks in `try_from`. Spec `tests/case_checks.rs`, 8/8.
+**Stuck.** Asked twice *which function* the work went in. Swapped `require_fact_mut(..).is_ok()` for
+`fact_mut(..).is_some()` after one note: `Option` when absence is normal, `Result` when it is a failure.
 
 ### Stage 6d — the front door ✅ 2026-08-30
 
-**Built.** `parse_case`: `toml::from_str` with `.map_err` into `AppError::Parse { path, message }`,
-then `raw.try_into()` as the last line. Spec `tests/case_parse.rs`, 4 tests. 4/4.
-**Headline concept.** `?` calls `From::from` on the error on its way out — invisible in Stage 5
-because both sides were `AppError`, and `E0277` the moment they differ.
-**Outcome.** Pass, first submission. **76 tests across eight files green, `fmt` and
-`clippy -D warnings` clean. Stage 6 and Phase 1 §1.3 closed.** He wrote `.map_err` in the right
-place — wrapping only the parser's failure, not the whole function, which is the mistake hint 4
-existed to catch.
-**Do differently.** Nothing on the teaching side. One cosmetic note carried forward: the `parse_case`
-doc comment reads "but it it fails", and `RawCase`'s is "Raw case" where the other public items say
-what the type _means_.
+**Built.** `parse_case`: `toml::from_str` + `.map_err` into `AppError::Parse`, then `raw.try_into()`.
+Spec `tests/case_parse.rs`, 4/4; 76 total. Pass on first submission; `.map_err` wrapped only the
+parser's failure, which is the mistake hint 4 existed to catch.
 
 ### Stage 7 — `VisibleFact<'a>` ✅ 2026-09-01
 
-**Built.** In `src/case.rs`: `VisibleFact<'a>`, a tuple struct over `&'a Fact` with a private field,
-`id()` and `statement() -> &'a str`, `Case::visible_to`, and free `visible_statements`. Spec
-`tests/visible_fact.rs`, 9 tests. 9/9.
-**Headline concept.** A struct that holds a borrow — the lifetime parameter on the _type_, not only
-on a function signature.
-**Outcome.** Pass, first submission, no questions asked mid-stage. He wrote `.map(VisibleFact)`
-point-free, so the `clippy::redundant_closure` lint the brief was built around never fired — the
-second stage running whose planned error did not happen. Sources re-checked at Stage 8 issue time:
-`fmt` and `clippy --all-targets -D warnings` clean.
-**Do differently.** He committed and asked for Stage 8 without saying "ready", so the review and the
-ledger update ran a stage late. Check `git log` before issuing rather than waiting for the word.
-
-### Stage 9b — a function React can call ✅ 2026-09-15
-
-**Built.** `case_intro`'s body — `load_case(Path::new(CASES_DIR), &slug)?` then
-`Ok(CaseIntro::from(&case))` — and the command on the handler list in `lib.rs`. Spec
-`tests/commands.rs`, now 11 tests. **105 tests across twelve files green, `fmt` and
-`clippy -D warnings` clean.**
-**Headline concept.** `#[tauri::command]` plus the list, as two halves of one idea: marked but
-unlisted is unreachable, silently.
-**Where he got stuck.** One place, one message: `generate_handler![case_intro]` with no path.
-`pub mod ipc;` declares the module without bringing its items into `lib.rs`. He took
-rust-analyzer's suggestion — `use ipc::case_intro;` — rather than the path form the brief
-recommended. Both compile; his is fine.
-**Outcome.** Pass. First stage since 7 to land in one sitting with one question. His verdict on the
-re-cut format: _"This way works for me, I learned."_
-**Do differently.** He also deleted `greet` while he was in there, and `App.tsx` still calls it — so
-the template UI now rejects with "command not found". Not a defect, and a good accidental
-demonstration of the stage's own point, but the brief should have said what else touches a command
-before inviting him to remove one.
-
-### Stage 9a — the box the screen gets ✅ 2026-09-14
-
-**Built.** New `src/ipc.rs`: `SuspectSummary`, `CaseIntro`, both deriving `Serialize`, and
-`impl From<&Case> for CaseIntro`. Plus `Case::suspects()` in `case.rs` and `pub mod ipc;`. Spec
-`tests/commands.rs`, 6 tests. 6/6; **100 tests across twelve files green, `fmt` clean.**
-**Headline concept.** A second, smaller type built only to be handed out — and `Case` having no
-`Serialize` as the thing that makes a leak impossible rather than merely unlikely.
-**Where he got stuck.** All of it, and twice it was the brief rather than the code — corrections 10
-and 11, `MENTOR-NOTES.md`, 2026-09-14. The stage was issued three files wide and had to be cut down
-mid-flight, then cut again to one topic. He ended at _"no idea, dude"_ on the conversion.
-**In the code itself, two real slips, each fixed in one message.** He wrote `{id: …, name: …}` with
-no struct name — the TypeScript reflex, same one as Stage 1's array literal. And
-`SuspectId::new(suspect.id)`, wrapping an id that `case_file.rs` had already converted at the door.
-**Outcome.** Pass. Offered the loop-and-push version as an escape hatch; he went back to the
-`.map().collect()` chain and landed it himself, `cargo fmt` layout and all.
-**Do differently.** When one line takes four exchanges, the line is not the problem — stop
-correcting it token by token and change the medium. What finally worked was naming both defects flat
-out, with the why, when he asked for exactly that. Leftover: an unused `Suspect` import in `ipc.rs`,
-handed to 9b as a tidy-up.
+**Built.** `VisibleFact<'a>` over `&'a Fact`, `id()`, `statement() -> &'a str`, `Case::visible_to`,
+`visible_statements`. Spec `tests/visible_fact.rs`, 9/9. No questions mid-stage.
+**Do differently.** He wrote `.map(VisibleFact)` point-free, so the planned clippy lint never fired.
+He committed without saying "ready" — check `git log` rather than waiting for the word.
 
 ### Stage 8 — `storage.rs`, the first shell module ✅ 2026-09-13
 
-**Built.** New `src/storage.rs`: `case_path`, a private `is_slug`, and `load_case` — slug guard, the
-read, and the `ErrorKind::NotFound` split — plus one line in `lib.rs`. Spec `tests/storage.rs`,
-9 tests. 9/9; 94 tests across ten files green, `fmt` and `clippy -D warnings` clean.
-**Headline concept.** `Path` / `PathBuf`, and telling one kind of read failure from all the others.
-**Where he got stuck.** Step 4, six exchanges, ending in _"ok, I am L O S T"_. Three mentor defects
-of one shape: `fs::read_to_string`, `.display()` and a value-returning `map_err` closure were named
-in prose, never printed as code, then asked for in a single step. Account in `MENTOR-NOTES.md`,
-2026-09-13; it produced Rule 1's printed-line test, Rule 2's rung-4 constraint and Rule 3's no-paste
-bullet.
-**Outcome.** Once the body was reset to four straight-line steps he wrote the rest himself, including
-the empty-name hole in `is_slug` (`.all()` on nothing is `true`) and the whole of step 5.
-**Do differently.** He diagnosed the defect before I did — _"the two more lines are not mine because I
-suspect they have steps I have never touched"_ — and was right. When he says a step contains
-something untaught, check the brief before answering the error.
+**Built.** `case_path`, private `is_slug`, `load_case` with the `ErrorKind::NotFound` split. Spec
+`tests/storage.rs`, 9/9; 94 total.
+**Stuck.** Step 4, six exchanges, ending in *"ok, I am L O S T"* — three calls named in prose, never
+printed, asked for in one step. Once reset to four straight-line steps he wrote the rest himself.
+
+### Stage 9a — the box the screen gets ✅ 2026-09-14
+
+**Built.** `src/ipc.rs`: `SuspectSummary`, `CaseIntro`, both `Serialize`, `impl From<&Case> for
+CaseIntro`; `Case::suspects()`. Spec `tests/commands.rs`, 6/6; 100 total.
+**Stuck.** All of it — the brief was three files wide and was cut twice mid-flight. Two real slips:
+a struct literal with no struct name, and re-wrapping an id already converted at the door.
+**Do differently.** When one line takes four exchanges, stop correcting it token by token.
+
+### Stage 9b — a function React can call ✅ 2026-09-15
+
+**Built.** `case_intro`'s body and its place on the handler list. Spec `tests/commands.rs`, 11/11;
+105 total. First stage since 7 to land in one sitting. His verdict: *"This way works for me, I learned."*
+**Stuck.** Once: `generate_handler![case_intro]` with no path; took rust-analyzer's `use` suggestion.
+**Do differently.** He deleted `greet` while `App.tsx` still called it — say what else touches a
+command before inviting him to remove one.

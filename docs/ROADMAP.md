@@ -4,12 +4,8 @@
 **Target:** Windows + NVIDIA GPU, 8 GB+ VRAM. Android is Phase 2.5.
 **Inference:** `llama-cpp-2` in-process, CUDA offload — `adr/ADR-0001-cross-platform-inference.md`.
 
-The live queue is the stage table in `PROGRESS.md`. This file is the **plan**; `DECISIONS.md` is the
-**why**. When they overlap, this file carries a pointer and nothing more.
-
-*(Phase 0 is finished; its leftovers live in `PROGRESS.md`. §0 "current state", the Phase 0
-checklist and "next three actions" were removed 2026-08-30 — `archive/2026-08-30-roadmap-stale-
-sections.md`.)*
+The next one or two stages live in `PROGRESS.md`; the later queue is here. This file is the
+**plan**; `DECISIONS.md` is the **why**. When they overlap, this file carries a pointer only.
 
 ---
 
@@ -45,7 +41,7 @@ src-tauri/src/
   generator.rs      seeded case skeletons + is_solvable     Stage 22
   # ---- shell: allowed Tauri, tokio, the filesystem ----
   storage.rs        reads case files from disk              Stage 8
-  state.rs          AppState, managed via tauri::State      Stages 9c–9d
+  state.rs          AppState, managed via tauri::State      Stage 9c
   session/          stateful interrogation orchestration
   llm/              trait InferenceEngine · llama.rs · mock.rs (build mock FIRST)
   ipc.rs            wire types (9a) + #[tauri::command] wrappers (9b)
@@ -57,8 +53,7 @@ src-tauri/src/
 - A domain module that needs `tauri`, `tokio` or `std::fs` means the boundary has leaked. Fix the
   boundary, not the import.
 - `ipc` functions deserialize, delegate, map errors. Nothing else.
-- No `unwrap()` / `expect()` in domain modules. `main.rs`, `lib.rs` wiring and tests are exempt.
-- Every stage ends on `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, commit.
+- The rest of the code conventions: `CLAUDE.md`.
 
 ---
 
@@ -76,8 +71,7 @@ traits, `TryFrom`, the IPC boundary, interior mutability.
 - **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
   Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
 - **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); the screen-shaped wire types (9a);
-  `#[tauri::command]` and the handler list (9b); `AppState` and `.manage()` (9c); `State<'_, T>` as
-  a command parameter (9d). **No lock here** — `AppState` is read-only until Stage 10.
+  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10.
   `DECISIONS.md`, 2026-09-13 and 2026-09-14.
 - **1.6 Transcript and phase** — `enum Phase { Intro, Interrogating { turns }, Reporting, Scored }`.
   Illegal transitions unrepresentable. **Also where `Mutex` lands**, because the transcript is the
@@ -93,6 +87,20 @@ compile, all domain logic tested without launching Tauri.
 
 `async`/`await`, the tokio runtime, `Send`/`Sync`, `Arc`, channels, `spawn_blocking`, cancellation,
 FFI lifetimes.
+
+| # | Stage | Headline concept | Est |
+|---|---|---|---|
+| 11 | `trait InferenceEngine` + `MockEngine` | trait objects vs generics | 55 |
+| 12 | the first `async fn` | a future does nothing until polled | 45 |
+| 13 | where blocking work goes | blocking work must leave the runtime | 50 |
+| 14 | channels | an `mpsc` pipe moves ownership | 50 |
+| 15 | sharing across threads | `Arc<Mutex<T>>`, and why a std guard cannot cross `.await` | 55 |
+| 16 | streaming to React | Tauri events with a typed payload | 45 |
+| 17 | cancellation | `select!` and cooperative cancellation | 55 |
+| 18 | **toolchain session** — `llama-cpp-2` on Windows/CUDA | **zero new concepts. Environment only.** | 2 h |
+| 19 | owning the model | one thread owns the FFI handle | 60 |
+
+Each of these still has to pass Rule 1 (one new thing) before it is issued; several will split.
 
 - **2.1 The engine trait, mock first** — `trait InferenceEngine`, `MockEngine` with canned
   deterministic lines. Unblocks Phases 3–4 and keeps the suite fast forever. Stage 11.
@@ -119,6 +127,13 @@ FFI lifetimes.
 `MockEngine` still passes the same tests.
 
 ## Phase 3 — Case engine, gating & scoring — Stages 20–23
+
+| # | Stage | Headline concept | Est |
+|---|---|---|---|
+| 20 | `build_prompt` | prompts are code — snapshot tests | 55 |
+| 21 | tier-1 scoring | pure functions over ids, reproducible | 55 |
+| 22 | the generator skeleton | determinism from a seed | 60 |
+| 23 | grammar-constrained output | constraining a model at decode time | 55 |
 
 - **3.1 Prompt assembly** — `build_prompt(...) -> Prompt` in `prompt.rs`, pure and synchronous,
   snapshot-tested with `insta`. Prompts are code; regressions in them are bugs and must show in a
