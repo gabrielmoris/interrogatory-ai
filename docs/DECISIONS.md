@@ -5,10 +5,26 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-17 — Stage 10 is five stages, and `Phase` keeps its data inside one variant
+
+**Decided.** `transcript.rs` holds `Speaker { Detective, Suspect }`, `Turn { speaker, text }` and
+`Phase { Briefing, Interrogating { suspect: SuspectId, turns: Vec<Turn> }, Reporting }`. A wrong
+transition is `AppError::InvalidState` (already in `error.rs`) at run time. Split: 10a read the data
+out, 10b move between phases, 10c record a line, 10d the lock, 10e React starts an interrogation.
+**Why.** "A suspect during the briefing" cannot be built, so illegal *states* do not compile. Illegal
+*transitions* cannot be compile errors while the phase is one value behind one lock across IPC calls.
+The suspect sits in the phase because Phase 1 plays one suspect per case; per-suspect sessions are §3.3.
+**Rejected.** Typestate structs with consuming transitions — they cannot live in one `Mutex` field
+without an enum around them anyway, and moving out of a lock guard needs `mem::replace`. A
+`Transcript(Vec<Turn>)` newtype and a `Scored` variant — no behaviour or data for either until §2.7
+and Stage 21. `Speaker::Suspect(SuspectId)` — the phase already knows who is in the room.
+**Costs.** No way back from the room to the briefing until §3.3. `Reporting` holds nothing until Stage 21.
+Phase 1's exit criterion reworded. 10d and 10e are counted against Rule 1 again before issuing.
+
 ### 2026-09-14 — `AppState` starts immutable, and the lock waits for Stage 10
 
 **Decided.** Stage 9's `AppState` holds one field, `cases_dir: PathBuf`, and no lock. `Mutex` and
-interior mutability move out of Phase 1 §1.5 and into **Stage 10**, arriving with `Transcript` — the
+interior mutability move out of Phase 1 §1.5 and into **Stage 10d**, arriving with `Phase` — the
 first thing in this app that changes while it runs. Stage 9 is 9a (the wire types) + 9b (the
 command) + 9c (`.manage()` and `State<'_, T>`).
 **Why.** A lock around a value that is only ever read teaches the syntax and none of the reason, and
@@ -76,7 +92,7 @@ and hands React a sentence to regex. Also rejected: reading the file here.
 **Costs.** The filesystem read moves to Stage 8 with `Io` / `CaseNotFound` and a shell-side
 `storage.rs`; tests reach the two real files with `include_str!`, so `case_file.rs` stays pure.
 `SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument —
-Stage 10, since 9's command takes a slug.
+Stage 10e, since 9's command takes a slug.
 
 ### 2026-08-25 — `AppError` holds owned, serializable data; `std::io::Error` never goes inside it
 

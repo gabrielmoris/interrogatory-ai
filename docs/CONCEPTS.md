@@ -14,7 +14,7 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 
 | Writing stage | Ask about |
 |---|---|
-| 10 | **Stage 9a** — a type built only to be sent · **Stage 9c** — `.manage` / `State` |
+| 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a)* · **Stage 9a** — a type built only to be sent *(ask in 10b)* |
 | 11 | **Stage 9b**, second pass · **Stage 10** |
 | 12 | **Stage 9c**, second pass |
 | 13 | **Stage 8**, third pass |
@@ -191,6 +191,16 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 | `Ok` resolves the promise on the React side, `Err` rejects it with `AppError` as JSON | `resolve` / `reject` | defined |
 | `Path::new("some text")` — a borrowed path from a string | — | used |
 
+### Stage 9c — the app holds the case folder ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`.manage(value)`** — hand the app one value at startup, to hold for as long as it runs | a context provider at the top of the tree | defined |
+| **`State<'_, T>`** — a command asks for that value in its parameter list, matched by *type*, not name | `useContext(…)` | defined |
+| Nothing checks that `.manage` happened — a missing one fails when the command is called, not at compile time | — | defined |
+| A command split in two: a plain `_from` function tests call, and a one-line `#[tauri::command]` wrapper | a route handler delegating to a service function | defined |
+| `PathBuf::from("some text")` — an owned path from a string | — | defined |
+
 ---
 
 ## Vocabulary
@@ -213,6 +223,6 @@ interior mutability · zero-cost abstraction · trait object · blanket impl *(n
 still needs the one-line refresher)*
 
 **Due next, so plan the sentence now:** *interior mutability* and *trait object* come off this list
-in Stages 10 and 11 respectively — they are those stages' headline concepts, not asides. Do not use
+in Stages 10d and 11 respectively — they are those stages' headline concepts, not asides. Do not use
 either word before then, including in a roadmap pointer he might read.
 

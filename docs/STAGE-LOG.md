@@ -96,3 +96,12 @@ a struct literal with no struct name, and re-wrapping an id already converted at
 **Stuck.** Once: `generate_handler![case_intro]` with no path; took rust-analyzer's `use` suggestion.
 **Do differently.** He deleted `greet` while `App.tsx` still called it — say what else touches a
 command before inviting him to remove one.
+
+### Stage 9c — the app holds the case folder ✅ 2026-09-17
+
+**Built.** `src/state.rs`: `AppState { cases_dir }` and `new`; the 9b body moved into
+`case_intro_from(&Path, &str)`; the command down to one line; `.manage(AppState::new(PathBuf::from("cases")))`.
+Spec `tests/commands.rs`, 12/12; 106 total across twelve files. `fmt` and `clippy -D warnings` clean.
+**Stuck.** On the brief, not the Rust — reissued mid-stage after corrections 12–14 (a `todo!()` over
+code he had already written, a hidden one-field struct, a hole whose answer was sixty lines away).
+**Do differently.** Neither `case_intro_from` nor `case_intro` has a doc comment; the depot's did. Tidying.

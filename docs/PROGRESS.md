@@ -5,23 +5,30 @@ Last updated: 2026-09-17.
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last reviewed | **Stage 9b**, 2026-09-15. 11/11; 105 tests across twelve files, `fmt` and `clippy -D warnings` clean. |
-| Submitted | **Stage 9c** — committed `c49dcaf` ("finish 9c"), **not yet reviewed**. |
-| Next action | **Mentor's.** Review 9c, update `CONCEPTS.md` / `STAGE-LOG.md` / this file. Then split Stage 10 and issue its first half. |
+| Last reviewed | **Stage 9c**, 2026-09-17. 12/12; 106 tests across twelve files, `fmt` and `clippy -D warnings` clean. |
+| Issued | **Stage 10a** — `docs/stages/stage-10a-where-the-player-is.md`, spec `tests/phase.rs` (6 tests, measured). |
+| Next action | **His.** Stage 10a. Then mentor: review it, write 10b into `tests/phase.rs`. |
 | Blocked on | nothing |
 
 ## Stage queue
 
-Stages 1–9b ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`.
+Stages 1–9c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 9c | the app holds the case folder | `.manage()` and `State<'_, T>` — two halves of one idea | 25 |
-| 10 | `Transcript` and `Phase` | a state machine as an enum with data, **and the lock** — two things, split before issuing | 50+ |
+| 10a | where the player is | data inside one variant, and the `match` arm that takes it out · recall `*` | 25 |
+| 10b | moving between phases | replacing the whole value behind `&mut self` (`*self = …`) · recall guard clause *(shaky)* | 25 |
+| 10c | recording a line | a `match` on `&mut self` hands out `&mut` to the data inside · recall `Vec::push` | 25 |
+| 10d | the app holds the phase | `Mutex` — changing a value the app shares · recall `.map_err` *(shaky)*. Decide the poisoned-lock variant before writing. | 30 |
+| 10e | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
+
+10d and 10e: re-count against Rule 1 before issuing — either may split.
 
 ## Open, not blocking
 
-- [ ] Doc comments: the three Stage 5 `Case` methods and both items in `error.rs` have none.
+- [ ] Rule 4a: all three habits asked once, in 10a (§4 rule 3, rule 5, §5 opening line). Do not ask again.
+- [ ] Doc comments: `ipc.rs :: case_intro_from` / `case_intro` (9c), the three Stage 5 `Case` methods
+      and both items in `error.rs` have none.
       `parse_case`'s says "but it it fails"; `RawCase`'s says only "Raw case". Tidying.
 - [ ] `#[serde(default)]` on `RawCase::facts` should come off — `suspects` is required and both are
       the same kind of thing. Changes no test.

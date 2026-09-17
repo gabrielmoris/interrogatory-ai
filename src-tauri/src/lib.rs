@@ -10,6 +10,7 @@ pub mod ids;
 pub mod ipc;
 pub mod state;
 pub mod storage;
+pub mod transcript;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

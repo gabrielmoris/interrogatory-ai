@@ -35,7 +35,7 @@ src-tauri/src/
   case.rs           Case, Suspect, Fact                     Stages 3–4, 7
   error.rs          AppError (thiserror) + Serialize        Stage 5
   case_file.rs      RawCase -> TryFrom -> Case              Stage 6
-  transcript.rs     Turn, Speaker, Transcript, Phase        Stage 10
+  transcript.rs     Speaker, Turn, Phase                    Stages 10a–10c
   prompt.rs         deterministic String assembly           Stage 20
   scoring.rs        Report, Verdict, ScoreBreakdown         Stage 21
   generator.rs      seeded case skeletons + is_solvable     Stage 22
@@ -71,17 +71,18 @@ traits, `TryFrom`, the IPC boundary, interior mutability.
 - **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
   Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
 - **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); the screen-shaped wire types (9a);
-  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10.
+  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10d.
   `DECISIONS.md`, 2026-09-13 and 2026-09-14.
-- **1.6 Transcript and phase** — `enum Phase { Intro, Interrogating { turns }, Reporting, Scored }`.
-  Illegal transitions unrepresentable. **Also where `Mutex` lands**, because the transcript is the
-  first thing that changes while the app runs. Two topics: split before issuing. Stage 10.
+- **1.6 Transcript and phase** — `enum Phase { Briefing, Interrogating { suspect, turns }, Reporting }`.
+  The suspect and the lines exist only inside `Interrogating`, so illegal states do not compile; a
+  wrong transition is `InvalidState`. **`Mutex` lands in 10d**, because the phase is the first thing
+  that changes while the app runs. Stages 10a–10e — queue in `PROGRESS.md`, `DECISIONS.md` 2026-09-17.
 
 **Concept to internalize before Phase 2:** `std::sync::MutexGuard` is not `Send` across `.await`.
-Stage 15 makes you feel it; Stage 10 is where the habit forms.
+Stage 15 makes you feel it; Stage 10d is where the habit forms.
 
-**Exit:** a case loads from disk, one command returns it to React, illegal phase transitions do not
-compile, all domain logic tested without launching Tauri.
+**Exit:** a case loads from disk, one command returns it to React, a phase that holds data it
+should not have does not compile, a wrong transition is an `InvalidState` error, all domain logic tested without launching Tauri.
 
 ## Phase 2 — Async Rust & local LLM — Stages 11–19 *(the hard phase)*
 
