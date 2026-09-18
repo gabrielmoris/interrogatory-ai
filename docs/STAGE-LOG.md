@@ -105,3 +105,13 @@ Spec `tests/commands.rs`, 12/12; 106 total across twelve files. `fmt` and `clipp
 **Stuck.** On the brief, not the Rust — reissued mid-stage after corrections 12–14 (a `todo!()` over
 code he had already written, a hidden one-field struct, a hole whose answer was sixty lines away).
 **Do differently.** Neither `case_intro_from` nor `case_intro` has a doc comment; the depot's did. Tidying.
+
+### Stage 10a — where the player is ✅ 2026-09-17
+
+**Built.** `src/transcript.rs`: `Speaker`, `Turn`, `Phase { Briefing, Interrogating { suspect, turns },
+Reporting }`, with `suspect()` and `turn_count()`. Spec `tests/phase.rs`, 6/6; 112 total across
+thirteen files. `fmt` and `clippy -D warnings` clean. Committed `780d337`.
+**Stuck.** Nothing. Pass on first submission, both arms right including `Some(*suspect)` — the `*`
+recalled from 6b without help. Written in the same sitting the brief was issued.
+**Do differently.** Rule 4a's commit-sentence habit was asked once, in §4; the message came out
+generated as usual. Asked once — do not ask again.

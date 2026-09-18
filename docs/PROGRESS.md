@@ -5,19 +5,18 @@ Last updated: 2026-09-17.
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last reviewed | **Stage 9c**, 2026-09-17. 12/12; 106 tests across twelve files, `fmt` and `clippy -D warnings` clean. |
-| Issued | **Stage 10a** — `docs/stages/stage-10a-where-the-player-is.md`, spec `tests/phase.rs` (6 tests, measured). |
-| Next action | **His.** Stage 10a. Then mentor: review it, write 10b into `tests/phase.rs`. |
+| Last reviewed | **Stage 10a**, 2026-09-17. 6/6, first submission; 112 tests across thirteen files, `fmt` and `clippy -D warnings` clean. |
+| Issued | **Stage 10b** — `docs/stages/stage-10b-moving-between-phases.md`, spec `tests/phase_moves.rs` (7 tests, measured). |
+| Next action | **His.** Stage 10b. Then mentor: review it, write 10c. |
 | Blocked on | nothing |
 
 ## Stage queue
 
-Stages 1–9c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–10a ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 10a | where the player is | data inside one variant, and the `match` arm that takes it out · recall `*` | 25 |
-| 10b | moving between phases | replacing the whole value behind `&mut self` (`*self = …`) · recall guard clause *(shaky)* | 25 |
+| 10b | moving between phases *(issued)* | replacing the whole value behind `&mut self` (`*self = …`) · recall guard clause *(shaky)* | 25 |
 | 10c | recording a line | a `match` on `&mut self` hands out `&mut` to the data inside · recall `Vec::push` | 25 |
 | 10d | the app holds the phase | `Mutex` — changing a value the app shares · recall `.map_err` *(shaky)*. Decide the poisoned-lock variant before writing. | 30 |
 | 10e | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
@@ -26,7 +25,7 @@ Stages 1–9c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sha
 
 ## Open, not blocking
 
-- [ ] Rule 4a: all three habits asked once, in 10a (§4 rule 3, rule 5, §5 opening line). Do not ask again.
+- [ ] Rule 4a: all three habits were asked once, in 10a. Do not ask again.
 - [ ] Doc comments: `ipc.rs :: case_intro_from` / `case_intro` (9c), the three Stage 5 `Case` methods
       and both items in `error.rs` have none.
       `parse_case`'s says "but it it fails"; `RawCase`'s says only "Raw case". Tidying.

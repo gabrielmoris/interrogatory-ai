@@ -14,7 +14,7 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 
 | Writing stage | Ask about |
 |---|---|
-| 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a)* · **Stage 9a** — a type built only to be sent *(ask in 10b)* |
+| 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a ✅)* · **Stage 9a** — a type built only to be sent *(asked in 10b ✅)* |
 | 11 | **Stage 9b**, second pass · **Stage 10** |
 | 12 | **Stage 9c**, second pass |
 | 13 | **Stage 8**, third pass |
@@ -126,7 +126,7 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 | `TryFrom` — `From` for a conversion that can fail | a parse function returning a result instead of throwing | defined |
 | Associated types (`type Error = …`) — a trait can ask for a *type*, not only functions | a generic parameter you fill in on the interface | defined |
 | `try_into()` arriving free once `TryFrom` exists | — | defined |
-| **`*` — reading the value out of a borrow** | nothing; references are invisible in TS | defined |
+| **`*` — reading the value out of a borrow** | nothing; references are invisible in TS | used *(Stage 10a, unprompted)* |
 | `E0382` from a `for` loop consuming a `Vec` without `&` | — | not met (he wrote the `&` unprompted) |
 
 ### Stage 6c — the four checks ✅
@@ -200,6 +200,15 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 | Nothing checks that `.manage` happened — a missing one fails when the command is called, not at compile time | — | defined |
 | A command split in two: a plain `_from` function tests call, and a one-line `#[tauri::command]` wrapper | a route handler delegating to a service function | defined |
 | `PathBuf::from("some text")` — an owned path from a string | — | defined |
+
+### Stage 10a — where the player is ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **Data that lives inside one variant** — `Interrogating { suspect, turns }`, and the other variants have no such fields | a union whose members carry different properties | defined |
+| **A `match` arm that names the data** — `Phase::Interrogating { suspect, .. }`, where `..` is "ignore the rest" (`E0027` without it) | narrowing on `kind`, then reading the property | defined |
+| No field access on an enum — `phase.turns` is `E0609` even after a check; the arm is the only door | — | defined |
+| What the arm hands you is a borrow, so `Some(*suspect)` — and `.len()` needs no `*` | — | defined |
 
 ---
 
