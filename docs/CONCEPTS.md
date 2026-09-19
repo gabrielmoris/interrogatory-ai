@@ -22,7 +22,10 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 
 **`shaky` — due in every brief until he gets it right twice:**
 
-- A guard clause as the shape of a function body — Stage 5, wrong again in Stage 8.
+- **Which phase a move's check names** — the phase you must be in *now*, never the one you end up
+  in. Stage 10b: `finish` was written against `Briefing`, then `Reporting`, before `Interrogating`.
+- A guard clause as the shape of a function body — Stage 5, wrong again in Stage 8. **1 of 2**: both
+  10b guards were the right shape, unaided.
 - `.map_err`, and that its closure *hands back* a value rather than returning one — Stage 6d, wrong
   again in Stage 8.
 
@@ -200,6 +203,15 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 | Nothing checks that `.manage` happened — a missing one fails when the command is called, not at compile time | — | defined |
 | A command split in two: a plain `_from` function tests call, and a one-line `#[tauri::command]` wrapper | a route handler delegating to a service function | defined |
 | `PathBuf::from("some text")` — an owned path from a string | — | defined |
+
+### Stage 10b — moving between phases ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`*self = …`** — a method replacing the whole value it was handed, instead of handing one back | reassigning the state variable, but through the borrow | defined |
+| A move names two phases: the check names where you are **now**, `*self =` names where you **end up** | — | **shaky** (crossed them twice) |
+| `matches!(self, Variant { .. })` — asking "is it this variant" where the variant carries data; without `{ .. }`, `E0533` | — | used |
+| An error variant built at the call site, with a `name()` for the human half | — | used |
 
 ### Stage 10a — where the player is ✅
 

@@ -6,6 +6,19 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-19 — One word for two things _(correction 15)_
+
+> "I thought I have all right... I don't understannd then, I will need fuirther explanation, not riddles"
+
+Mid-10b, `finish`'s guard. The unblocking reply said the check should "ask about the room, not the
+briefing", and handed back his line with a hole. But a move has two phases in it — where you must be
+now, and where you end up — and "the room" named one in the metaphor and the other in his head, so
+the second attempt was `Reporting` in both places. **A hole plus a metaphor is a riddle when the
+learner has not separated the two things the metaphor covers.** What worked was naming them as two
+different slots, in a table: *check = where you are now* · *`*self =` = where you end up*.
+→ **When one line takes two attempts, stop blanking and name the parts.** `CONCEPTS.md` carries it
+as a `shaky` row.
+
 ### 2026-09-16 — A pointer is not an explanation _(correction 14)_
 
 > "step 3 is so bad explained that I can't understand what I have to do there"

@@ -115,3 +115,14 @@ thirteen files. `fmt` and `clippy -D warnings` clean. Committed `780d337`.
 recalled from 6b without help. Written in the same sitting the brief was issued.
 **Do differently.** Rule 4a's commit-sentence habit was asked once, in §4; the message came out
 generated as usual. Asked once — do not ask again.
+
+### Stage 10b — moving between phases ✅ 2026-09-19
+
+**Built.** `Phase::name`, `Phase::begin`, `Phase::finish` in `transcript.rs`. Spec
+`tests/phase_moves.rs`, 7/7; 119 total across fourteen files. `fmt` and `clippy -D warnings` clean.
+**Stuck.** `finish`'s guard, three attempts: `Briefing`, then `Reporting`, then `Interrogating { .. }`.
+He had the replacement line right every time — the confusion was *which* of a move's two phases the
+check names. Also copied two of the depot's words into `name()`.
+**Do differently.** The unblocking reply said "leaving the room is only allowed from the room", and
+"the room" read as the destination — a metaphor doing two jobs. What worked was a two-column table:
+*check = where you are now* · *`*self =` = where you end up*. Mentor defect, logged as correction 15.

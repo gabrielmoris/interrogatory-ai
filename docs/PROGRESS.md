@@ -5,18 +5,17 @@ Last updated: 2026-09-17.
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last reviewed | **Stage 10a**, 2026-09-17. 6/6, first submission; 112 tests across thirteen files, `fmt` and `clippy -D warnings` clean. |
-| Issued | **Stage 10b** — `docs/stages/stage-10b-moving-between-phases.md`, spec `tests/phase_moves.rs` (7 tests, measured). |
-| Next action | **His.** Stage 10b. Then mentor: review it, write 10c. |
+| Last reviewed | **Stage 10b**, 2026-09-19. 7/7; 119 tests across fourteen files, `fmt` and `clippy -D warnings` clean. |
+| Uncommitted | his 10b fix to `src/transcript.rs` — commit it. |
+| Next action | **Mentor's.** Write 10c. Open it by folding the two guards' duplicated error into one helper (`record` would be the third copy), and ask the `shaky` question: which phase does a move's check name? |
 | Blocked on | nothing |
 
 ## Stage queue
 
-Stages 1–10a ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–10b ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 10b | moving between phases *(issued)* | replacing the whole value behind `&mut self` (`*self = …`) · recall guard clause *(shaky)* | 25 |
 | 10c | recording a line | a `match` on `&mut self` hands out `&mut` to the data inside · recall `Vec::push` | 25 |
 | 10d | the app holds the phase | `Mutex` — changing a value the app shares · recall `.map_err` *(shaky)*. Decide the poisoned-lock variant before writing. | 30 |
 | 10e | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |

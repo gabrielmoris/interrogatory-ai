@@ -54,7 +54,7 @@ impl Phase {
 
     /// Calls a suspect in. Only from the briefing.
     pub fn begin(&mut self, suspect: SuspectId) -> AppResult<()> {
-        if !matches!(&self, Phase::Briefing) {
+        if !matches!(self, Phase::Briefing) {
             return Err(AppError::InvalidState {
                 action: "begin an interrogation".to_string(),
                 state: self.name().to_string(),
@@ -70,7 +70,7 @@ impl Phase {
 
     /// Leaves the room to write the report. Only from an interrogation.
     pub fn finish(&mut self) -> AppResult<()> {
-        if !matches!(&self, Phase::Interrogating { .. }) {
+        if !matches!(self, Phase::Interrogating { .. }) {
             return Err(AppError::InvalidState {
                 action: "finish an interrogation".to_string(),
                 state: self.name().to_string(),
