@@ -5,6 +5,18 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-19 — `record` takes a speaker and a `&str`; one `refusal` helper builds the error
+
+**Decided.** `Phase::record(&mut self, speaker: Speaker, text: &str) -> AppResult<()>`, refused
+outside `Interrogating` with action `"record a line"`. The `InvalidState` literal moves into a private
+`Phase::refusal(&self, action: &str) -> AppError`, used by `begin`, `finish` and `record`.
+**Why.** Callers hold a speaker and some text, never a ready-made `Turn`; `&str` in, `String` stored
+is the Stage 3 rule he already follows. Three copies of a four-line error is where a typo in one goes
+unseen — `finish`'s exact wording is pinned by no test.
+**Rejected.** `record(turn: Turn)` — every call site builds the struct. `text: String` — saves one copy
+nobody will measure. No helper — a four-line literal inside `record`'s `_` arm.
+**Costs.** Phase 2 copies each streamed reply once into the transcript. Revisit only if a profile says so.
+
 ### 2026-09-17 — Stage 10 is five stages, and `Phase` keeps its data inside one variant
 
 **Decided.** `transcript.rs` holds `Speaker { Detective, Suspect }`, `Turn { speaker, text }` and

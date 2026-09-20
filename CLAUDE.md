@@ -26,53 +26,47 @@ A session is 2–3 stages and ends on a green suite and a commit. Never end mid-
   the writing to fit.
 - **Count the document, not the ledger.** Every call, method, macro, attribute or file he has never
   typed is a new thing, whether or not it is a ledger concept.
-- **Printed-line test.** Each of those appears in §2d as a complete line of real code, or the stage
-  does not use it. Named in prose is not taught. A shape with its body commented out is not taught.
+- **Printed-line test.** Each of those appears in the brief as a complete line of real code — in §1
+  if he has written it before, in §2 if it is the new thing. Named in prose is not taught.
 - **It is also a sizing test.** If passing it would print close to the finished answer, split.
 - A term that is neither in the ledger nor in this stage's budget does not appear in the brief.
 
-## Rule 2 — the brief is a worked example plus the same problem
+## Rule 2 — the example is his own code, and the task is the next line of it
 
-His words: **"The task MUST match the explanation."** The evidence: `docs/TEACHING-EVIDENCE.md`.
+His words, 2026-09-20, five exchanges into one line of Stage 10c: *"you just give me a bunch of text
+explaining me about depot and you expect me to relate it and get WHAT I have to do and translate it
+then to the interrogatory."* Also: *"the gap between the explanation and the task is too big."*
+The older evidence: `docs/TEACHING-EVIDENCE.md`. `MENTOR-NOTES.md` has what this replaced and why.
 
-**The match test — run it before every brief.** Put §2d (worked example) beside §3.2 (his code).
+**The parcel-depot domain is retired.** An example in another domain asks him to do two things at
+once — learn the new thing, and translate it. The translation is where he stops, five times in one
+stage. The example is now **code he has already written**, quoted into the brief. A brief never sends
+him to another file to go and look, and never asks him to map one domain onto another.
 
-1. Every construct the task requires appears in the worked example.
-2. Every construct in the worked example is required by the task.
+**The gather test — run it before every brief.** §1 holds, printed in full, every line the task
+needs: the shape he will copy, the call he will make, the conversion he will use. Of each, ask
+*has he typed this before?*
 
-Either fails → fix the example, never the task. If matching means printing the solution → Rule 1.
+- Yes → quote his own line, name its file and function, and say in one line per line what it does.
+- No → that is the stage's one new thing (Rule 1). It gets §2 to itself, and there is only one.
 
-**Fading.** A concept's status in `CONCEPTS.md` sets both the explanation and the scaffolding. This
-table is the only copy of that rule.
+A piece that is neither — never typed, and not this stage's lesson — means the stage is too big.
+Split it.
 
-| Status | Worked example | What he writes |
-|---|---|---|
-| *(absent)* | full, every line, §2d | completion problem, 2–3 holes |
-| `defined` | one line of code, in place, saying where he met it | completion problem, 1 hole |
-| `used` | a pointer to where he did it | the bare task |
-| `solid` | nothing | the bare task |
-| `shaky` | full again, old examples reprinted | completion problem, 2–3 holes |
+**One blank, one value.** The brief prints the shape; what he fills in is a value, never a shape, and
+every blank says in plain words what that value is, on its own line. Never `____` standing in for a
+line — he reads it as code. Write `// ← your statement goes here: <what it must do>`.
 
-**Holes.**
+**Explanation sits next to the step it serves**, never forty lines away. Code he already wrote that
+moves: print his own lines as a before/after, never re-issue them as `todo!()`.
 
-- §3.2 is the shape with holes, not a blank body. A bare `todo!()` only where he has already written
-  that same body once.
-- A hole is worth having only if he has every piece to fill it. Otherwise hand him the piece.
-- Every hole reprints its own answer-shaped line right beside it, and names every import, type and
-  call the filled line needs. "Same shape as the depot's" is a scroll instruction, not adjacency. If
-  the reprint gives the answer away, the hole is in the wrong place.
-- Substitutions go in the hole's own comment, naming the value: `// <- .manage(…) with YOUR type and "cases"`.
-- Hide a shape (a struct's fields, a signature) only when choosing it is the lesson.
-- Code he already wrote that moves: print his own lines as a before/after. Never re-issue it as `todo!()`.
-- Explanation sits next to the step it serves, never forty lines away.
+**Recall is one question in chat, after the stage is green** — from the 1–2–4 due table in
+`CONCEPTS.md` (taught at N → asked at N+1, N+3, N+7). It is not a section he must read before he can
+start. Wrong answer → `shaky`, schedule resets to N+1, and the next brief quotes that line of his
+code in §1 instead of assuming it.
 
-**Recall (§1).** Two questions he answers from memory, answers in `<details>`, plus one prediction he
-commits to before §2 (answered by §2). One question from the 1–2–4 due table in `CONCEPTS.md` (taught
-at stage N → asked at N+1, N+3, N+7), one from what this task needs. Every `shaky` concept is asked in
-every brief until he gets it right twice. Wrong answer → `shaky`, and its schedule resets to N+1.
-
-**90 lines of prose, hard ceiling.** Blank lines, code blocks and `<details>` tags do not count — he
-wants more code and less explanation. Measure, do not judge:
+**60 lines of prose, hard ceiling** — table rows included. Code blocks and blank lines do not count.
+Measure, do not judge:
 
 ```bash
 python3 -c "
@@ -80,21 +74,19 @@ import sys,re; b=False; n=0
 for l in open(sys.argv[1],encoding='utf-8'):
     t=l.strip()
     if t.startswith('\`\`\`'): b=not b; continue
-    if not b and t and not t.startswith(('<details','</details','<summary')): n+=1
+    if not b and t: n+=1
 print(n)" docs/stages/stage-NN-*.md
 ```
 
-**Checkpoints are measured, never guessed.** Build the reference implementation stub-by-stub in a
-throwaway crate outside `src-tauri/src/` and paste the real `cargo test` summary. A row you did not
-run says `unmeasured`. Label each row with the section that explains it — he reads the table as the
-spec. (From Cowork: the cloud container has cargo, the device VM does not.)
-
-**Hint ladder (§5), four fixed rungs:** (1) where it goes, (2) the question the code must ask,
-(3) the shape with names blanked, (4) the parcel-depot line in full. Rung 4 answers the step the
-checkpoint table stops at, never a later one.
+**Every number and every error message is measured, never guessed.** Build the reference
+implementation in a throwaway crate outside `src-tauri/src/`: the `cargo test` summary after each
+step, and every compiler message §4 lists. A number you did not run does not go in the brief.
+(From Cowork: the cloud container has cargo, the device VM does not. Run git on the device as
+`git --no-optional-locks …` — a plain `git status` leaves an `index.lock` the VM cannot delete.)
 
 **Show, don't describe.** A new attribute or syntax position → print the two or three surrounding
-lines of the real file.
+lines of the real file. The same syntax doing two jobs (a pattern that builds after `=` and asks
+before `=>`) → print both of his lines side by side before the task uses one.
 
 **Not in a brief:** architecture arguments, rejected alternatives, anything addressed to a future
 mentor. Three lines and a pointer to `DECISIONS.md`.
@@ -104,36 +96,30 @@ mentor. Three lines and a pointer to `DECISIONS.md`.
 ```
 # Stage NN — <plain-English name, no Rust words>
 
-Test:    src-tauri/tests/<file>.rs — N tests
-Run:     cd src-tauri && cargo test --test <file>
-Writes:  src-tauri/src/<file>.rs :: <function>()
-New:     the one new thing
-Recall:  the one thing being recalled (Stage n)
-Est.     N min
+Test:   src-tauri/tests/<file>.rs — N tests
+Run:    cd src-tauri && cargo test --test <file>
+Write:  src-tauri/src/<file>.rs :: <function>()
+New:    the one new thing
+Est.    N min
 
-## 0. What this has to do, in ordinary words     [MAX 6 LINES. NO RUST TOKENS.]
-   The gameplay reason, then the algorithm as instructions to a person.
+## 0. What this does                  [MAX 5 LINES. NO RUST TOKENS.]
+     The gameplay reason, then the rule as instructions to a person.
 
-## 1. Recall                                     [2 questions + 1 prediction, answers in <details>]
+## 1. Your own code, gathered here    [every piece the task needs, quoted from HIS files,
+                                       each labelled file.rs :: function(), each with one
+                                       plain line saying what each line does]
 
-## 2. The worked example                         [the ONE new thing]
-     a. Plain English — what it is, no Rust names. Show the artifact (screen, JSON) first.
-     b. The TypeScript you would write.
-     c. What Rust does differently, and where the analogy breaks.
-     d. The example IN FULL, in the parcel-depot domain, never the detective game.
-        Every line present. Nothing elided, nothing commented out.
+## 2. The one new thing               [what it is, and how it differs from the piece in §1 that
+                                       looks the same. A two-row table beats a paragraph.
+                                       Name the compiler error he gets doing it the §1 way.]
 
-## 3. The same problem, in your code
-   3.1 Numbered steps in ordinary words, each naming file.rs :: function(). A step says
-       what to do, never what to weigh up — criteria go in §4.
-   3.2 The code with holes — same shape as §2d, each hole beside its step.
-   3.3 Checkpoints — measured, one row per step.
-   3.4 The interleaved step — the one step that reuses a pattern from a non-adjacent
-       earlier stage. Pointer only.
+## 3. What to do                      [numbered steps in ordinary words, each naming
+                                       file.rs :: function(). The code printed whole, with the
+                                       statement he writes left as a commented gap. Each step
+                                       ends with the command and the measured output to expect.]
 
-## 4. Rules — numbered, ≤5, one line each.
-
-## 5. If you are stuck — exactly 4 <details>, the ladder above, parcel-depot domain.
+## 4. If it does not compile          [table: the exact compiler message → what it means.
+                                       Measured, not imagined.]
 ```
 
 ## Rule 3 — when he is stuck mid-stage
@@ -154,7 +140,8 @@ Five slots, in order, nothing else. It fits on a phone screen: no headers, no bu
 - Answer the error he asked about, not the other problems you can see.
 - Short is not small: count untaught things, not lines.
 - **Unblock with a hole:** hand back his own line with the one wrong piece blanked out.
-- **Never hand him a line to paste into his own file.** Full lines go in the parcel-depot domain.
+- **Hand back his own line with the one wrong piece named** — not a new line to paste. After three
+  exchanges on one line, stop blanking: print the shape whole and leave only the value.
 - One line taking four exchanges → stop correcting it token by token; change the medium.
 - He says a step contains something untaught → check the brief before answering the error.
 - He says he is following blindly → stop advancing and re-teach the last thing he copied.

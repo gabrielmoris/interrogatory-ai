@@ -1,7 +1,8 @@
 # CONCEPTS — what Gabriel has been taught, and when
 
-The ledger `CLAUDE.md` Rules 1–2 read from. A concept's status sets how much explanation **and** how
-much scaffolding it gets — the fading table in Rule 2 is the only copy of that rule.
+The ledger `CLAUDE.md` Rules 1–2 read from. A concept's status decides where it appears in a brief:
+anything he has met is quoted into §1 from his own code, and only a new concept gets §2. The gather
+test in Rule 2 is the only copy of that rule.
 
 **At review time:** add the stage's rows, bump what he used again unaided, and mark `shaky` anything
 he got wrong after it had been recalled. `shaky` clears only when he uses it correctly without help.
@@ -10,7 +11,8 @@ he got wrong after it had been recalled. `shaky` clears only when he uses it cor
 
 ## Recall due — the 1–2–4 schedule
 
-Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says how to use this table.
+Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked in chat once the stage is
+green — not as a section in the next brief (Rule 2, rewritten 2026-09-20).
 
 | Writing stage | Ask about |
 |---|---|
@@ -20,7 +22,8 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Rule 2 says
 | 13 | **Stage 8**, third pass |
 | 14 | **Stage 9a**, third pass |
 
-**`shaky` — due in every brief until he gets it right twice:**
+**`shaky` — asked after every stage until he gets it right twice, and quoted in §1 when the next
+stage needs it:**
 
 - **Which phase a move's check names** — the phase you must be in *now*, never the one you end up
   in. Stage 10b: `finish` was written against `Briefing`, then `Reporting`, before `Interrogating`.

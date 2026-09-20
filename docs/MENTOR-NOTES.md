@@ -6,6 +6,41 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-20 — The example was never his code _(correction 17)_
+
+> "you just give me a bunch of texrt explaining me about depot and you expect me to relate it and get
+> WHAT I have to do and translate it then to the interrogatory."
+
+> "the gap between the explanation and the task is too big, assuming that I know everything on the
+> midele... It is so hard that I am loosing itnerest on this whole project."
+
+> "When you change the .md files you forget everything because you add text and text instead of
+> reading everything and adapting what has to be done."
+
+Five exchanges on one line of Stage 10c. Each reply was shorter than the last and none of them
+worked, because all five asked him to carry something across: from the depot to the game, from
+another file to this one, from a description to a line of code. The worked example was correct and
+it was never *his* code. Asked how to continue, he chose: rewrite the brief first, then he writes
+the function.
+→ **Rule 2 replaced.** The parcel-depot domain is retired; §1 of a brief is his own code, gathered
+and quoted; recall moved out of the brief into one question in chat; the ceiling dropped 90 → 60
+lines and the template from six sections to five. 10c was rewritten in place, 288 lines → 121, not
+patched. Related: **when a correction lands, rewrite the document, do not append to it** — the first
+10c patch left the old example sitting above the new comments and made the brief worse.
+
+### 2026-09-20 — Same words, two jobs _(correction 16)_
+
+> "I am blocked, I think yourt explanations are vague, too technical and unrelated with the tasks."
+
+Mid-10c, step 2. Under the first hole he wrote `action: Phase::Interrogating { suspect: speaker,
+turns: self.turn_count() };` — a *build*, where the hole wanted an *ask*. `Phase::Interrogating { … }`
+builds after `=` (10b) and asks before `=>` (10a), and no brief had put the two side by side. The
+hole's comment described the answer in abstract words ("the phase the player must be in NOW, naming
+its list") instead of reprinting his own `turn_count` line, which the fading table already requires
+for a `defined` concept. §2c spent its words on borrow theory, not on what he types.
+→ **Same syntax doing two jobs is shown side by side before a task uses one** (Rule 2). The hole
+comment was rewritten mid-stage; the unblocking reply showed his two lines, `begin` and `turn_count`.
+
 ### 2026-09-19 — One word for two things _(correction 15)_
 
 > "I thought I have all right... I don't understannd then, I will need fuirther explanation, not riddles"
