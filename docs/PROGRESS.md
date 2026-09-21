@@ -5,9 +5,9 @@ Last updated: 2026-09-20.
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last reviewed | **Stage 10c**, 2026-09-20. 5/5; 124 tests across fifteen files, `clippy -D warnings` clean. `cargo fmt` not yet run. |
-| Uncommitted | the `cargo fmt` diff in `transcript.rs`; the teaching-rules rewrite; Stage 10d's brief and spec. 10c itself is committed (`02a7c33`). |
-| Next action | **His.** Stage 10d — brief at `docs/stages/stage-10d-what-the-room-will-show.md`, spec at `src-tauri/tests/phase_transcript.rs`. Open the session by asking 10c's recall question (`CONCEPTS.md`). |
+| Last reviewed | **Stage 10d**, 2026-09-21. 6/6, `fmt` and `clippy -D warnings` clean. Full-suite total (130 expected) to confirm from his run. |
+| Uncommitted | everything since `02a7c33` is staged, not committed: 10d, the `fmt` fix in `record`, the teaching-rules rewrite. |
+| Next action | **His:** answer 10d's four questions, commit. **Then mine:** record the answers in `CONCEPTS.md`, write 10e. Open the next session with the recall question (`CONCEPTS.md`). |
 | Blocked on | nothing |
 
 **The teaching rules were rewritten 2026-09-20 (correction 18)** after *"I finish the stage without
@@ -24,7 +24,7 @@ Stages 1–10c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 10d | what the room will show | **consolidation — zero new elements.** `&[Turn]` as the borrowed form of `Vec<Turn>`, which is Stage 3's `String`/`&str` on a second type. Two whole bodies, signatures given. | 25 |
+| ~~10d~~ ✅ | what the room will show | **consolidation — zero new elements.** `&[Turn]` as the borrowed form of `Vec<Turn>`, which is Stage 3's `String`/`&str` on a second type. Two whole bodies, signatures given. | 25 |
 | 10e | the app holds the phase | `Mutex` — changing a value the app shares · recall `.map_err` *(shaky)*. Decide the poisoned-lock variant before writing. | 30 |
 | 10f | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
 

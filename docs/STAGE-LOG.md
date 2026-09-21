@@ -140,3 +140,17 @@ from his own code; the last blocker was a struct value with no name, which is 9a
 time.
 **Do differently.** The rewrite should have been the first reply, not the fifth. Rule 2 is replaced
 (correction 17). Recall was not asked at all this stage — due at the start of 10d.
+
+### Stage 10d — what the room will show ✅ 2026-09-21
+
+**Built.** `Phase::transcript` and `Phase::last_line` in `transcript.rs`. Spec
+`tests/phase_transcript.rs`, 6/6; `fmt` and `clippy -D warnings` clean against his file in the
+reference crate. `last_line` is `self.transcript().last()` — of the two routes the brief offered he
+took the one that leaves *where the lines live* decided in one place.
+**Stuck.** The first brief, written to the new template, explained before it said what to build:
+*"I have no idea what I have to do"* (correction 19, brief and template rewritten). Then one draft,
+`&[turns.last()]` — step 2's tool in step 1, wrapped in a new list (`E0308`, expected `Turn`, found
+`Option<&Turn>`). One exchange, fixed.
+**Do differently.** Goal first, always. Predictions were asked for at both runs and not reported.
+Four questions asked at review — outcome recorded in `CONCEPTS.md`.
+

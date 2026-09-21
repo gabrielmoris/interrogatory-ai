@@ -20,8 +20,8 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked close
 | Writing stage | Ask about |
 |---|---|
 | 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a ✅)* · **Stage 9a** — a type built only to be sent *(asked in 10b ✅)* |
-| 10d | **Stage 10c** — the name in front of a struct value *(shaky)*. 10c's recall was never asked; ask it first thing. |
-| 10e | **Stage 10d** — a window onto a list vs a copy of it |
+| 10d | *(not asked — asked at the end of the rewrite reply, went unanswered, carried to 10e)* |
+| 10e | **Stage 10c** — the name in front of a struct value *(shaky)*, first · **Stage 10d** — a view onto a list vs a copy of it |
 | 10f | **Stage 9b**, second pass · **Stage 10** |
 | 11 | **Stage 9c**, second pass |
 | 12 | **Stage 8**, third pass |
