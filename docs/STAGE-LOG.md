@@ -113,7 +113,7 @@ Reporting }`, with `suspect()` and `turn_count()`. Spec `tests/phase.rs`, 6/6; 1
 thirteen files. `fmt` and `clippy -D warnings` clean. Committed `780d337`.
 **Stuck.** Nothing. Pass on first submission, both arms right including `Some(*suspect)` — the `*`
 recalled from 6b without help. Written in the same sitting the brief was issued.
-**Do differently.** Rule 4a's commit-sentence habit was asked once, in §4; the message came out
+**Do differently.** Rule 5's commit-sentence habit was asked once, in §4; the message came out
 generated as usual. Asked once — do not ask again.
 
 ### Stage 10b — moving between phases ✅ 2026-09-19
@@ -126,3 +126,17 @@ check names. Also copied two of the depot's words into `name()`.
 **Do differently.** The unblocking reply said "leaving the room is only allowed from the room", and
 "the room" read as the destination — a metaphor doing two jobs. What worked was a two-column table:
 *check = where you are now* · *`*self =` = where you end up*. Mentor defect, logged as correction 15.
+
+### Stage 10c — keeping what was said ✅ 2026-09-20
+
+**Built.** `Phase::refusal` (one error for all three moves) and `Phase::record` in `transcript.rs`.
+Spec `tests/phase_record.rs`, 5/5; 124 total across fifteen files. `clippy -D warnings` clean;
+`cargo fmt` still had a diff at review time — committed as `02a7c33` before it was run.
+**Stuck.** Eight exchanges on one line, the worst of the project. The brief's example was in the
+parcel-depot domain, and each unblocking reply asked him to carry something across: depot → game,
+another file → this one, description → code. *"the gap between the explanation and the task is too
+big... I am loosing itnerest on this whole project."* He wrote the arm once the brief was rewritten
+from his own code; the last blocker was a struct value with no name, which is 9a's lesson a second
+time.
+**Do differently.** The rewrite should have been the first reply, not the fifth. Rule 2 is replaced
+(correction 17). Recall was not asked at all this stage — due at the start of 10d.

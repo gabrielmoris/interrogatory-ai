@@ -6,6 +6,53 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-21 — The goal came last _(correction 19)_
+
+> "I readed the stage 10d. I have no idea what I have to do. What method in which implementation am
+> I doing? What is the objective? Why you give me examples of things before you explain me what am I
+> building and where?"
+
+The first 10d brief — written the same day as correction 18, to the new template — opened with the
+gameplay reason, then *the picture before you start*, then a separate section gathering his code,
+then the new thing, and only in §4 said what to write. The file and method were only in the header's
+`Write:` line. Rule 0 had said "the model before the task" and was read as "the model before
+saying what the task is". An explanation has nothing to attach to until the goal is known.
+
+→ **Rule 0 re-cut into four moments, goal first. The template's §0 is now *what you are building, and
+where*: file, `impl`, method names, what the game uses each for, the stubs to paste, the first run.
+No separate "your code" section — each step quotes the piece it copies, beside it.**
+
+### 2026-09-20 — The briefs worked and taught nothing _(correction 18)_
+
+> "You assume I know too much... When you explain a topic, I need you to be less abstract and show me
+> in a way I can relate with previous exercise, typescript or natural language."
+
+> "don't make me learn the logic of the app + rust syntax + rust logic. You must tell me in natural
+> language what has specifically to be done and give me examples on how rust does that."
+
+And, asked where it broke, he named three: *I say why and not what* · *too many things at once* ·
+**no mental model — "I finish the stage without understanding why Rust needed it. I feel I'm
+copying."**
+
+The third is the one the old rules could not see. Correction 17's fix — print the shape whole, leave
+one value blank — worked on its own terms: 10c went green. That format is an *incomplete worked
+example*, and its measured result is construction without comprehension plus inflated confidence
+(`TEACHING-EVIDENCE.md` rows 1–4). The ledger said `defined`; the understanding was not there. He
+caught it himself, which the research says learners usually cannot.
+
+He also asked for the research: *"Research science of learning and teaching deeply to adapt all this
+process and adapt all your .md files to do it. Since I don't want you to have too long context,
+adapt, do not just add text."*
+
+→ **Rule 0** — supportive explanation before the task and after it is green; mid-task he gets only
+the step. This is what reconciles *"you say why, not what"* with *"I have no mental model"*: both
+are true, at different moments. **Rule 3** — the locus test (blanks go where the concept is, not
+where the typing is), predict-before-run marked `sure`/`guessing`, one printed version that passes
+every test and is still wrong, and four closed-book questions once green. Question 2 — *what would
+actually have gone wrong if the compiler had allowed it?* — is the copying detector, and a blank on
+it now sets `shaky`. **Rule 5** — a TypeScript *bug he has shipped*, never a TypeScript feature, and
+every analogy carries its breakage clause in the same breath. Old Rules 3→4, 4+4a→5, 5→7.
+
 ### 2026-09-20 — The example was never his code _(correction 17)_
 
 > "you just give me a bunch of texrt explaining me about depot and you expect me to relate it and get
@@ -94,7 +141,7 @@ it is the lesson.**
 > basically so I, a rust NEWBIE can I uncerstand."
 
 The already re-cut 9a had two concepts and 73 prose lines, and still explained what `CaseIntro` *was*
-without showing the screen it is *for*. → **Rule 1: one new thing plus one recall. Rule 4: show the
+without showing the screen it is *for*. → **Rule 1: one new thing plus one recall. Rule 5: show the
 artifact before naming the type.**
 
 ### 2026-09-14 — Two concepts on paper, ten new things in the document _(correction 10)_
@@ -147,7 +194,7 @@ separate them, and he asks for more code. → **90 lines of prose, code not coun
 
 Mid-6c, an eight-item reply — why, the trap, the method, laziness, a code block — and the instruction
 was never stated. The six-line reply that worked: what to do, the function name, a handback.
-→ **Rule 3, slot 1.**
+→ **Rule 4, slot 1.**
 
 ### 2026-08-29 — Briefs grew after every request to slow down
 
@@ -171,7 +218,7 @@ closing a decision.**
 > it in CLAUDE.md but seems that you forget all time."
 
 Four headed sections in answer to one compile error; then a *shorter* reply carrying three untaught
-things. → **Rule 3. Short is not small. Losing his interest is the failure state.**
+things. → **Rule 4. Short is not small. Losing his interest is the failure state.**
 
 ### 2026-08-25 — Architecture questions are not homework
 
@@ -179,7 +226,7 @@ things. → **Rule 3. Short is not small. Losing his interest is the failure sta
 > product, you are teaching and I am learning."
 
 Stage 4 duplicated a rule the roadmap had already given an owner, and the resulting bug was handed
-back to him as a design question. → **Rule 5.**
+back to him as a design question. → **Rule 7.**
 
 ### 2026-08-25 — "Be more pedagogical" meant the briefs too
 
@@ -204,4 +251,4 @@ use `std::iter::empty()`). "One boolean in your filter closure" did not parse.
 > "the way you explain is like if I were writing Rust for years... go slowly."
 
 What worked: one concept per reply, from zero — trait → `derive` → moves → `From` — each ending with
-one command. → **Rule 4.**
+one command. → **Rule 5.**

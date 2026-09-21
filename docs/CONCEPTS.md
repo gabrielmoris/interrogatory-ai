@@ -1,32 +1,41 @@
 # CONCEPTS — what Gabriel has been taught, and when
 
 The ledger `CLAUDE.md` Rules 1–2 read from. A concept's status decides where it appears in a brief:
-anything he has met is quoted into §1 from his own code, and only a new concept gets §2. The gather
-test in Rule 2 is the only copy of that rule.
+anything he has met is quoted from his own code in the step that uses it; only a new concept gets
+explained, in that same step. The gather
+test in Rule 2 is the only copy of that rule, and Rule 3 decides where the blanks go.
 
 **At review time:** add the stage's rows, bump what he used again unaided, and mark `shaky` anything
-he got wrong after it had been recalled. `shaky` clears only when he uses it correctly without help.
+he got wrong after it had been recalled — **or anything he could not answer question 2 on**
+(`CLAUDE.md` Rule 3: *what would actually have gone wrong if the compiler had allowed it?*). Passing
+a stage is not evidence; question 2 is. `shaky` clears only when he uses it correctly without help.
 
 ---
 
 ## Recall due — the 1–2–4 schedule
 
-Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked in chat once the stage is
-green — not as a section in the next brief (Rule 2, rewritten 2026-09-20).
+Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked closed-book in chat at the
+*start* of the session, before the repo is opened (Rule 3). Multiple choice is fine.
 
 | Writing stage | Ask about |
 |---|---|
 | 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a ✅)* · **Stage 9a** — a type built only to be sent *(asked in 10b ✅)* |
-| 11 | **Stage 9b**, second pass · **Stage 10** |
-| 12 | **Stage 9c**, second pass |
-| 13 | **Stage 8**, third pass |
-| 14 | **Stage 9a**, third pass |
+| 10d | **Stage 10c** — the name in front of a struct value *(shaky)*. 10c's recall was never asked; ask it first thing. |
+| 10e | **Stage 10d** — a window onto a list vs a copy of it |
+| 10f | **Stage 9b**, second pass · **Stage 10** |
+| 11 | **Stage 9c**, second pass |
+| 12 | **Stage 8**, third pass |
+| 13 | **Stage 9a**, third pass |
 
-**`shaky` — asked after every stage until he gets it right twice, and quoted in §1 when the next
-stage needs it:**
+**`shaky` — asked after every stage until he gets it right twice, and quoted in the step that needs
+it when the next stage uses it:**
 
+- **A struct value must name its struct** — `Turn { … }`, never a bare `{ … }`. Stage 9a, wrong
+  again in Stage 10c: `error: struct literal body without path`, and the two knock-on syntax errors
+  it causes were what actually blocked him. **0 of 2.**
 - **Which phase a move's check names** — the phase you must be in *now*, never the one you end up
   in. Stage 10b: `finish` was written against `Briefing`, then `Reporting`, before `Interrogating`.
+  Stage 10c did not test it — the rewritten brief printed the arm for him.
 - A guard clause as the shape of a function body — Stage 5, wrong again in Stage 8. **1 of 2**: both
   10b guards were the right shape, unaided.
 - `.map_err`, and that its closure *hands back* a value rather than returning one — Stage 6d, wrong
@@ -216,6 +225,16 @@ stage needs it:**
 | `matches!(self, Variant { .. })` — asking "is it this variant" where the variant carries data; without `{ .. }`, `E0533` | — | used |
 | An error variant built at the call site, with a `name()` for the human half | — | used |
 
+### Stage 10c — keeping what was said ✅
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **A `match` arm on `&mut self` hands out data you can change** — the same arm as `turn_count`, but now `turns.push(…)` is legal | narrowing, then mutating the array in place | defined |
+| A block as an arm's body: statements, then the value the arm hands back | `case 'x': { …; return … }` | defined |
+| `Vec::push` on a list reached through an arm | `array.push(…)` | used |
+| A private method building one error for three call sites (`refusal`) | a private helper on the class | used |
+| A struct value must name its struct — `Turn { … }` | `{ speaker, text }` is already an object in TS | **shaky** (9a, wrong again here) |
+
 ### Stage 10a — where the player is ✅
 
 | Concept | TypeScript anchor | Status |
@@ -247,6 +266,9 @@ interior mutability · zero-cost abstraction · trait object · blanket impl *(n
 still needs the one-line refresher)*
 
 **Due next, so plan the sentence now:** *interior mutability* and *trait object* come off this list
-in Stages 10d and 11 respectively — they are those stages' headline concepts, not asides. Do not use
+in Stages 10e and 11 respectively — they are those stages' headline concepts, not asides. Do not use
 either word before then, including in a roadmap pointer he might read.
+
+**Interleave only what is confusable** (`TEACHING-EVIDENCE.md` row 23): `T` / `&T` / `&mut T`,
+`String` / `&str` / `&[T]`, `?` / `unwrap` / `match`. Mixing unrelated topics measurably hurts.
 

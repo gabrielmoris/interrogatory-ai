@@ -71,15 +71,17 @@ traits, `TryFrom`, the IPC boundary, interior mutability.
 - **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
   Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
 - **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); the screen-shaped wire types (9a);
-  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10d.
+  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10e.
   `DECISIONS.md`, 2026-09-13 and 2026-09-14.
 - **1.6 Transcript and phase** — `enum Phase { Briefing, Interrogating { suspect, turns }, Reporting }`.
   The suspect and the lines exist only inside `Interrogating`, so illegal states do not compile; a
-  wrong transition is `InvalidState`. **`Mutex` lands in 10d**, because the phase is the first thing
-  that changes while the app runs. Stages 10a–10e — queue in `PROGRESS.md`, `DECISIONS.md` 2026-09-17.
+  wrong transition is `InvalidState`. **`Mutex` lands in 10e**, because the phase is the first thing
+  that changes while the app runs. **10d is a consolidation stage** — zero new elements, the
+  borrowed/owned pair on a second type (`CLAUDE.md` Rule 1). Stages 10a–10f — queue in
+  `PROGRESS.md`, `DECISIONS.md` 2026-09-17.
 
 **Concept to internalize before Phase 2:** `std::sync::MutexGuard` is not `Send` across `.await`.
-Stage 15 makes you feel it; Stage 10d is where the habit forms.
+Stage 15 makes you feel it; Stage 10e is where the habit forms.
 
 **Exit:** a case loads from disk, one command returns it to React, a phase that holds data it
 should not have does not compile, a wrong transition is an `InvalidState` error, all domain logic tested without launching Tauri.

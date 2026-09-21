@@ -87,11 +87,27 @@ impl Phase {
     /// Keeps one line said in the room. Only during an interrogation.
     pub fn record(&mut self, speaker: Speaker, text: &str) -> AppResult<()> {
         match self {
-            Phase::Interrogating { turns, .. } =>{
-                turns.push(Turn {speaker, text: text.to_string()});
+            Phase::Interrogating { turns, .. } => {
+                turns.push(Turn {
+                    speaker,
+                    text: text.to_string(),
+                });
                 Ok(())
-            },
+            }
             _ => Err(self.refusal("record a line")),
         }
+    }
+
+    /// Every line said in this room, oldest first. Empty outside the room.
+    pub fn transcript(&self) -> &[Turn] {
+        match self {
+            Phase::Interrogating { turns, .. } => turns,
+            _ => &[],
+        }
+    }
+
+    /// The line said most recently, or `None` if nothing has been said.
+    pub fn last_line(&self) -> Option<&Turn> {
+        self.transcript().last()
     }
 }

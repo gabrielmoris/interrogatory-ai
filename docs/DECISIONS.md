@@ -31,7 +31,7 @@ without an enum around them anyway, and moving out of a lock guard needs `mem::r
 `Transcript(Vec<Turn>)` newtype and a `Scored` variant — no behaviour or data for either until §2.7
 and Stage 21. `Speaker::Suspect(SuspectId)` — the phase already knows who is in the room.
 **Costs.** No way back from the room to the briefing until §3.3. `Reporting` holds nothing until Stage 21.
-Phase 1's exit criterion reworded. 10d and 10e are counted against Rule 1 again before issuing.
+Phase 1's exit criterion reworded. 10e and 10f are counted against Rule 1 again before issuing.
 
 ### 2026-09-14 — `AppState` starts immutable, and the lock waits for Stage 10
 
