@@ -6,6 +6,21 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-22 — "Hand X to Y" is not an instruction _(correction 20)_
+
+> "Hand the suspect to the phase's own `begin` (Stage 10b) and hand back its answer. This sentence is
+> completelly nosense for me... I have NO CLUE of what I need to you. are you explaining for a machine
+> or for a person who needs to learn and understand?"
+
+10e step 1 asked for one line he had every piece of, in a sentence that named neither the value it is
+written on nor what the line does. "Hand X to Y" and "hand back its answer" are my idiom; the shape
+example (`case.rs :: suspect_count()`) was folded into the same sentence as a subordinate clause, so
+the instruction and the example cancelled each other. His draft, `*self.phase::suspect()`, shows what
+was missing: `::` where a `.` goes, the argument's name where the method's goes, and a `*` nothing
+asked for.
+→ **Rule 2 amended**: the *what to do* sentence names the value and the method, in words that work
+without Rust; the shape example gets its own paragraph. Step 1 rewritten in place, not appended to.
+
 ### 2026-09-21 — The goal came last _(correction 19)_
 
 > "I readed the stage 10d. I have no idea what I have to do. What method in which implementation am

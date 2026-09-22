@@ -26,6 +26,9 @@ pub enum AppError {
     #[error("cannot {action} while {state}")]
     InvalidState { action: String, state: String },
 
+    #[error("a crash may have left the game half-changed: {message}")]
+    Poisoned { message: String },
+
     #[error("{id} appears twice in this case file")]
     DuplicateSuspect { id: SuspectId },
 

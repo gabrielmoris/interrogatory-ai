@@ -63,6 +63,9 @@ its file and function.
 which file and `impl`, what the game uses it for, and gives him the stubs to paste. Each step then
 opens with *what to do* in plain English, and only then the Rust. A step that names a Rust method
 before it has named the purpose is written backwards; a brief that explains before §0 is too.
+**Plain English means it names the value and the method being written**, in a sentence that works
+for a reader with no Rust: *"hand X to Y and hand back its answer"* is mentor idiom, not an
+instruction (correction 20). The shape example never shares that sentence — it gets its own.
 
 **The gather test — run it before every brief.** Each step prints, in full, every line it needs, next
 to it — never gathered in a separate section. Of each, ask *has he typed this before?* Yes → quote
