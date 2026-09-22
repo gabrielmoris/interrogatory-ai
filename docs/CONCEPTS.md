@@ -8,7 +8,8 @@ test in Rule 2 is the only copy of that rule, and Rule 3 decides where the blank
 **At review time:** add the stage's rows, bump what he used again unaided, and mark `shaky` anything
 he got wrong after it had been recalled — **or anything he could not answer question 2 on**
 (`CLAUDE.md` Rule 3: *what would actually have gone wrong if the compiler had allowed it?*). Passing
-a stage is not evidence; question 2 is. `shaky` clears only when he uses it correctly without help.
+a stage is not evidence; question 2 is. **Code he did not type is not evidence either** — a line
+handed to him stays `defined`, never `used` (10e). `shaky` clears only when he uses it right unaided.
 
 ---
 
@@ -21,8 +22,9 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked close
 |---|---|
 | 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a ✅)* · **Stage 9a** — a type built only to be sent *(asked in 10b ✅)* |
 | 10d | *(not asked — asked at the end of the rewrite reply, went unanswered, carried to 10e)* |
-| 10e | **Stage 10c** — the name in front of a struct value *(shaky)*, first · **Stage 10d** — a view onto a list vs a copy of it |
-| 10f | **Stage 9b**, second pass · **Stage 10** |
+| 10e | *(asked at the top of the reply; he went straight into the stage and they went unanswered)* |
+| 10f | **Stage 10c** — the name in front of a struct value *(shaky)* · **Stage 10e** — why `&self` could not change the phase. Ask these two and nothing else, before anything is opened |
+| 11 | **Stage 9b**, second pass · **Stage 10** |
 | 11 | **Stage 9c**, second pass |
 | 12 | **Stage 8**, third pass |
 | 13 | **Stage 9a**, third pass |
@@ -33,6 +35,12 @@ it when the next stage uses it:**
 - **A struct value must name its struct** — `Turn { … }`, never a bare `{ … }`. Stage 9a, wrong
   again in Stage 10c: `error: struct literal body without path`, and the two knock-on syntax errors
   it causes were what actually blocked him. **0 of 2.**
+- **Calling a method on a value held in a field** — `self.phase.begin(suspect)`: value, dot, method.
+  Stage 10e, three wrong forms in a row (`*self.phase::suspect()`, `self.phase(suspect)`, then the
+  whole line given). `::` reaches into a *type*, `.` calls on a *value* he already holds. **0 of 2.**
+- **`&self` vs `&mut self` as *who may call the method*** — Stage 10e: he accepted the editor's
+  "make it `&mut self`" fix twice, which moved the errors into the test file (`E0596` ×7, `E0524`).
+  Not a typo — the signature is the decision. **0 of 2.**
 - **Which phase a move's check names** — the phase you must be in *now*, never the one you end up
   in. Stage 10b: `finish` was written against `Briefing`, then `Reporting`, before `Interrogating`.
   Stage 10c did not test it — the rewritten brief printed the arm for him.
@@ -235,6 +243,17 @@ it when the next stage uses it:**
 | A private method building one error for three call sites (`refusal`) | a private helper on the class | used |
 | A struct value must name its struct — `Turn { … }` | `{ speaker, text }` is already an object in TS | **shaky** (9a, wrong again here) |
 
+### Stage 10e — the app holds the phase ✅ *(code handed over, not typed)*
+
+| Concept | TypeScript anchor | Status |
+|---|---|---|
+| **`Mutex<T>`** — a value behind a lock; `.lock()` waits, then hands out a guard that stands in for the value | no equivalent: JS has no shared-memory threads | defined *(printed for him)* |
+| **Interior mutability** — changing a value through `&self`, because the type guarantees one writer at a time | — | defined |
+| The guard opens the lock when it is dropped, at the closing `}` | — | defined |
+| A method name belongs to the type it is written on — `AppState::begin` and `Phase::begin` are two functions, not recursion | two classes can both have `save()` | defined *(his question, answered in chat)* |
+| A poisoned lock, and mapping it to `AppError::Poisoned` with `.map_err` | — | defined *(printed; `.map_err` stays shaky)* |
+| `&self` on a method is what makes it callable from a command — `State<'_, T>` never gives `&mut` | — | **shaky** |
+
 ### Stage 10a — where the player is ✅
 
 | Concept | TypeScript anchor | Status |
@@ -265,9 +284,9 @@ internally tagged representation · `&dyn std::error::Error` · monomorphisation
 interior mutability · zero-cost abstraction · trait object · blanket impl *(named in Stage 2 —
 still needs the one-line refresher)*
 
-**Due next, so plan the sentence now:** *interior mutability* and *trait object* come off this list
-in Stages 10e and 11 respectively — they are those stages' headline concepts, not asides. Do not use
-either word before then, including in a roadmap pointer he might read.
+*interior mutability* came off this list in Stage 10e, defined in one sentence in the brief.
+**Due next:** *trait object* comes off in Stage 11, as that stage's headline concept. Do not use the
+word before then, including in a roadmap pointer he might read.
 
 **Interleave only what is confusable** (`TEACHING-EVIDENCE.md` row 23): `T` / `&T` / `&mut T`,
 `String` / `&str` / `&[T]`, `?` / `unwrap` / `match`. Mixing unrelated topics measurably hurts.

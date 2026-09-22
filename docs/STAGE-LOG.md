@@ -154,3 +154,18 @@ took the one that leaves *where the lines live* decided in one place.
 **Do differently.** Goal first, always. Predictions were asked for at both runs and not reported.
 Four questions asked at review — outcome recorded in `CONCEPTS.md`.
 
+### Stage 10e — the app holds the phase ✅ 2026-09-22
+
+**Built.** `AppState { cases_dir, phase: Mutex<Phase> }`, `AppState::begin`, and `AppError::Poisoned`
+in `error.rs`. Spec `tests/app_phase.rs`, 4/4; 134 across seventeen files, `fmt` and
+`clippy -D warnings` clean in the reference crate. Committed `7b5ceba`.
+**Stuck.** The whole stage, and the body was printed for him in the end. Step 1 was one line he had
+every piece of, and its instruction was mentor idiom — *"This sentence is completelly nosense for
+me... I have NO CLUE of what I need to [do]"* (correction 20). Then `self.phase(suspect)`; then the
+editor's "make it `&mut self`" quick fix, accepted twice, so the measured `E0596` / `E0524`
+checkpoints arrived as failure rather than as the evidence they were written to be.
+**Do differently.** The unblocking ladder was too slow — when the line is plumbing and the lesson is
+elsewhere, print it whole at the second exchange, not the fifth. Method calls on a field and
+`&self` vs `&mut self` are `shaky`, `0 of 2`; 10f is now a consolidation stage run in chat
+(`DECISIONS.md`, 2026-09-22), and the lock is asked about there, since he did not type it here.
+

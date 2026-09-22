@@ -6,6 +6,20 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-22 — The ledger said `solid` about code he had never typed unaided _(correction 21)_
+
+> "You are not giving me enough pi3ces to build the puzzle. Youa re assuming I know rust... NO, I
+> DONT DONT DO NOT know rust!"
+
+`self.phase.begin(suspect)` — value, dot, method — stood at `solid` in the ledger, on the strength of
+lines written inside heavily scaffolded briefs. With no scaffold, 10e got three wrong forms in a row:
+`*self.phase::suspect()`, `self.phase(suspect)`, and `&mut self` accepted from the editor twice. A
+green suite had been read as evidence, and so had code a brief had printed.
+→ **`CONCEPTS.md`: code he did not type is not evidence — a printed line stays `defined`, never
+`used`.** Method calls on a field and `&self` vs `&mut self` set to `shaky`, `0 of 2`. **And the
+Rule 4 ladder in practice:** when the line is plumbing and the stage's lesson is elsewhere, print it
+whole at the second exchange. Correction 20's rewrite was the right move two exchanges too late.
+
 ### 2026-09-22 — "Hand X to Y" is not an instruction _(correction 20)_
 
 > "Hand the suspect to the phase's own `begin` (Stage 10b) and hand back its answer. This sentence is

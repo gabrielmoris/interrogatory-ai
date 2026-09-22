@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-21.
+Last updated: 2026-09-22.
 
 |  |  |
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
-| Last reviewed | **Stage 10d**, 2026-09-21. 6/6, `fmt` and `clippy -D warnings` clean; 130 tests across sixteen files, measured in the reference crate against his files. Committed `1fb653a`. |
-| Uncommitted | Stage 10e's brief and spec; `DECISIONS.md` 2026-09-21 and the 10d→10e renumbering it forced in two older entries; correction 20 (`MENTOR-NOTES.md`, `CLAUDE.md` Rule 2, 10e step 1 rewritten). |
-| Next action | **His.** The two recall questions in chat (10c, 10d — `CONCEPTS.md`), then Stage 10e: brief `docs/stages/stage-10e-the-app-holds-the-phase.md`, spec `src-tauri/tests/app_phase.rs`. 10d's four questions went unanswered; its recall question stands in for question 2 — do not re-ask them. |
+| Last reviewed | **Stage 10e**, 2026-09-22. 4/4; 134 tests across seventeen files, `fmt` and `clippy -D warnings` clean in the reference crate against his files. Committed `7b5ceba`. **The body was printed for him** — see `STAGE-LOG.md`. |
+| Uncommitted | This review: `CONCEPTS.md`, `STAGE-LOG.md`, `DECISIONS.md` 2026-09-22, correction 21 in `MENTOR-NOTES.md`. |
+| Next action | **His:** 10e's four questions, whenever he is up for it. **Mine:** 10f as a consolidation stage, in chat, no brief (`DECISIONS.md`, 2026-09-22). Open it with the two recall questions and nothing else. |
 | Blocked on | nothing |
 
 **The teaching rules were rewritten 2026-09-20 (correction 18)** after *"I finish the stage without
@@ -25,14 +25,13 @@ Stages 1–10d ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | # | Stage | New thing | Est |
 |---|---|---|---|
 | ~~10d~~ ✅ | what the room will show | **consolidation — zero new elements.** `&[Turn]` as the borrowed form of `Vec<Turn>`, which is Stage 3's `String`/`&str` on a second type. Two whole bodies, signatures given. | 25 |
-| 10e | the app holds the phase | `Mutex` — changing a value every command shares · recall `.map_err` *(shaky)*. **Issued 2026-09-21**: one method, `AppState::begin`, first refused (`E0596`, then `E0524` on `&mut self`), then through the lock. Poison → `AppError::Poisoned` (`DECISIONS.md`). 4 tests, 60 prose lines. | 30 |
-| 10f | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
+| ~~10e~~ ✅ | the app holds the phase | `Mutex`, interior mutability, `AppError::Poisoned`. Printed for him after five exchanges — nothing from it counts as `used`. | 30 |
+| 10f | two more methods through the lock | **consolidation — zero new elements**, and **in chat, not a brief** (`DECISIONS.md`, 2026-09-22). `AppState::suspect()` and `AppState::record()`, one line at a time, typed by him. | 30 |
+| 10g | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
 
-10f: re-count against Rule 1 before issuing, and write it to the rewritten rules. Before writing it,
-decide where an id arriving from React is checked against the case — `AppState` holds no `Case` yet,
-and `SuspectId` means "an id that exists in this case" (`DECISIONS.md`, 2026-08-27). Reading the
-phase through the lock (`AppState::suspect()`) was cut from 10e to fit the ceiling; it goes with the
-first command that reads the phase, or into a consolidation stage.
+10g: re-count against Rule 1 before issuing. Before writing it, decide where an id arriving from
+React is checked against the case — `AppState` holds no `Case` yet, and `SuspectId` means "an id that
+exists in this case" (`DECISIONS.md`, 2026-08-27).
 
 ## Open, not blocking
 

@@ -5,6 +5,19 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-22 — 10f is a consolidation stage, and it runs in chat instead of a brief
+
+**Decided.** 10f carries zero new elements: `AppState::suspect()` and `AppState::record()`, the same
+lock lines on two more methods, typed by him one line at a time in chat, one run per method. No
+document. `Deserialize` on `SuspectId`, the command and the handler list move to 10g.
+**Why.** Rule 1 schedules a consolidation stage when two ledger entries go `shaky`; four did in 10e,
+and the lock itself was printed rather than typed, so nothing in 10e is `used`. Rule 4's last rung is
+*change the medium*, and 10e was the second stage running where the document was what failed.
+**Rejected.** 10f as planned — stacking `Deserialize`, a command and the handler list on syntax he
+cannot yet type unaided. A shorter brief: the medium is the thing being changed, not the length.
+**Costs.** One extra sitting before React can start an interrogation. Nothing lands in
+`docs/stages/`, so the `STAGE-LOG.md` entry has to carry what was taught.
+
 ### 2026-09-21 — The phase lives in `AppState` behind a `std::sync::Mutex`; poison is an `AppError`
 
 **Decided.** `AppState { cases_dir, phase: Mutex<Phase> }`, `phase` private, starting at `Briefing`.
