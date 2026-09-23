@@ -34,13 +34,18 @@ it when the next stage uses it:**
 
 - **A struct value must name its struct** — `Turn { … }`, never a bare `{ … }`. Stage 9a, wrong
   again in Stage 10c: `error: struct literal body without path`, and the two knock-on syntax errors
-  it causes were what actually blocked him. **0 of 2.**
+  it causes were what actually blocked him. **0 of 2 in use** — recognised in 10f's multiple-choice
+  recall, which is not use.
 - **Calling a method on a value held in a field** — `self.phase.begin(suspect)`: value, dot, method.
   Stage 10e, three wrong forms in a row (`*self.phase::suspect()`, `self.phase(suspect)`, then the
-  whole line given). `::` reaches into a *type*, `.` calls on a *value* he already holds. **0 of 2.**
+  whole line given). `::` reaches into a *type*, `.` calls on a *value* he already holds. **2 of 2** —
+  10f, `phase.record(speaker, text)` and `phase.suspect()`, both unaided. Clears to `used` after one
+  more unprompted use in 10g.
 - **`&self` vs `&mut self` as *who may call the method*** — Stage 10e: he accepted the editor's
   "make it `&mut self`" fix twice, which moved the errors into the test file (`E0596` ×7, `E0524`).
-  Not a typo — the signature is the decision. **0 of 2.**
+  **2 of 2** — 10f: `let phase` without `mut` in `suspect`, unaided; then, closed-book, *"record
+  modifies phase adding a record, suspect just gives a suspect to look at it, I am not mutating it"*.
+  Clears to `used` after one more unprompted use in 10g.
 - **Which phase a move's check names** — the phase you must be in *now*, never the one you end up
   in. Stage 10b: `finish` was written against `Briefing`, then `Reporting`, before `Interrogating`.
   Stage 10c did not test it — the rewritten brief printed the arm for him.

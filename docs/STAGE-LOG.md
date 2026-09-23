@@ -169,3 +169,16 @@ elsewhere, print it whole at the second exchange, not the fifth. Method calls on
 `&self` vs `&mut self` are `shaky`, `0 of 2`; 10f is now a consolidation stage run in chat
 (`DECISIONS.md`, 2026-09-22), and the lock is asked about there, since he did not type it here.
 
+### Stage 10f — two more methods through the lock ✅ 2026-09-23
+
+**Built.** `AppState::record` and `AppState::suspect` in `state.rs`, the 10e lock on two more
+methods. Spec `tests/app_room.rs`, 4/4; `app_phase` 4/4 still, `fmt` and `clippy -D warnings` clean
+in the reference crate against his `state.rs`. Committed `591b991`. Run in chat, no brief
+(`DECISIONS.md`, 2026-09-22): §0 and one step per message, measured counts `0/4` → `2/4` → `4/4`.
+**Stuck.** Nowhere reported. Both method calls on the guard typed unaided; `suspect` came in with
+`let phase` (no `mut`) and `Ok(…)` around the answer. He did not report predictions or run output,
+so whether he met `E0308` / `unused_mut` on the way is unknown. Recall: both multiple-choice right.
+**Do differently.** Asked him for "sure / guessing" twice; he skipped it both times. Don't ask a
+third time this stage — ask once at the top of 10g, then drop it if skipped again.
+**After green.** The four questions misfired (correction 22). One question on `mut` instead: model
+said back correctly in his words.

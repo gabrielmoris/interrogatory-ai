@@ -115,6 +115,9 @@ and ask what it costs. This is what stops a green suite being read as understand
 **c. The four questions, closed-book, once it is green.** In chat, in his own words, no code in
 front of him. Two minutes, not an exam:
 
+**Only when the compiler refused something.** A stage that went green first time (consolidation
+stages, usually) gets one question instead, about a choice he made: *"why X here and not Y?"* (22).
+
 1. Why did the compiler refuse your first version?
 2. **What would actually have gone wrong if it had allowed it?**
 3. What is the other way to write it, and why is this one better?

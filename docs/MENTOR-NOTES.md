@@ -6,6 +6,17 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-23 — The four questions asked about a refusal that never happened _(correction 22)_
+
+> "1. It waws never refused... 2. I dont understadnd the question, allow what? 3. No idea
+> 4. When was unsafe? I just did it stragith"
+
+10f went green first time. Questions 1, 2 and 4 all presuppose a compiler refusal; asked verbatim,
+three of four had no referent, and the one real gap (question 3, why no `mut` on the `suspect`
+guard) was buried among them.
+→ **Rule 3c amended**: the four questions only follow a refusal. A clean stage gets one question
+about a choice he made.
+
 ### 2026-09-22 — The ledger said `solid` about code he had never typed unaided _(correction 21)_
 
 > "You are not giving me enough pi3ces to build the puzzle. Youa re assuming I know rust... NO, I
