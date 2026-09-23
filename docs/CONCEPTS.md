@@ -23,7 +23,7 @@ Taught at stage N → asked at N+1, N+3, N+7 (6a–6d count as one). Asked close
 | 10 | **Stage 9c** — `.manage` / `State` *(asked in 10a ✅)* · **Stage 9a** — a type built only to be sent *(asked in 10b ✅)* |
 | 10d | *(not asked — asked at the end of the rewrite reply, went unanswered, carried to 10e)* |
 | 10e | *(asked at the top of the reply; he went straight into the stage and they went unanswered)* |
-| 10f | **Stage 10c** — the name in front of a struct value *(shaky)* · **Stage 10e** — why `&self` could not change the phase. Ask these two and nothing else, before anything is opened |
+| 10f | **Stage 10c** — the name in front of a struct value *(shaky)* · **Stage 10e** — why `&self` could not change the phase. **Asked 2026-09-22, multiple choice: both right** (b, b; sure/guessing not given) |
 | 11 | **Stage 9b**, second pass · **Stage 10** |
 | 11 | **Stage 9c**, second pass |
 | 12 | **Stage 8**, third pass |
