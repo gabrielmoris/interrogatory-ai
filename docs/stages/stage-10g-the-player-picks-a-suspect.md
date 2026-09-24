@@ -55,14 +55,8 @@ one thing changed:
 | ``E0599 no method named `require_suspect` found for enum `Result` `` | line a lost its `?` |
 | ``E0308 mismatched types … expected `&Path`, found `PathBuf` `` | line a lost the `&` before `state.cases_dir` |
 
-## Why — read this after it is green
+## What you learned
 
-- Step 1 lets serde turn React's `2` into `SuspectId(2)`. It checks only that it is a whole number.
-  Test `any_number_at_all_becomes_a_suspect_id` shows `99` passes too, though the case has no 99.
-- So line b is the real check. Without it, a wrong id from React would put a suspect in the room
-  who does not exist in the case.
-- Line b must come before line c: check first, then change the room.
-
-## When it is green — one question, in chat, from memory
-
-`suspect` already arrives as a `SuspectId`. Why does the function still ask the case about it?
+- `Deserialize` lets Rust build a value from JSON. You added it so React's `2` can become `SuspectId(2)`.
+- It only checks the type: a whole number. `99` becomes a `SuspectId` too, even though the case has no suspect 99.
+- So your line `case.require_suspect(suspect)?;` is the real check, and it comes before `state.begin`.

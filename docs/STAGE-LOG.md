@@ -182,3 +182,14 @@ so whether he met `E0308` / `unused_mut` on the way is unknown. Recall: both mul
 third time this stage — ask once at the top of 10g, then drop it if skipped again.
 **After green.** The four questions misfired (correction 22). One question on `mut` instead: model
 said back correctly in his words.
+
+### Stage 10g — the player picks a suspect ✅ 2026-09-24
+
+**Built.** `Deserialize` on `SuspectId`; `ipc.rs :: begin_interrogation_from` — load the case, check
+the suspect with `require_suspect`, then `state.begin`. Spec `tests/pick_suspect.rs`, 6/6; 144 across
+nineteen files, `fmt` and `clippy -D warnings` clean. Committed `a7c66a2`.
+**Stuck.** The first brief hid "paste the stub" in a paragraph (`E0432`, correction 23). Then
+`AppState::begin(&self, suspect); Ok(())` — `self` outside an `impl`, and the `;` would have
+swallowed `begin`'s error. Fixed in one message once the doc said `state.begin(suspect)`.
+**Do differently.** The whole method was rebuilt after this stage (correction 24).
+
