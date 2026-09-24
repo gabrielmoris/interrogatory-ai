@@ -6,8 +6,8 @@ Last updated: 2026-09-23.
 |---|---|
 | Phase | **1 — Rust core & Tauri foundations** |
 | Last reviewed | **Stage 10f**, 2026-09-23, in chat. 4/4 `app_room`, 4/4 `app_phase`; `fmt` and `clippy -D warnings` clean in the reference crate against his `state.rs`. Committed `591b991`. |
-| Uncommitted | This review: `CONCEPTS.md`, `STAGE-LOG.md`, `PROGRESS.md`. |
-| Next action | **His:** 10f's four questions (10e's went unasked — 10f's cover the same lock). **Mine:** 10g — first decide where an id from React is checked against the case (see below), then re-count it against Rule 1. |
+| Uncommitted | 10g brief + `tests/pick_suspect.rs`, `DECISIONS.md` 2026-09-23. |
+| Next action | **His:** Stage 10g — `docs/stages/stage-10g-the-player-picks-a-suspect.md`. Open 10g's session by asking once for `sure`/`guessing` (skipped twice in 10f; drop it if skipped again). |
 | Blocked on | nothing |
 
 **The teaching rules were rewritten 2026-09-20 (correction 18)** after *"I finish the stage without
@@ -27,11 +27,10 @@ Stages 1–10f ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~10d~~ ✅ | what the room will show | **consolidation — zero new elements.** `&[Turn]` as the borrowed form of `Vec<Turn>`, which is Stage 3's `String`/`&str` on a second type. Two whole bodies, signatures given. | 25 |
 | ~~10e~~ ✅ | the app holds the phase | `Mutex`, interior mutability, `AppError::Poisoned`. Printed for him after five exchanges — nothing from it counts as `used`. | 30 |
 | ~~10f~~ ✅ | two more methods through the lock | **consolidation — zero new elements**, and **in chat, not a brief** (`DECISIONS.md`, 2026-09-22). `AppState::suspect()` and `AppState::record()`, one line at a time, typed by him. | 30 |
-| 10g | React starts an interrogation | `Deserialize` on `SuspectId` for a command argument · recall `generate_handler!` | 25 |
+| 10g | the player picks a suspect | `Deserialize` on `SuspectId`: shape checked, meaning not — `begin_interrogation_from` checks it with `require_suspect`. Brief and spec written and verified (6 tests; 144 across nineteen files). | 25 |
+| 10h | React starts an interrogation | **zero new elements** — `#[tauri::command]` wrapper, `generate_handler!`, a console `invoke`. Recall of 9b/9c. | 20 |
 
-10g: re-count against Rule 1 before issuing. Before writing it, decide where an id arriving from
-React is checked against the case — `AppState` holds no `Case` yet, and `SuspectId` means "an id that
-exists in this case" (`DECISIONS.md`, 2026-08-27).
+Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 
 ## Open, not blocking
 

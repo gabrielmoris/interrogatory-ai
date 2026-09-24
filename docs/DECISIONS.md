@@ -5,11 +5,27 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-23 — An id from React is checked against the case file inside `begin_interrogation_from`
+
+**Decided.** `ipc.rs :: begin_interrogation_from(state: &AppState, slug, suspect: SuspectId)` loads
+the case by slug, calls `Case::require_suspect`, and only then `AppState::begin`. `SuspectId` derives
+`Deserialize`; `FactId` does not. Stage 10g is this function; 10h is the `#[tauri::command]` wrapper,
+`generate_handler!` and the React call — split so each carries one new thing.
+**Why.** Deserializing proves the shape, not that the suspect exists. The check sits right after it,
+using `require_suspect`, the rule's one owner. `AppState` holding no `Case` is fine while the case
+file is small; `case_intro` already reads it per call.
+**Rejected.** Storing the loaded `Case` in `AppState` now — needs a "choose case" command and a second
+lock with no stage asking for it. Taking `u32` and building the id in the command — the same check,
+with a second conversion to keep in step.
+**Costs.** The case file is read on every begin. Revisit when `AppState` needs the case for the
+report (Phase 3), and then load once.
+
 ### 2026-09-22 — 10f is a consolidation stage, and it runs in chat instead of a brief
 
 **Decided.** 10f carries zero new elements: `AppState::suspect()` and `AppState::record()`, the same
 lock lines on two more methods, typed by him one line at a time in chat, one run per method. No
-document. `Deserialize` on `SuspectId`, the command and the handler list move to 10g.
+document. `Deserialize` on `SuspectId`, the command and the handler list move to 10g (then split:
+10g the checked function, 10h the command — 2026-09-23).
 **Why.** Rule 1 schedules a consolidation stage when two ledger entries go `shaky`; four did in 10e,
 and the lock itself was printed rather than typed, so nothing in 10e is `used`. Rule 4's last rung is
 *change the medium*, and 10e was the second stage running where the document was what failed.
@@ -137,7 +153,7 @@ and hands React a sentence to regex. Also rejected: reading the file here.
 **Costs.** The filesystem read moves to Stage 8 with `Io` / `CaseNotFound` and a shell-side
 `storage.rs`; tests reach the two real files with `include_str!`, so `case_file.rs` stays pure.
 `SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument —
-Stage 10f, since 9's command takes a slug.
+Stage 10g, since 9's command takes a slug (renumbered 2026-09-22/23).
 
 ### 2026-08-25 — `AppError` holds owned, serializable data; `std::io::Error` never goes inside it
 

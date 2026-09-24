@@ -47,3 +47,10 @@ pub fn case_intro_from(cases_dir: &Path, slug: &str) -> AppResult<CaseIntro> {
 pub fn case_intro(state: State<'_, AppState>, slug: String) -> AppResult<CaseIntro> {
     case_intro_from(&state.cases_dir, &slug)
 }
+
+/// Calls in the suspect the player picked, once the case is known to have them.
+pub fn begin_interrogation_from(state: &AppState, slug: &str, suspect: SuspectId) -> AppResult<()> {
+    let case = load_case(&state.cases_dir, slug)?;
+    case.require_suspect(suspect)?;
+    state.begin(suspect)
+}

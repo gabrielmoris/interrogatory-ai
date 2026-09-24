@@ -206,6 +206,12 @@ filler. When he catches an overstatement, correct it and engage his argument.
 
 ### The template — fixed order, nothing else
 
+**Superseded for layout by correction 23 (2026-09-24):** the steps are a numbered list of *actions*
+— one file, one action, the code or a copy-this-line table, the expected result — with no
+explanation between them. The "why" is one short section after the steps. `stage-10g` is the model.
+**Instructions live in the stage doc, never only in chat** (2026-09-24): any fix or clarification is
+written into the brief first; the chat reply only says what changed there.
+
 ```
 # Stage NN — <plain-English name, no Rust words>
 

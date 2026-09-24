@@ -6,6 +6,19 @@ softened by a session that never saw the failure.
 
 ---
 
+### 2026-09-24 — Instructions buried in explanation _(correction 23)_
+
+> "when I read your explanations I dont get a grasp of what I really need to do... you never told me
+> to put begin_interrogation_from anywhere and I cant run the tests properly... you mix explanations
+> with isntructions and sometimes things get too ambiguous and abstract."
+
+The first 10g brief did say to paste the stub, but inside a §0 paragraph that also explained the
+game, the files and 10h. He read step 1, ran, and hit `E0432`. Every step mixed the action, his old
+code, a table, a prediction and the concept in one flow; the action was one sentence among many.
+→ **Briefs are a numbered list of actions.** Each item: one file, one action, the code or the
+line-to-copy table, and the expected run result. No explanation between items. "Why" goes in one
+short section *after* the steps, to read once it is green. 10g rewritten to this shape.
+
 ### 2026-09-23 — The four questions asked about a refusal that never happened _(correction 22)_
 
 > "1. It waws never refused... 2. I dont understadnd the question, allow what? 3. No idea
