@@ -54,3 +54,12 @@ pub fn begin_interrogation_from(state: &AppState, slug: &str, suspect: SuspectId
     case.require_suspect(suspect)?;
     state.begin(suspect)
 }
+
+#[tauri::command]
+pub fn begin_interrogation(
+    state: State<'_, AppState>,
+    slug: String,
+    suspect: SuspectId,
+) -> AppResult<()> {
+    begin_interrogation_from(&state, &slug, suspect)
+}

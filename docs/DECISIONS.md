@@ -5,6 +5,20 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-25 — 10h's spec only checks the command's shape; no `tauri::test`
+
+**Decided.** `tests/start_interrogation.rs` assigns `begin_interrogation` to a
+`fn(State<'_, AppState>, String, SuspectId) -> AppResult<()>`. It compiles or it does not. What the
+command does is `begin_interrogation_from`, already tested in `pick_suspect.rs`. No `[dev-dependencies]`.
+**Why.** The first version (2026-09-24) used `tauri::test::mock_app`. On Windows its test binary dies
+with `STATUS_ENTRYPOINT_NOT_FOUND` (0xc0000139): test binaries lack the Common Controls v6 manifest
+that `tauri-build` embeds only in the app (tauri-apps/tauri#13419). Measured on his machine 2026-09-25.
+**Rejected.** Embedding the manifest for every target from `build.rs` — cannot be verified from the
+Linux container, and it is linker plumbing with nothing to teach. A full IPC round trip —
+`generate_handler!` cannot name a command from another crate (measured).
+**Costs.** The handler list and the JSON argument names are checked only by the console step.
+Revisit if a later stage needs a running Tauri in tests; fix the manifest then, on his machine.
+
 ### 2026-09-23 — An id from React is checked against the case file inside `begin_interrogation_from`
 
 **Decided.** `ipc.rs :: begin_interrogation_from(state: &AppState, slug, suspect: SuspectId)` loads
