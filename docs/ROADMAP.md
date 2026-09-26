@@ -43,7 +43,7 @@ src-tauri/src/
   storage.rs        reads case files from disk              Stage 8
   state.rs          AppState, managed via tauri::State      Stage 9c
   session/          stateful interrogation orchestration
-  llm/              trait InferenceEngine · llama.rs · mock.rs (build mock FIRST)
+  llm.rs            trait InferenceEngine + MockEngine (11a); llm/ when llama.rs lands (19)
   ipc.rs            wire types (9a) + #[tauri::command] wrappers (9b)
                     (a directory when it holds a second command group — DECISIONS, 2026-09-13)
 ```
@@ -93,7 +93,8 @@ FFI lifetimes.
 
 | # | Stage | Headline concept | Est |
 |---|---|---|---|
-| 11 | `trait InferenceEngine` + `MockEngine` | trait objects vs generics | 55 |
+| 11a | `trait InferenceEngine` + `MockEngine` | declaring your own trait | 20 |
+| 11b | the game holds an engine | trait objects (`Box<dyn …>`) | — |
 | 12 | the first `async fn` | a future does nothing until polled | 45 |
 | 13 | where blocking work goes | blocking work must leave the runtime | 50 |
 | 14 | channels | an `mpsc` pipe moves ownership | 50 |

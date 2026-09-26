@@ -193,3 +193,17 @@ nineteen files, `fmt` and `clippy -D warnings` clean. Committed `a7c66a2`.
 swallowed `begin`'s error. Fixed in one message once the doc said `state.begin(suspect)`.
 **Do differently.** The whole method was rebuilt after this stage (correction 24).
 
+### Stage 10h — React starts an interrogation ✅ 2026-09-25
+
+**Built.** `ipc.rs :: begin_interrogation`, the `#[tauri::command]` around `begin_interrogation_from`;
+`lib.rs` imports it and adds it to `generate_handler!`. Spec `tests/start_interrogation.rs`, 1/1; 145
+across twenty files, `fmt` and `clippy -D warnings` clean against his exact files. Committed `9de6939`.
+**Stuck.** Not on the Rust. The doc's copy-and-change table did not say the rest of the copy stays,
+so he asked where `state` comes from; the `lib.rs` table called existing lines "changes" without line
+numbers. Then the console was a browser tab (`window.__TAURI__` undefined). Then my first spec used
+`tauri::test::mock_app`, which crashes on Windows (`STATUS_ENTRYPOINT_NOT_FOUND`) — replaced by a
+shape check (`DECISIONS.md`, 2026-09-25).
+**Do differently.** A copy-and-change table says what stays, and shows the finished result. Edits to
+existing lines give the line number and the whole line. Anything that runs Tauri is checked on
+Windows, not only in the Linux container.
+

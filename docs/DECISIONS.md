@@ -5,6 +5,20 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-25 — Stage 11 splits; 11a is `llm.rs` with a synchronous `reply(&self, &str)`
+
+**Decided.** `src/llm.rs`, one file: `pub trait InferenceEngine { fn reply(&self, prompt: &str) -> AppResult<String>; }`
+and `MockEngine { line: String }` that returns its line whatever it is asked. Domain-pure: no
+`tauri`, `tokio`, `std::fs`. 11a = declaring a trait; 11b = trait objects (`Box<dyn …>`).
+**Why.** Rule 2: implementing a trait is known (`From`, `TryFrom`); declaring one is the single new
+thing. Trait objects are a second. `AppResult` from day one because the real engine can fail
+(`AppError::Inference` already exists), so the mock satisfies the signature the model will need.
+**Rejected.** The `llm/` directory now — one file until `llama.rs` arrives (Stage 19), same rule as
+`ipc.rs`. A `Prompt` type as the argument — Stage 20 owns it. `async fn reply` — Stage 12's lesson.
+A mock that cycles through several lines — needs `&mut self` or a `Cell`, nothing to teach here.
+**Costs.** `reply`'s signature changes twice more: `&str` → `Prompt` (Stage 20), and
+blocking → streamed tokens (Stages 12–16). Each change is one trait line and the mock's body.
+
 ### 2026-09-25 — 10h's spec only checks the command's shape; no `tauri::test`
 
 **Decided.** `tests/start_interrogation.rs` assigns `begin_interrogation` to a

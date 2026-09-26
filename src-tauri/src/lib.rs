@@ -8,6 +8,7 @@ pub mod difficulty;
 pub mod error;
 pub mod ids;
 pub mod ipc;
+pub mod llm;
 pub mod state;
 pub mod storage;
 pub mod transcript;
