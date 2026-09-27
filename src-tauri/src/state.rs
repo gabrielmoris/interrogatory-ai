@@ -1,5 +1,6 @@
 use crate::error::{AppError, AppResult};
 use crate::ids::SuspectId;
+use crate::llm::InferenceEngine;
 use crate::transcript::{Phase, Speaker};
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -8,13 +9,15 @@ use std::sync::Mutex;
 pub struct AppState {
     pub cases_dir: PathBuf,
     phase: Mutex<Phase>,
+    engine: Box<dyn InferenceEngine>,
 }
 
 impl AppState {
-    pub fn new(cases_dir: PathBuf) -> Self {
+    pub fn new(cases_dir: PathBuf, engine: Box<dyn InferenceEngine>) -> Self {
         Self {
             cases_dir,
             phase: Mutex::new(Phase::Briefing),
+            engine,
         }
     }
 
@@ -42,5 +45,10 @@ impl AppState {
         })?;
 
         Ok(phase.suspect())
+    }
+
+    /// The suspect's reply to what the detective just asked.
+    pub fn ask(&self, question: &str) -> AppResult<String> {
+        self.engine.reply(question)
     }
 }

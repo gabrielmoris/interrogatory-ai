@@ -16,6 +16,7 @@ use interrogatory_ai_lib::case::Case;
 use interrogatory_ai_lib::error::AppError;
 use interrogatory_ai_lib::ids::SuspectId;
 use interrogatory_ai_lib::ipc::{case_intro_from, CaseIntro, SuspectSummary};
+use interrogatory_ai_lib::llm::MockEngine;
 use interrogatory_ai_lib::state::AppState;
 use interrogatory_ai_lib::storage::load_case;
 use serde_json::json;
@@ -137,7 +138,7 @@ fn no_statement_ever_gets_out() {
 
 #[test]
 fn the_app_state_holds_the_folder_it_was_given() {
-    let state = AppState::new(fixtures());
+    let state = AppState::new(fixtures(), Box::new(MockEngine::new("No comment.")));
 
     assert_eq!(state.cases_dir, fixtures());
 }

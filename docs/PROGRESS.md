@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-25 (11a issued).
+Last updated: 2026-09-26 (11b issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 10h**, 2026-09-25. 1/1 `start_interrogation`; 145 across twenty files, `fmt` and `clippy -D warnings` clean. Committed `9de6939`. |
-| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md` (10h review); `DECISIONS.md`, `ROADMAP.md`, `stages/stage-11a-the-suspect-gets-a-voice.md`, `tests/engine.rs` (11a). |
-| Next action | **His:** Stage 11a — `docs/stages/stage-11a-the-suspect-gets-a-voice.md`. Verified: 3 tests, 148 across twenty-one files, `fmt` and `clippy -D warnings` clean. |
+| Last reviewed | **Stage 11a**, 2026-09-26. 3/3 `engine`; 148 across twenty-one files, `fmt` and `clippy -D warnings` clean. Committed `bb57f8e`. |
+| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md`, `DECISIONS.md`, `ROADMAP.md`; 11b doc; `tests/app_engine.rs` (new) and four tests moved to the two-argument `AppState::new`. |
+| Next action | **His:** Stage 11b — `docs/stages/stage-11b-the-game-holds-an-engine.md`. |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -15,7 +15,7 @@ Last updated: 2026-09-25 (11a issued).
 
 ## Stage queue
 
-Stages 1–10h ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–11a ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
@@ -24,8 +24,10 @@ Stages 1–10h ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~10f~~ ✅ | two more methods through the lock | **consolidation — zero new elements**, and **in chat, not a brief** (`DECISIONS.md`, 2026-09-22). `AppState::suspect()` and `AppState::record()`, one line at a time, typed by him. | 30 |
 | ~~10g~~ ✅ | the player picks a suspect | `Deserialize` on `SuspectId`: shape checked, meaning not — `begin_interrogation_from` checks it with `require_suspect`. Brief and spec written and verified (6 tests; 144 across nineteen files). | 25 |
 | ~~10h~~ ✅ | React starts an interrogation | **zero new elements** — `#[tauri::command]` wrapper, `generate_handler!`, a console `invoke`. Recall of 9b/9c. Doc and spec written and verified (1 test; `tauri::test` dropped — Windows, `DECISIONS.md` 2026-09-25). | 20 |
-| **11a** | the suspect gets a voice | **your own trait** — `trait InferenceEngine { fn reply }`, `impl … for MockEngine`. Implementing a trait is known (`From`, 9a); declaring one is new. | 20 |
-| 11b | the game holds an engine | trait objects — `Box<dyn InferenceEngine>`. Count against Rule 2 before issuing. | — |
+| ~~11a~~ ✅ | the suspect gets a voice | **your own trait** — `trait InferenceEngine { fn reply }`, `impl … for MockEngine`. Implementing a trait is known (`From`, 9a); declaring one is new. | 20 |
+| 11b | the game holds an engine | **`Box<dyn InferenceEngine>`** as a field of `AppState`; `AppState::ask` passes the question on. `: Send + Sync` on the trait is printed, not taught (Stage 15). Doc and spec written and verified (3 tests; 151 across twenty-two files). | 25 |
+| 11c | the room keeps the exchange | **zero new elements** — `ask` checks the phase and records both lines through the lock (10e/10f pattern). | 25 |
+| 11d | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). | 20 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 

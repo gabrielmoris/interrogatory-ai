@@ -94,7 +94,9 @@ FFI lifetimes.
 | # | Stage | Headline concept | Est |
 |---|---|---|---|
 | 11a | `trait InferenceEngine` + `MockEngine` | declaring your own trait | 20 |
-| 11b | the game holds an engine | trait objects (`Box<dyn …>`) | — |
+| 11b | the game holds an engine | trait objects (`Box<dyn …>`) | 25 |
+| 11c | the room keeps the exchange | consolidation — zero new | 25 |
+| 11d | React asks a question | consolidation — zero new | 20 |
 | 12 | the first `async fn` | a future does nothing until polled | 45 |
 | 13 | where blocking work goes | blocking work must leave the runtime | 50 |
 | 14 | channels | an `mpsc` pipe moves ownership | 50 |

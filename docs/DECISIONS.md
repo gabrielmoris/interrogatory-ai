@@ -5,6 +5,21 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-26 — `AppState` owns the engine as `Box<dyn InferenceEngine>`; the trait is `Send + Sync`
+
+**Decided.** `AppState { cases_dir, phase, engine: Box<dyn InferenceEngine> }`, `engine` private;
+`AppState::new(cases_dir, engine)`. `lib.rs` picks the engine (a `MockEngine` until Stage 19).
+`AppState::ask(&self, question)` is only `self.engine.reply(question)` in 11b; 11c adds the phase check
+and the recording. `pub trait InferenceEngine: Send + Sync`.
+**Why.** A struct field cannot be `impl Trait`; a box of `dyn` is the one type that holds any engine.
+Tauri's `.manage` needs `Send + Sync` (measured: without it, 14 `E0277` across `ipc.rs` and `lib.rs`).
+**Rejected.** `AppState<E: InferenceEngine>` — every `State<'_, AppState>` in `ipc.rs` would carry `E`.
+`Box<dyn InferenceEngine + Send + Sync>` at each use — the same promise written three times.
+Keeping `new(cases_dir)` with a default mock plus a second constructor — two doors for one thing.
+`Arc` — nothing clones the engine yet (Stage 15).
+**Costs.** Four older test files changed to the two-argument `new`. `Send + Sync` is used a stage
+before it is taught; 11b's doc says so in one line.
+
 ### 2026-09-25 — Stage 11 splits; 11a is `llm.rs` with a synchronous `reply(&self, &str)`
 
 **Decided.** `src/llm.rs`, one file: `pub trait InferenceEngine { fn reply(&self, prompt: &str) -> AppResult<String>; }`

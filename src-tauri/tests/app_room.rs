@@ -9,13 +9,17 @@
 
 use interrogatory_ai_lib::error::AppError;
 use interrogatory_ai_lib::ids::SuspectId;
+use interrogatory_ai_lib::llm::MockEngine;
 use interrogatory_ai_lib::state::AppState;
 use interrogatory_ai_lib::transcript::Speaker;
 use std::path::PathBuf;
 
 /// The app the moment it starts.
 fn fresh_app() -> AppState {
-    AppState::new(PathBuf::from("cases"))
+    AppState::new(
+        PathBuf::from("cases"),
+        Box::new(MockEngine::new("No comment.")),
+    )
 }
 
 fn viktor() -> SuspectId {

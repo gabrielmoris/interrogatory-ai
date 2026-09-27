@@ -14,6 +14,7 @@
 use interrogatory_ai_lib::error::AppError;
 use interrogatory_ai_lib::ids::SuspectId;
 use interrogatory_ai_lib::ipc::begin_interrogation_from;
+use interrogatory_ai_lib::llm::MockEngine;
 use interrogatory_ai_lib::state::AppState;
 use serde_json::json;
 use std::path::Path;
@@ -24,6 +25,7 @@ fn app() -> AppState {
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
             .join("cases"),
+        Box::new(MockEngine::new("No comment.")),
     )
 }
 

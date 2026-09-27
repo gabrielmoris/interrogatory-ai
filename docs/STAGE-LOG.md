@@ -207,3 +207,12 @@ shape check (`DECISIONS.md`, 2026-09-25).
 existing lines give the line number and the whole line. Anything that runs Tauri is checked on
 Windows, not only in the Linux container.
 
+### Stage 11a — the suspect gets a voice ✅ 2026-09-26
+
+**Built.** `src/llm.rs`: `trait InferenceEngine { fn reply(&self, prompt: &str) -> AppResult<String>; }`,
+`MockEngine { line }` with `new`, and `impl InferenceEngine for MockEngine`. `pub mod llm;` in `lib.rs`.
+Spec `tests/engine.rs`, 3/3; 148 across twenty-one files, `fmt` and `clippy -D warnings` clean
+against his exact `llm.rs`. Committed `bb57f8e`.
+**Stuck.** Nowhere reported. No questions in chat; first submission matched the reference exactly.
+**Do differently.** Nothing. The doc shape (steps with run results, copy-and-change table plus the
+finished code) worked first time — keep it.

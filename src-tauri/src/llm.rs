@@ -1,7 +1,7 @@
 use crate::error::AppResult;
 
 /// Anything that can answer the detective. The game only talks to this.
-pub trait InferenceEngine {
+pub trait InferenceEngine: Send + Sync {
     /// The suspect's reply to what the detective just said.
     fn reply(&self, prompt: &str) -> AppResult<String>;
 }
