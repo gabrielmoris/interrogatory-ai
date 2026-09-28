@@ -49,6 +49,18 @@ impl AppState {
 
     /// The suspect's reply to what the detective just asked.
     pub fn ask(&self, question: &str) -> AppResult<String> {
-        self.engine.reply(question)
+        self.record(Speaker::Detective, question)?;
+        let reply = self.engine.reply(question)?;
+        self.record(Speaker::Suspect, &reply)?;
+        Ok(reply)
+    }
+
+    /// How many lines have been said in the room. `0` outside it.
+    pub fn turn_count(&self) -> AppResult<usize> {
+        let phase = self.phase.lock().map_err(|e| AppError::Poisoned {
+            message: e.to_string(),
+        })?;
+
+        Ok(phase.turn_count())
     }
 }

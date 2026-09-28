@@ -216,3 +216,14 @@ against his exact `llm.rs`. Committed `bb57f8e`.
 **Stuck.** Nowhere reported. No questions in chat; first submission matched the reference exactly.
 **Do differently.** Nothing. The doc shape (steps with run results, copy-and-change table plus the
 finished code) worked first time — keep it.
+
+### Stage 11b — the game holds an engine ✅ 2026-09-27
+
+**Built.** `AppState` gets a private `engine: Box<dyn InferenceEngine>`; `new(cases_dir, engine)`;
+`ask(&self, question)` = `self.engine.reply(question)`. `lib.rs` hands it a `MockEngine`. The trait
+is now `InferenceEngine: Send + Sync`. Spec `tests/app_engine.rs`, 3/3; 151 across twenty-two files,
+`fmt` and `clippy -D warnings` clean against his exact files. Committed `4cec09d`.
+**Stuck.** Not on the code. One question: what `: Send + Sync` does and why. Answered in chat and
+written into the doc's "What you learned".
+**Do differently.** A line printed "for a later stage" still needs its why in the doc before he
+reaches it, not only in "What you learned".

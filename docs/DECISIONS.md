@@ -5,6 +5,20 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-27 — `ask` is `record` → `reply` → `record`; the lock is never held while the engine talks
+
+**Decided.** `AppState::ask` calls `self.record(Detective, question)?`, then `self.engine.reply(question)?`,
+then `self.record(Suspect, &reply)?`. Three separate steps, each lock taken and dropped inside `record`.
+Outside the room it fails with `record`'s own refusal (`action: "record a line"`). `AppState::turn_count`
+added for the test to read. A failed `reply` leaves the question kept without an answer.
+**Why.** Zero new elements. And the real model takes seconds: holding the phase lock that long would
+stall every other command. Stage 15 teaches that; the shape is already right.
+**Rejected.** One lock across all three — blocks the app while the model thinks. A separate
+"ask a question" refusal — a second phase check next to `record`'s. `AppState::transcript()` —
+returning lines out of a lock needs `.to_vec()` and a lifetime reason; that is 11d-or-later material.
+**Costs.** Between the two `record`s another command could change the phase; the second then fails.
+No command can do that yet (`finish` is not on `AppState`). Revisit when it is.
+
 ### 2026-09-26 — `AppState` owns the engine as `Box<dyn InferenceEngine>`; the trait is `Send + Sync`
 
 **Decided.** `AppState { cases_dir, phase, engine: Box<dyn InferenceEngine> }`, `engine` private;

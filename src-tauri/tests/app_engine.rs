@@ -6,8 +6,12 @@
 //! which kind: a `MockEngine` today, a real language model later, or
 //! `EchoEngine` below, which only this test file knows about. The field is a
 //! `Box<dyn InferenceEngine>`: "one thing that has `reply`, any type".
+//!
+//! Since Stage 11c the app only asks inside an interrogation, so the tests
+//! call a suspect in first.
 
 use interrogatory_ai_lib::error::AppResult;
+use interrogatory_ai_lib::ids::SuspectId;
 use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
@@ -27,6 +31,7 @@ fn the_app_asks_the_engine_it_was_given() {
         PathBuf::from("cases"),
         Box::new(MockEngine::new("I was at home all night.")),
     );
+    app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(
         app.ask("Where were you on Tuesday?"),
@@ -37,6 +42,7 @@ fn the_app_asks_the_engine_it_was_given() {
 #[test]
 fn any_engine_fits_the_same_field() {
     let app = AppState::new(PathBuf::from("cases"), Box::new(EchoEngine));
+    app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(app.ask("Who is Viktor?"), Ok("Who is Viktor?".to_string()));
 }
