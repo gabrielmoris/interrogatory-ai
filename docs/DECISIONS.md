@@ -5,6 +5,15 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-28 — `ask_suspect` calls `AppState::ask` directly; no `ask_suspect_from`
+
+**Decided.** `#[tauri::command] ask_suspect(state, question: String) -> AppResult<String>` is one line:
+`state.ask(&question)`. Third entry in `generate_handler!`.
+**Why.** The `_from` functions exist so tests can call the logic without Tauri. `AppState::ask` already
+is that function, tested in `room_exchange.rs`. The spec only checks the command's shape (10h pattern).
+**Rejected.** `ask_suspect_from(&AppState, &str)` — a wrapper around one method call.
+**Costs.** None now. If the command ever does more than ask (e.g. load the case), add the `_from` then.
+
 ### 2026-09-27 — `ask` is `record` → `reply` → `record`; the lock is never held while the engine talks
 
 **Decided.** `AppState::ask` calls `self.record(Detective, question)?`, then `self.engine.reply(question)?`,

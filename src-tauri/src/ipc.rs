@@ -63,3 +63,8 @@ pub fn begin_interrogation(
 ) -> AppResult<()> {
     begin_interrogation_from(&state, &slug, suspect)
 }
+
+#[tauri::command]
+pub fn ask_suspect(state: State<'_, AppState>, question: String) -> AppResult<String> {
+    state.ask(&question)
+}

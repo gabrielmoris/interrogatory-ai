@@ -227,3 +227,13 @@ is now `InferenceEngine: Send + Sync`. Spec `tests/app_engine.rs`, 3/3; 151 acro
 written into the doc's "What you learned".
 **Do differently.** A line printed "for a later stage" still needs its why in the doc before he
 reaches it, not only in "What you learned".
+
+### Stage 11c — the room keeps the exchange ✅ 2026-09-28
+
+**Built.** `AppState::ask` = `record(Detective, question)?` → `engine.reply(question)?` →
+`record(Suspect, &reply)?` → `Ok(reply)`. `AppState::turn_count`, a copy of `suspect`. Spec
+`tests/room_exchange.rs`, 4/4; 155 across twenty-three files, `fmt` and `clippy -D warnings` clean
+against his exact `state.rs`. Committed `7a43733`.
+**Stuck.** Nowhere reported. First submission matched the reference. He put `turn_count` after `ask`
+instead of before it — method order does not matter.
+**Do differently.** Nothing. The numbered "what it does / the line" table for a body worked.

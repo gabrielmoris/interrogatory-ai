@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-27 (11c issued).
+Last updated: 2026-09-28 (11c reviewed, 11d issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 11b**, 2026-09-27. 3/3 `app_engine`; 151 across twenty-two files, `fmt` and `clippy -D warnings` clean. Committed `4cec09d`. |
-| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md`, `DECISIONS.md`; 11c doc; `tests/room_exchange.rs` (new), `tests/app_engine.rs` (calls a suspect in before asking). |
-| Next action | **His:** Stage 11c — `docs/stages/stage-11c-the-room-keeps-the-exchange.md`. |
+| Last reviewed | **Stage 11c**, 2026-09-28. 4/4 `room_exchange`; 155 across twenty-three files, `fmt` and `clippy -D warnings` clean. Committed `7a43733`. |
+| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md`, `DECISIONS.md`; 11d doc; `tests/ask_command.rs` (new). |
+| Next action | **His:** Stage 11d — `docs/stages/stage-11d-react-asks-a-question.md`. |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -15,7 +15,7 @@ Last updated: 2026-09-27 (11c issued).
 
 ## Stage queue
 
-Stages 1–11b ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–11c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
@@ -26,8 +26,8 @@ Stages 1–11b ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~10h~~ ✅ | React starts an interrogation | **zero new elements** — `#[tauri::command]` wrapper, `generate_handler!`, a console `invoke`. Recall of 9b/9c. Doc and spec written and verified (1 test; `tauri::test` dropped — Windows, `DECISIONS.md` 2026-09-25). | 20 |
 | ~~11a~~ ✅ | the suspect gets a voice | **your own trait** — `trait InferenceEngine { fn reply }`, `impl … for MockEngine`. Implementing a trait is known (`From`, 9a); declaring one is new. | 20 |
 | ~~11b~~ ✅ | the game holds an engine | **`Box<dyn InferenceEngine>`** as a field of `AppState`; `AppState::ask` passes the question on. `: Send + Sync` on the trait is printed, not taught (Stage 15). Doc and spec written and verified (3 tests; 151 across twenty-two files). | 25 |
-| 11c | the room keeps the exchange | **zero new elements** — `ask` = `record` + `reply` + `record`; `AppState::turn_count` is a copy of `suspect`. Doc and spec written and verified (4 tests; 155 across twenty-three files). | 20 |
-| 11d | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). | 20 |
+| ~~11c~~ ✅ | the room keeps the exchange | **zero new elements** — `ask` = `record` + `reply` + `record`; `AppState::turn_count` is a copy of `suspect`. Doc and spec written and verified (4 tests; 155 across twenty-three files). | 20 |
+| 11d | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 
