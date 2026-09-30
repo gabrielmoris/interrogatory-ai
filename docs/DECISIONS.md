@@ -5,6 +5,20 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-30 — Stage 13 moves case loading into `spawn_blocking`; the engine never uses it
+
+**Decided.** `ipc.rs :: case_intro_in_background(cases_dir: PathBuf, slug: String) -> AppResult<CaseIntro>`
+= `spawn_blocking(move || case_intro_from(&cases_dir, &slug)).await.map_err(..BackgroundFailed..)?`.
+`case_intro` becomes `async` and calls it with `state.cases_dir.clone()`. New `AppError::BackgroundFailed
+{ message }` for a thread that panicked or was cancelled. Spec `tests/load_in_background.rs` (4).
+**Why.** Rule 2: one idea — slow work leaves on its own thread and must own what it takes (`move`, owned
+inputs). Disk reads are what `spawn_blocking` is for, and the inputs are plain owned values, so no `Arc`.
+**Rejected.** Moving `engine.reply` into `spawn_blocking` — `&self` cannot enter a `'static` closure
+without `Arc<dyn InferenceEngine>` (Stage 15, a second new thing), and the real engine gets one dedicated
+thread with channels (ROADMAP §2.3, Stages 14/19), so the code would be thrown away.
+**Costs.** `begin_interrogation` still reads the case on the window thread (it borrows `&AppState`).
+Left until the loaded case is held in state (Phase 3). `ask` still runs the mock on a tokio worker (Stage 14).
+
 ### 2026-09-29 — Stage 12 is `async fn ask` + `async fn ask_suspect`; the engine trait stays synchronous
 
 **Decided.** `AppState::ask` becomes `pub async fn`; its body is unchanged (nothing inside awaits yet).

@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-29 (11d reviewed, Stage 12 issued).
+Last updated: 2026-09-30 (Stage 13 issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 11d**, 2026-09-29. 1/1 `ask_command`; 156 across twenty-four files, `fmt` and `clippy -D warnings` clean. Committed `e34d2ef`. |
-| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md` (11d review); Stage 12 doc, `tests/ask_async.rs`, three tests moved to async, `DECISIONS.md`. |
-| Next action | **His:** Stage 12 — `docs/stages/stage-12-a-question-waits.md`. Written and verified (3 tests; 159 across twenty-five files). |
+| Last reviewed | **Stage 12**, 2026-09-30. 3/3 `ask_async`; 159 across twenty-five files, `fmt` and `clippy -D warnings` clean against his exact files. Committed `4833d96`. |
+| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md` (Stage 12 review); `DECISIONS.md`, `tests/load_in_background.rs`, `docs/stages/stage-13-slow-work-gets-its-own-thread.md` (Stage 13). |
+| Next action | **His:** Stage 13 — `docs/stages/stage-13-slow-work-gets-its-own-thread.md`. Then mine: Stage 14 (channels). |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -15,7 +15,7 @@ Last updated: 2026-09-29 (11d reviewed, Stage 12 issued).
 
 ## Stage queue
 
-Stages 1–11d ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–12 ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
@@ -28,7 +28,8 @@ Stages 1–11d ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~11b~~ ✅ | the game holds an engine | **`Box<dyn InferenceEngine>`** as a field of `AppState`; `AppState::ask` passes the question on. `: Send + Sync` on the trait is printed, not taught (Stage 15). Doc and spec written and verified (3 tests; 151 across twenty-two files). | 25 |
 | ~~11c~~ ✅ | the room keeps the exchange | **zero new elements** — `ask` = `record` + `reply` + `record`; `AppState::turn_count` is a copy of `suspect`. Doc and spec written and verified (4 tests; 155 across twenty-three files). | 20 |
 | ~~11d~~ ✅ | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
-| 12 | a question waits until it is awaited | **`async fn` + `.await`** — a future does nothing until awaited. `AppState::ask` and `ask_suspect` become async; tests use `block_on`. Doc and spec written and verified (3 tests; 159 across twenty-five files). | 25 |
+| ~~12~~ ✅ | a question waits until it is awaited | **`async fn` + `.await`** — a future does nothing until awaited. `AppState::ask` and `ask_suspect` become async; tests use `block_on`. Doc and spec written and verified (3 tests; 159 across twenty-five files). | 25 |
+| 13 | slow work gets its own thread | **`spawn_blocking` + `move`** — work on another thread must own what it uses. `case_intro_in_background` (disk read), `case_intro` async, `AppError::BackgroundFailed`. Doc and spec written and verified (4 tests; 163 across twenty-six files). | 25 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 

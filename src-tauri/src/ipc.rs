@@ -1,11 +1,12 @@
+use tauri::async_runtime::spawn_blocking;
 use tauri::State;
 
 use crate::case::Case;
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
 use crate::ids::SuspectId;
 use crate::state::AppState;
 use crate::storage::load_case;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// One suspect as the briefing screen needs them.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
@@ -43,9 +44,18 @@ pub fn case_intro_from(cases_dir: &Path, slug: &str) -> AppResult<CaseIntro> {
     Ok(CaseIntro::from(&case))
 }
 
+/// Reads the case on a separate thread, so the window never waits for the disk.
+pub async fn case_intro_in_background(cases_dir: PathBuf, slug: String) -> AppResult<CaseIntro> {
+    spawn_blocking(move || case_intro_from(&cases_dir, &slug))
+        .await
+        .map_err(|e| AppError::BackgroundFailed {
+            message: e.to_string(),
+        })?
+}
+
 #[tauri::command]
-pub fn case_intro(state: State<'_, AppState>, slug: String) -> AppResult<CaseIntro> {
-    case_intro_from(&state.cases_dir, &slug)
+pub async fn case_intro(state: State<'_, AppState>, slug: String) -> AppResult<CaseIntro> {
+    case_intro_in_background(state.cases_dir.clone(), slug).await
 }
 
 /// Calls in the suspect the player picked, once the case is known to have them.

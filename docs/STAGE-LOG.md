@@ -247,3 +247,13 @@ his exact files. Committed `e34d2ef`.
 **Stuck.** Nowhere reported. First submission matched the reference. Whether he ran the console
 step (4) was not reported.
 **Do differently.** Nothing. Stage 11 is done: the game can call a suspect in, ask, and keep both lines.
+
+### Stage 12 — a question waits until it is awaited ✅ 2026-09-30
+
+**Built.** `AppState::ask` is `pub async fn` (body unchanged); `ipc.rs :: ask_suspect` is `pub async fn`
+ending in `state.ask(&question).await`. Spec `tests/ask_async.rs`, 3/3; 159 across twenty-five files,
+`fmt` and `clippy -D warnings` clean. His `state.rs` and `ipc.rs` are byte-identical to the reference.
+Committed `4833d96`.
+**Stuck.** Nowhere reported. First submission matched the reference.
+**Do differently.** Nothing. Whether the `block_on` test binaries load on Windows was not reported;
+if a later `cargo test` shows `0xc0000139`, it is that (DECISIONS 2026-09-29).

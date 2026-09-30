@@ -37,6 +37,9 @@ pub enum AppError {
 
     #[error("{id} knows nothing they are allowed to talk about")]
     SuspectKnowsNothing { id: SuspectId },
+
+    #[error("work on a background thread stopped before it finished: {message}")]
+    BackgroundFailed { message: String },
 }
 
 /// A `Result` that fails with `AppError`. Use it instead of spelling out  `Result<T, AppError>` in every signature.
