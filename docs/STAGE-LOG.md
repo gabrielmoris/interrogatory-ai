@@ -237,3 +237,13 @@ against his exact `state.rs`. Committed `7a43733`.
 **Stuck.** Nowhere reported. First submission matched the reference. He put `turn_count` after `ask`
 instead of before it — method order does not matter.
 **Do differently.** Nothing. The numbered "what it does / the line" table for a body worked.
+
+### Stage 11d — React asks a question ✅ 2026-09-29
+
+**Built.** `ipc.rs :: ask_suspect(state, question: String) -> AppResult<String>`, one line:
+`state.ask(&question)`. `lib.rs` imports it and adds it to `generate_handler!`. Spec
+`tests/ask_command.rs`, 1/1; 156 across twenty-four files, `fmt` and `clippy -D warnings` clean against
+his exact files. Committed `e34d2ef`.
+**Stuck.** Nowhere reported. First submission matched the reference. Whether he ran the console
+step (4) was not reported.
+**Do differently.** Nothing. Stage 11 is done: the game can call a suspect in, ask, and keep both lines.

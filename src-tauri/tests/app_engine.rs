@@ -9,12 +9,16 @@
 //!
 //! Since Stage 11c the app only asks inside an interrogation, so the tests
 //! call a suspect in first.
+//!
+//! Since Stage 12 `ask` is async. A test cannot `.await`, so it waits with
+//! `block_on` (see `ask_async.rs`).
 
 use interrogatory_ai_lib::error::AppResult;
 use interrogatory_ai_lib::ids::SuspectId;
 use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
+use tauri::async_runtime::block_on;
 
 /// A second engine, written here: it repeats the question back.
 struct EchoEngine;
@@ -34,7 +38,7 @@ fn the_app_asks_the_engine_it_was_given() {
     app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(
-        app.ask("Where were you on Tuesday?"),
+        block_on(app.ask("Where were you on Tuesday?")),
         Ok("I was at home all night.".to_string())
     );
 }
@@ -44,7 +48,10 @@ fn any_engine_fits_the_same_field() {
     let app = AppState::new(PathBuf::from("cases"), Box::new(EchoEngine));
     app.begin(SuspectId::new(2)).unwrap();
 
-    assert_eq!(app.ask("Who is Viktor?"), Ok("Who is Viktor?".to_string()));
+    assert_eq!(
+        block_on(app.ask("Who is Viktor?")),
+        Ok("Who is Viktor?".to_string())
+    );
 }
 
 #[test]

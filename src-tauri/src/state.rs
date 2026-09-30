@@ -48,7 +48,7 @@ impl AppState {
     }
 
     /// The suspect's reply to what the detective just asked.
-    pub fn ask(&self, question: &str) -> AppResult<String> {
+    pub async fn ask(&self, question: &str) -> AppResult<String> {
         self.record(Speaker::Detective, question)?;
         let reply = self.engine.reply(question)?;
         self.record(Speaker::Suspect, &reply)?;

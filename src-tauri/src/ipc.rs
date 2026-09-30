@@ -65,6 +65,6 @@ pub fn begin_interrogation(
 }
 
 #[tauri::command]
-pub fn ask_suspect(state: State<'_, AppState>, question: String) -> AppResult<String> {
-    state.ask(&question)
+pub async fn ask_suspect(state: State<'_, AppState>, question: String) -> AppResult<String> {
+    state.ask(&question).await
 }

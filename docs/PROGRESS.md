@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-28 (11c reviewed, 11d issued).
+Last updated: 2026-09-29 (11d reviewed, Stage 12 issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 11c**, 2026-09-28. 4/4 `room_exchange`; 155 across twenty-three files, `fmt` and `clippy -D warnings` clean. Committed `7a43733`. |
-| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md`, `DECISIONS.md`; 11d doc; `tests/ask_command.rs` (new). |
-| Next action | **His:** Stage 11d — `docs/stages/stage-11d-react-asks-a-question.md`. |
+| Last reviewed | **Stage 11d**, 2026-09-29. 1/1 `ask_command`; 156 across twenty-four files, `fmt` and `clippy -D warnings` clean. Committed `e34d2ef`. |
+| Uncommitted | `PROGRESS.md`, `STAGE-LOG.md` (11d review); Stage 12 doc, `tests/ask_async.rs`, three tests moved to async, `DECISIONS.md`. |
+| Next action | **His:** Stage 12 — `docs/stages/stage-12-a-question-waits.md`. Written and verified (3 tests; 159 across twenty-five files). |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -15,7 +15,7 @@ Last updated: 2026-09-28 (11c reviewed, 11d issued).
 
 ## Stage queue
 
-Stages 1–11c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–11d ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
@@ -27,7 +27,8 @@ Stages 1–11c ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~11a~~ ✅ | the suspect gets a voice | **your own trait** — `trait InferenceEngine { fn reply }`, `impl … for MockEngine`. Implementing a trait is known (`From`, 9a); declaring one is new. | 20 |
 | ~~11b~~ ✅ | the game holds an engine | **`Box<dyn InferenceEngine>`** as a field of `AppState`; `AppState::ask` passes the question on. `: Send + Sync` on the trait is printed, not taught (Stage 15). Doc and spec written and verified (3 tests; 151 across twenty-two files). | 25 |
 | ~~11c~~ ✅ | the room keeps the exchange | **zero new elements** — `ask` = `record` + `reply` + `record`; `AppState::turn_count` is a copy of `suspect`. Doc and spec written and verified (4 tests; 155 across twenty-three files). | 20 |
-| 11d | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
+| ~~11d~~ ✅ | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
+| 12 | a question waits until it is awaited | **`async fn` + `.await`** — a future does nothing until awaited. `AppState::ask` and `ask_suspect` become async; tests use `block_on`. Doc and spec written and verified (3 tests; 159 across twenty-five files). | 25 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 

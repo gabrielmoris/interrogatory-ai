@@ -5,6 +5,22 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-29 — Stage 12 is `async fn ask` + `async fn ask_suspect`; the engine trait stays synchronous
+
+**Decided.** `AppState::ask` becomes `pub async fn`; its body is unchanged (nothing inside awaits yet).
+`ipc.rs :: ask_suspect` becomes `pub async fn` and ends in `.await`. Spec `tests/ask_async.rs` (3):
+calling `ask` keeps 0 lines, `block_on` keeps 2, a dropped future keeps nothing. Tests wait with
+`tauri::async_runtime::block_on` — no `tokio` dev-dependency, no `#[tokio::test]`.
+`room_exchange.rs`, `app_engine.rs` and `ask_command.rs` changed to the async form by me.
+**Why.** Rule 2: `async fn` and `.await` are one idea (a future does nothing until awaited), so no split.
+`ask` is where the game will wait for the model (channel reply, Stage 14), so it is the right fn to make
+async. Tauri runs non-async commands on the main thread; a slow reply would freeze the window.
+**Rejected.** `async fn reply` on `InferenceEngine` — `async fn` in a trait is not usable as
+`Box<dyn …>` without `async-trait` or boxed futures; the real engine answers over a channel anyway
+(ROADMAP §2.3). `#[tokio::test]` — a dev-dependency and an attribute macro, two more things.
+**Costs.** `engine.reply` still runs on a tokio worker inside `ask` and blocks it. That is Stage 13.
+Not verified on Windows: whether a test binary using `block_on` loads (0xc0000139 risk, see 2026-09-25).
+
 ### 2026-09-28 — `ask_suspect` calls `AppState::ask` directly; no `ask_suspect_from`
 
 **Decided.** `#[tauri::command] ask_suspect(state, question: String) -> AppResult<String>` is one line:

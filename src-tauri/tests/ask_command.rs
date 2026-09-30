@@ -1,4 +1,4 @@
-//! Stage 11d — React asks a question
+//! Stage 11d — React asks a question (async since Stage 12)
 //!
 //! Run with:  cargo test --test ask_command      (from src-tauri/)
 //!
@@ -12,7 +12,10 @@ use interrogatory_ai_lib::state::AppState;
 use tauri::State;
 
 #[test]
-fn ask_suspect_takes_the_state_and_a_question() {
-    // This line compiles only if `ask_suspect` has exactly this shape.
-    let _command: fn(State<'_, AppState>, String) -> AppResult<String> = ask_suspect;
+fn ask_suspect_is_async_and_takes_the_state_and_a_question() {
+    // This compiles only if `ask_suspect` takes these two inputs and,
+    // once awaited, gives back an `AppResult<String>`.
+    async fn _shape(state: State<'_, AppState>, question: String) -> AppResult<String> {
+        ask_suspect(state, question).await
+    }
 }
