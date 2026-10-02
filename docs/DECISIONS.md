@@ -5,6 +5,24 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-09-30 — Stage 14 splits; 14a puts the engine on its own thread behind a `std::sync::mpsc` channel
+
+**Decided.** New shell module `src/engine_thread.rs`: `Question { text: String, answer_to: Sender<AppResult<String>> }`,
+`start(Box<dyn InferenceEngine>) -> Sender<Question>` (spawns one thread), private `answer_all` loop
+(`for question in inbox` → `reply` → `send`). Std channels in both directions. Spec `tests/engine_thread.rs` (4).
+**14b (planned, zero new elements):** `AppState` holds `questions: Sender<Question>` instead of `engine`;
+`new` calls `start(engine)` (signature unchanged, no test changes); `ask` sends a `Question` and waits with
+`spawn_blocking(move || answer.recv())` (Stage 13). Measured: 167/167, clippy clean.
+**Why.** Rule 2: a channel is one idea — two ends, `send` moves the value. `thread::spawn` is a recall of
+`spawn_blocking`. The reply `Sender` inside each question is the request/response shape the real engine keeps.
+**Rejected.** One fixed answers channel — with two askers an answer can reach the wrong one; rewritten in 14b.
+tokio channels (`tauri::async_runtime::channel`) — `blocking_recv`/`blocking_send`, a capacity: a second API;
+they arrive when `select!` needs an awaitable receiver (Stage 17). The loop in `llm.rs` — that file is domain.
+Returning the `JoinHandle` — nothing joins; the thread ends when the last `Sender` drops.
+**Costs.** In 14b each question in flight parks one blocking-pool thread on `recv`. Harmless at one question
+at a time; replaced by an awaitable receiver later. A panicking engine kills its thread; 14b maps the
+failed `send`/`recv` to `AppError::Inference`.
+
 ### 2026-09-30 — Stage 13 moves case loading into `spawn_blocking`; the engine never uses it
 
 **Decided.** `ipc.rs :: case_intro_in_background(cases_dir: PathBuf, slug: String) -> AppResult<CaseIntro>`

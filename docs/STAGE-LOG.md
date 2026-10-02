@@ -257,3 +257,15 @@ Committed `4833d96`.
 **Stuck.** Nowhere reported. First submission matched the reference.
 **Do differently.** Nothing. Whether the `block_on` test binaries load on Windows was not reported;
 if a later `cargo test` shows `0xc0000139`, it is that (DECISIONS 2026-09-29).
+
+### Stage 13 — slow work gets its own thread ✅ 2026-09-30
+
+**Built.** `AppError::BackgroundFailed { message }`. `ipc.rs :: case_intro_in_background(PathBuf, String)`
+= `spawn_blocking(move || case_intro_from(..)).await.map_err(..)?`; `case_intro` is `async` and passes
+`state.cases_dir.clone()`. Spec `tests/load_in_background.rs`, 4/4; 163 across twenty-six files, `fmt` and
+`clippy -D warnings` clean. His `error.rs` and `ipc.rs` match the reference apart from line endings.
+Committed `b7154a0`.
+**Stuck.** Nowhere in the code. Before writing it he asked what `||` and `move` mean; answered in chat
+and added to the doc's "What you learned" (closure = `() =>`, `move` = the closure owns its variables).
+**Do differently.** Closures had been used since 9a without the word "closure" being taught. Name a
+syntax the first time it appears, even when it is not the stage's new thing.

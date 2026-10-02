@@ -86,7 +86,7 @@ tell him in one line. Never leave a design question to him.
 - **Everything lives in `src-tauri`** — no `crates/core` split (`DECISIONS.md`, 2026-08-21).
 - Domain modules (`difficulty.rs`, `ids.rs`, `case.rs`, `error.rs`, `case_file.rs`, `transcript.rs`)
   have **no `tauri::`, `tokio::` or `std::fs` imports**. Shell modules (`storage.rs`, `ipc.rs`,
-  `state.rs`) may.
+  `state.rs`, `engine_thread.rs`) may.
 - No `unwrap()` / `expect()` in domain modules. `main.rs`, `lib.rs` wiring and tests are exempt.
 - Every stage ends green on `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`.
 - Package manager is **bun**. Run cargo from `src-tauri/`.
