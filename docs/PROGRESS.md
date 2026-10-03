@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-09-30 (Stage 14a written).
+Last updated: 2026-10-03 (Stage 14a reviewed).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 13**, 2026-09-30. 4/4 `load_in_background`; 163 across twenty-six files, `fmt` and `clippy -D warnings` clean against his exact files. |
-| Uncommitted | Stage 14a: the spec `tests/engine_thread.rs`, the stage doc, `PROGRESS.md`, `STAGE-LOG.md`, `DECISIONS.md`, `CLAUDE.md` (shell list). Stage 13 is `b7154a0`. |
-| Next action | **His:** Stage 14a — `docs/stages/stage-14a-the-engine-gets-its-own-thread.md`. **Mine:** review it, then write 14b (`DECISIONS.md`, 2026-09-30). |
+| Last reviewed | **Stage 14a**, 2026-10-03. 4/4 `engine_thread` (20 repeat runs, no flake); 167 across twenty-seven files, `fmt` and `clippy -D warnings` clean against his exact files. |
+| Uncommitted | His Stage 14a: `src/engine_thread.rs` (new), `src/lib.rs` (`pub mod engine_thread;`), and this review's `PROGRESS.md` / `STAGE-LOG.md`. The spec and doc are `63b937c`. |
+| Next action | **His:** commit 14a. **Mine:** write 14b (`DECISIONS.md`, 2026-09-30). |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -15,7 +15,7 @@ Last updated: 2026-09-30 (Stage 14a written).
 
 ## Stage queue
 
-Stages 1–12 ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
+Stages 1–14a ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's shape: `DECISIONS.md`, 2026-09-17.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
@@ -30,7 +30,7 @@ Stages 1–12 ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sha
 | ~~11d~~ ✅ | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
 | ~~12~~ ✅ | a question waits until it is awaited | **`async fn` + `.await`** — a future does nothing until awaited. `AppState::ask` and `ask_suspect` become async; tests use `block_on`. Doc and spec written and verified (3 tests; 159 across twenty-five files). | 25 |
 | ~~13~~ ✅ | slow work gets its own thread | **`spawn_blocking` + `move`** — work on another thread must own what it uses. `case_intro_in_background` (disk read), `case_intro` async, `AppError::BackgroundFailed`. Doc and spec written and verified (4 tests; 163 across twenty-six files). | 25 |
-| **14a** | the engine gets its own thread | **a channel** — `Sender`/`Receiver`, `send` moves the value, `for … in inbox` ends when every `Sender` is gone. `engine_thread.rs :: start`, `Question`. Doc and spec written and verified (4 tests; 167 across twenty-seven files). | 25 |
+| ~~14a~~ ✅ | the engine gets its own thread | **a channel** — `Sender`/`Receiver`, `send` moves the value, `for … in inbox` ends when every `Sender` is gone. `engine_thread.rs :: start`, `Question`. Doc and spec written and verified (4 tests; 167 across twenty-seven files). | 25 |
 | 14b | `ask` goes through the engine thread | **zero new elements** — `AppState` holds the `Sender`; `ask` sends a `Question` and waits with `spawn_blocking` (13). Shape measured, not written. | 20 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.

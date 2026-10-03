@@ -269,3 +269,13 @@ Committed `b7154a0`.
 and added to the doc's "What you learned" (closure = `() =>`, `move` = the closure owns its variables).
 **Do differently.** Closures had been used since 9a without the word "closure" being taught. Name a
 syntax the first time it appears, even when it is not the stage's new thing.
+
+### Stage 14a — the engine gets its own thread ✅ 2026-10-03
+
+**Built.** `src/engine_thread.rs` (new shell module): `Question { text, answer_to: Sender<AppResult<String>> }`;
+`start(Box<dyn InferenceEngine>) -> Sender<Question>` = `channel()` + `thread::spawn(move || answer_all(..))`;
+`answer_all` runs `for question in inbox` and `let _ = question.answer_to.send(reply)`. `lib.rs` gains
+`pub mod engine_thread;`. Spec `tests/engine_thread.rs`, 4/4 (20 repeat runs, no flake); 167 across
+twenty-seven files, `fmt` and `clippy -D warnings` clean. His `engine_thread.rs` is identical to the reference.
+**Stuck.** Nowhere reported. First submission matched the reference.
+**Do differently.** Nothing. Whether he saw step 3's `E0382` before deleting the `println!` was not reported.
