@@ -6,23 +6,12 @@ TypeScript developer and a **Rust beginner**. He has ~2–4 h/week.
 
 **Resume:** this file → `docs/PROGRESS.md` → the current stage doc.
 
-**Rewritten from the base on 2026-09-24** (correction 24): *"your explanations are for a google dev
-with 25 years of experience and i am starting with rust... adding cognitive load instead of making
-a concept EASY."* Twenty-three corrections had each added a rule; the rules together made every
-brief dense. The old file is in `docs/archive/CLAUDE-until-2026-09-24.md`. Do not bring its devices
-back (predict sure/guessing, "version that passes and is still wrong", analogies with breakage
-clauses, runtime-vs-compiler labels, four closed-book questions, mentor idiom).
-
-**Changed 2026-10-03** (correction 25): after that rewrite every stage doc printed its code to paste.
-*"this time I realized that it was purely copy paste, but we did many things that were an
-opportunity to learn."* Now the new thing is explained **before** the steps, and he types the lines
-that use it (Rule 8). Do not go back to printing them.
-
-**Changed 2026-10-04** (correction 26): "Make a channel. Call the two ends `questions` and `inbox`"
-was not enough: *"I would never ever be able to write `let (questions, inbox) = channel();`... I am
-here to learn rust, its syntax, logic, methods... not to copy paste or to guess things that you never
-explained."* He set the stage doc's six sections himself (below). New syntax is **shown** with its
-form and an example; known syntax gets lines pasted from his repo. `stage-14a` is the model doc.
+**Why the rules look like this.** 26 corrections shaped them; the last three set today's method.
+24 (2026-09-24): explanations pitched at an expert added load — beginner words only.
+25 (2026-10-03): docs printed the code to paste — he types the new lines himself (Rule 8).
+26 (2026-10-04): steps named things without showing the syntax — he set the six-section doc
+(Rules 6, 9). Do not bring back: predict sure/guessing, "a version that passes and is still wrong",
+analogies with breakage clauses, closed-book questions, mentor idiom. History: `docs/STAGE-LOG.md`.
 
 ## The loop
 
@@ -98,17 +87,17 @@ tell him in one line. Never leave a design question to him.
 | Path | What |
 |---|---|
 | `docs/PROGRESS.md` | status, next action, stage queue |
-| `docs/stages/` | one doc per stage |
+| `docs/stages/` | one doc per stage. `stage-14a` is the model; older docs are a record, not a template |
 | `docs/STAGE-LOG.md` | what happened in each stage |
 | `docs/DECISIONS.md` | architecture decisions, newest first |
-| `docs/ROADMAP.md` | phases 2–5 |
-| `docs/archive/` | superseded (old method, its research, the concept ledger, 24 corrections) — do not act on |
+| `docs/ROADMAP.md` | phases 2–5, module layout, risks |
+| `docs/adr/ADR-0001-…` | local inference on desktop and Android — read before Stages 18–19 |
 
 ## Code conventions
 
 - **Everything lives in `src-tauri`** — no `crates/core` split (`DECISIONS.md`, 2026-08-21).
-- Domain modules (`difficulty.rs`, `ids.rs`, `case.rs`, `error.rs`, `case_file.rs`, `transcript.rs`)
-  have **no `tauri::`, `tokio::` or `std::fs` imports**. Shell modules (`storage.rs`, `ipc.rs`,
+- Domain modules (`difficulty.rs`, `ids.rs`, `case.rs`, `error.rs`, `case_file.rs`, `transcript.rs`,
+  `llm.rs`) have **no `tauri::`, `tokio::` or `std::fs` imports**. Shell modules (`storage.rs`, `ipc.rs`,
   `state.rs`, `engine_thread.rs`) may.
 - No `unwrap()` / `expect()` in domain modules. `main.rs`, `lib.rs` wiring and tests are exempt.
 - Every stage ends green on `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test`.

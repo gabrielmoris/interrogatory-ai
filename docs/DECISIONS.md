@@ -1,9 +1,19 @@
 # DECISIONS — architecture, newest first
 
-A lookup, not a read-through. Architecture only — teaching-process changes live in `MENTOR-NOTES.md`.
+A lookup, not a read-through. Architecture only — teaching-process changes live in `CLAUDE.md`.
 Per entry: decided / why / rejected / costs. If an entry needs more, it was two decisions.
 
 ---
+
+### 2026-10-04 — The desktop target is his Mac (Apple Silicon, Metal), not Windows/CUDA
+
+**Decided.** Code and the local model both run on his Mac mini. `llama-cpp-2` builds with Metal there;
+Android stays Phase 2.5 on the same engine. Stage 18 is a macOS/Metal toolchain session.
+**Why.** The repo moved to the Mac in October, and he chose it to run the model (asked 2026-10-04).
+**Rejected.** Keeping the Windows PC for the model — two machines to build on. Both — two desktop
+toolchains while he is still learning.
+**Costs.** The model's size is bounded by the Mac's unified memory, not VRAM. The Windows-only notes
+below (`0xc0000139`, the `tauri::test` crash) are history; on macOS `tauri::test` has not been tried.
 
 ### 2026-09-30 — Stage 14 splits; 14a puts the engine on its own thread behind a `std::sync::mpsc` channel
 
@@ -51,7 +61,6 @@ async. Tauri runs non-async commands on the main thread; a slow reply would free
 `Box<dyn …>` without `async-trait` or boxed futures; the real engine answers over a channel anyway
 (ROADMAP §2.3). `#[tokio::test]` — a dev-dependency and an attribute macro, two more things.
 **Costs.** `engine.reply` still runs on a tokio worker inside `ask` and blocks it. That is Stage 13.
-Not verified on Windows: whether a test binary using `block_on` loads (0xc0000139 risk, see 2026-09-25).
 
 ### 2026-09-28 — `ask_suspect` calls `AppState::ask` directly; no `ask_suspect_from`
 
@@ -103,7 +112,7 @@ thing. Trait objects are a second. `AppResult` from day one because the real eng
 `ipc.rs`. A `Prompt` type as the argument — Stage 20 owns it. `async fn reply` — Stage 12's lesson.
 A mock that cycles through several lines — needs `&mut self` or a `Cell`, nothing to teach here.
 **Costs.** `reply`'s signature changes twice more: `&str` → `Prompt` (Stage 20), and
-blocking → streamed tokens (Stages 12–16). Each change is one trait line and the mock's body.
+blocking → streamed tokens (Stage 16). Each change is one trait line and the mock's body.
 
 ### 2026-09-25 — 10h's spec only checks the command's shape; no `tauri::test`
 
@@ -134,20 +143,6 @@ with a second conversion to keep in step.
 **Costs.** The case file is read on every begin. Revisit when `AppState` needs the case for the
 report (Phase 3), and then load once.
 
-### 2026-09-22 — 10f is a consolidation stage, and it runs in chat instead of a brief
-
-**Decided.** 10f carries zero new elements: `AppState::suspect()` and `AppState::record()`, the same
-lock lines on two more methods, typed by him one line at a time in chat, one run per method. No
-document. `Deserialize` on `SuspectId`, the command and the handler list move to 10g (then split:
-10g the checked function, 10h the command — 2026-09-23).
-**Why.** Rule 1 schedules a consolidation stage when two ledger entries go `shaky`; four did in 10e,
-and the lock itself was printed rather than typed, so nothing in 10e is `used`. Rule 4's last rung is
-*change the medium*, and 10e was the second stage running where the document was what failed.
-**Rejected.** 10f as planned — stacking `Deserialize`, a command and the handler list on syntax he
-cannot yet type unaided. A shorter brief: the medium is the thing being changed, not the length.
-**Costs.** One extra sitting before React can start an interrogation. Nothing lands in
-`docs/stages/`, so the `STAGE-LOG.md` entry has to carry what was taught.
-
 ### 2026-09-21 — The phase lives in `AppState` behind a `std::sync::Mutex`; poison is an `AppError`
 
 **Decided.** `AppState { cases_dir, phase: Mutex<Phase> }`, `phase` private, starting at `Briefing`.
@@ -165,7 +160,7 @@ every holder is panic-free, which nothing checks, and it hides the crash. A `pub
 returning the guard — one caller today; it comes with the second.
 **Costs.** No test reaches `Poisoned`: it needs a panic while holding a private lock. Once poisoned,
 every later command fails until restart (`Mutex::clear_poison` when a "new case" command exists).
-Reading through the lock (`suspect()`), `record` and `finish` arrive with the commands that need them.
+`finish` arrives on `AppState` with the command that needs it.
 
 ### 2026-09-19 — `record` takes a speaker and a `&str`; one `refusal` helper builds the error
 
@@ -179,13 +174,11 @@ unseen — `finish`'s exact wording is pinned by no test.
 nobody will measure. No helper — a four-line literal inside `record`'s `_` arm.
 **Costs.** Phase 2 copies each streamed reply once into the transcript. Revisit only if a profile says so.
 
-### 2026-09-17 — Stage 10 is six stages, and `Phase` keeps its data inside one variant
+### 2026-09-17 — `Phase` keeps its data inside one variant
 
 **Decided.** `transcript.rs` holds `Speaker { Detective, Suspect }`, `Turn { speaker, text }` and
 `Phase { Briefing, Interrogating { suspect: SuspectId, turns: Vec<Turn> }, Reporting }`. A wrong
-transition is `AppError::InvalidState` (already in `error.rs`) at run time. Split: 10a read the data
-out, 10b move between phases, 10c record a line, 10d what the room shows (a consolidation stage,
-inserted 2026-09-20), 10e the lock, 10f React starts an interrogation.
+transition is `AppError::InvalidState` (already in `error.rs`) at run time.
 **Why.** "A suspect during the briefing" cannot be built, so illegal *states* do not compile. Illegal
 *transitions* cannot be compile errors while the phase is one value behind one lock across IPC calls.
 The suspect sits in the phase because Phase 1 plays one suspect per case; per-suspect sessions are §3.3.
@@ -194,21 +187,6 @@ without an enum around them anyway, and moving out of a lock guard needs `mem::r
 `Transcript(Vec<Turn>)` newtype and a `Scored` variant — no behaviour or data for either until §2.7
 and Stage 21. `Speaker::Suspect(SuspectId)` — the phase already knows who is in the room.
 **Costs.** No way back from the room to the briefing until §3.3. `Reporting` holds nothing until Stage 21.
-Phase 1's exit criterion reworded. 10e and 10f are counted against Rule 1 again before issuing.
-
-### 2026-09-14 — `AppState` starts immutable, and the lock waits for Stage 10
-
-**Decided.** Stage 9's `AppState` holds one field, `cases_dir: PathBuf`, and no lock. `Mutex` and
-interior mutability move out of Phase 1 §1.5 and into **Stage 10e**, arriving with `Phase` — the
-first thing in this app that changes while it runs. Stage 9 is 9a (the wire types) + 9b (the
-command) + 9c (`.manage()` and `State<'_, T>`).
-**Why.** A lock around a value that is only ever read teaches the syntax and none of the reason, and
-the reason is the whole lesson. Sequenced this way `Mutex` shows up the first time two things want to
-change one value, which is also where `MutexGuard` not crossing `.await` starts to matter (Stage 15).
-**Rejected.** `AppState { cases_dir: Mutex<PathBuf> }` now, to "get the habit in early". That is the
-pattern he has objected to five times: machinery first, motivation later.
-**Costs.** Stage 10 grows by one topic and will itself need splitting. `ROADMAP.md` §1.5 and §1.6
-amended; the "9c is where the habit forms" line now points at Stage 10.
 
 ### 2026-09-13 — What crosses to React is a screen-shaped type, built in `ipc.rs`
 
@@ -267,7 +245,7 @@ and hands React a sentence to regex. Also rejected: reading the file here.
 **Costs.** The filesystem read moves to Stage 8 with `Io` / `CaseNotFound` and a shell-side
 `storage.rs`; tests reach the two real files with `include_str!`, so `case_file.rs` stays pure.
 `SuspectId` / `FactId` get `Deserialize` at the first command that takes an id as an argument —
-Stage 10g, since 9's command takes a slug (renumbered 2026-09-22/23).
+Stage 10g, since 9's command takes a slug.
 
 ### 2026-08-25 — `AppError` holds owned, serializable data; `std::io::Error` never goes inside it
 
@@ -312,15 +290,15 @@ if the domain modules stay pure.
 **Rejected argument, corrected.** The mentor's compile-time case was oversold: with incremental
 compilation the loop is ~1–2 s vs ~10–20 s, not 2 s vs 2 min. The real argument was *enforcement* —
 a crate boundary makes purity a compile error rather than a promise. Noted, not decisive.
-**Tripwire.** If `cargo test` inside the Tauri crate turns flaky on Windows for Tauri-specific
+**Tripwire.** If `cargo test` inside the Tauri crate turns flaky for Tauri-specific
 reasons (`generate_context!` validation, `staticlib`/`cdylib` linking, `tauri::test` mocks), split
 immediately without further debate. The test loop is the product in this format.
 **Mitigation in force.** Domain modules carry no `tauri::` / `tokio::` / `std::fs` imports. If a
 domain function ever wants an `AppHandle`, that is the signal — discuss, do not quietly reach for it.
 
-### 2026-08-21 — Windows and Android on one engine
+### 2026-08-21 — Desktop and Android on one engine
 
-**Decided.** `llama-cpp-2`, compiled twice with different feature flags. Windows CUDA; Android via
+**Decided.** `llama-cpp-2`, compiled twice with different feature flags. Desktop GPU (Windows CUDA then; macOS Metal since 2026-10-04); Android via
 the NDK with Vulkan/OpenCL or a CPU floor. Android is **Phase 2.5**, sequenced after Phase 3.
 **Why / rejected.** Full reasoning in `adr/ADR-0001-cross-platform-inference.md`.
 

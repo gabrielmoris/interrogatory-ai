@@ -1,18 +1,18 @@
-# ADR-0001 — Cross-platform local inference (Windows + Android)
+# ADR-0001 — Cross-platform local inference (desktop + Android)
 
 **Status:** Accepted
-**Date:** 2026-08-21
-**Context:** Interrogator must run local-first on Windows (dev machine, NVIDIA 8 GB+) and on Android.
+**Date:** 2026-08-21. **Amended 2026-10-04:** the desktop is macOS on Apple Silicon (Metal), not Windows/CUDA (`DECISIONS.md`).
+**Context:** Interrogator must run local-first on macOS (dev machine, Apple Silicon) and on Android.
 
 ---
 
 ## Decision
 
-**One inference backend — llama.cpp via `llama-cpp-2` — compiled twice with different feature flags.** Windows builds with CUDA; Android builds for `aarch64-linux-android` via the NDK, with Vulkan (or OpenCL/Adreno) where the device supports it and CPU/NEON as the floor.
+**One inference backend — llama.cpp via `llama-cpp-2` — compiled twice with different feature flags.** macOS builds with Metal; Android builds for `aarch64-linux-android` via the NDK, with Vulkan (or OpenCL/Adreno) where the device supports it and CPU/NEON as the floor.
 
 `llama-cpp-sys-2`'s build script has first-class Android support: it detects `aarch64-linux-android` / `armv7-linux-androideabi`, reads `ANDROID_NDK` / `ANDROID_NDK_ROOT` / `NDK_ROOT`, emits per-ABI flags for arm64-v8a, armeabi-v7a, x86_64 and x86, handles `c++_static` vs `c++_shared` linking, and supports `GGML_VULKAN` and `GGML_OPENCL` (Qualcomm Adreno). CUDA and Metal are not configured for Android, as expected.
 
-This means **the `InferenceEngine` trait already defined in Phase 1 is the entire portability story for the code.** No second engine, no JNI bridge, no Kotlin.
+This means **the `InferenceEngine` trait (Stage 11a) is the entire portability story for the code.** No second engine, no JNI bridge, no Kotlin.
 
 ---
 
@@ -20,11 +20,11 @@ This means **the `InferenceEngine` trait already defined in Phase 1 is the entir
 
 Not the code. The **model**, and the **memory budget**.
 
-| | Windows | Android |
+| | Mac (Apple Silicon) | Android |
 |---|---|---|
-| Compute | CUDA, full offload | CPU/NEON floor; Vulkan or OpenCL where available |
+| Compute | Metal, full offload | CPU/NEON floor; Vulkan or OpenCL where available |
 | Practical model | ~8B instruct, Q4_K_M (~4.7 GB) | 1–4B instruct, Q4_K_M (~0.7–2.5 GB) |
-| Resident budget | VRAM + host RAM, generous | ~1.5–2.5 GB before the OS starts killing you |
+| Resident budget | unified memory, generous | ~1.5–2.5 GB before the OS starts killing you |
 | Process lifetime | until you close it | terminated at the OS's discretion when backgrounded |
 | Prefill cost | negligible | the real bottleneck on long transcripts |
 | Thermals | irrelevant | throttles within minutes of sustained generation |
@@ -70,7 +70,7 @@ enum ModelState {
 }
 ```
 
-Requirements: resumable (HTTP range requests), SHA-256 verified before first load, cancellable, and a UI state for each variant. Stream to disk with `reqwest` — never buffer 2 GB in memory. Same code path works on Windows, so build it once and use it on both.
+Requirements: resumable (HTTP range requests), SHA-256 verified before first load, cancellable, and a UI state for each variant. Stream to disk with `reqwest` — never buffer 2 GB in memory. Same code path works on the Mac, so build it once and use it on both.
 
 ### 2. Memory and process lifecycle
 - Let llama.cpp **mmap** the GGUF (its default). Mapped pages are evictable under pressure; a heap copy is not.
@@ -84,7 +84,7 @@ Requirements: resumable (HTTP range requests), SHA-256 verified before first loa
 - Prefill dominates. Every extra turn of transcript you resend costs real seconds. This is why §5 below matters.
 
 ### 4. Build toolchain
-`cargo-ndk`, `ANDROID_NDK_ROOT`, `tauri android init` / `dev` / `build`, Android SDK + NDK version pinning, C++ stdlib link mode. **Budget a full session for this and schedule no feature work alongside it** — same rule as the Windows/CUDA build. Record the exact working versions in `docs/BUILD.md`.
+`cargo-ndk`, `ANDROID_NDK_ROOT`, `tauri android init` / `dev` / `build`, Android SDK + NDK version pinning, C++ stdlib link mode. **Budget a full session for this and schedule no feature work alongside it** — same rule as the macOS/Metal build. Record the exact working versions in `docs/BUILD.md`.
 
 ---
 
@@ -119,7 +119,7 @@ fn engine_for(cfg: &Config) -> Box<dyn InferenceEngine> { /* Mock | Llama | Remo
 
 ## 7. Sequencing
 
-**Android is not a Phase 2 concern.** Phase 2 stays Windows/CUDA only. Fighting two toolchains before the game works is how this project dies.
+**Android is not a Phase 2 concern.** Phase 2 stays macOS/Metal only. Fighting two toolchains before the game works is how this project dies.
 
 Insert **Phase 2.5 — Android bring-up** *after* Phase 3 (case engine and scoring are stable):
 
@@ -131,7 +131,7 @@ Insert **Phase 2.5 — Android bring-up** *after* Phase 3 (case engine and scori
 
 **What to do *now*, at zero cost, so Phase 2.5 is possible:**
 
-- Domain modules never touch `std::fs`. Paths are passed in; Tauri resolves them per platform. *(Amended 2026-08-21: `crates/core` here means the domain modules in `src-tauri/src` — the workspace split was rejected, see `DECISIONS.md`.)*
+- Domain modules never touch `std::fs`. Paths are passed in; Tauri resolves them per platform.
 - `ModelProfile` exists as data from the first commit that loads a model.
 - No hardcoded chat template, context size, thread count, or token cap anywhere.
 - `InferenceEngine` returns a stream and takes a cancellation token — already the plan, and non-negotiable once mobile is in scope.
@@ -144,7 +144,7 @@ Insert **Phase 2.5 — Android bring-up** *after* Phase 3 (case engine and scori
 |---|---|
 | **MediaPipe / Google AI Edge LiteRT** | Kotlin + JNI, a second engine to maintain, no desktop story. Good mobile performance, but you would be writing and debugging two inference paths in a project whose point is learning Rust. |
 | **ONNX Runtime GenAI** | Cross-platform, but weaker Rust bindings and a more painful model conversion pipeline than GGUF. |
-| **Gemini Nano / AICore** | Device-gated, no control over sampling parameters or system prompt depth, and nothing equivalent on Windows. Fails the "one engine" requirement outright. |
+| **Gemini Nano / AICore** | Device-gated, no control over sampling parameters or system prompt depth, and nothing equivalent on the desktop. Fails the "one engine" requirement outright. |
 | **`candle`** | Pure Rust and pleasant to build, but slower, thinner quantization support, and no meaningful mobile GPU story. |
 | **Remote-only on Android** | Abandons local-first. Kept as a fallback tier, never as the default. |
 

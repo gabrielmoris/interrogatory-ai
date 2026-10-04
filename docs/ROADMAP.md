@@ -1,8 +1,8 @@
 # Interrogator — Engineering & Learning Roadmap
 
-**Budget:** 2–4 h/week — a **9–12 month build**. Do not compress it by skipping Phase 1.
-**Target:** Windows + NVIDIA GPU, 8 GB+ VRAM. Android is Phase 2.5.
-**Inference:** `llama-cpp-2` in-process, CUDA offload — `adr/ADR-0001-cross-platform-inference.md`.
+**Budget:** 2–4 h/week — a **9–12 month build**, started 2026-08-21.
+**Target:** his Mac mini, Apple Silicon (`DECISIONS.md`, 2026-10-04). Android is Phase 2.5.
+**Inference:** `llama-cpp-2` in-process, Metal offload — `adr/ADR-0001-cross-platform-inference.md`.
 
 The next one or two stages live in `PROGRESS.md`; the later queue is here. This file is the
 **plan**; `DECISIONS.md` is the **why**. When they overlap, this file carries a pointer only.
@@ -30,22 +30,23 @@ src-tauri/src/
   main.rs           entry only
   lib.rs            tauri::Builder wiring + module declarations
   # ---- domain: no tauri::, no tokio::, no std::fs ----
-  difficulty.rs     Difficulty, Tuning                      Stage 1
-  ids.rs            SuspectId, FactId                       Stage 2
-  case.rs           Case, Suspect, Fact                     Stages 3–4, 7
-  error.rs          AppError (thiserror) + Serialize        Stage 5
-  case_file.rs      RawCase -> TryFrom -> Case              Stage 6
-  transcript.rs     Speaker, Turn, Phase                    Stages 10a–10c
-  prompt.rs         deterministic String assembly           Stage 20
-  scoring.rs        Report, Verdict, ScoreBreakdown         Stage 21
-  generator.rs      seeded case skeletons + is_solvable     Stage 22
+  difficulty.rs     Difficulty, Tuning                       Stage 1
+  ids.rs            SuspectId, FactId                        Stage 2
+  case.rs           Case, Suspect, Fact, VisibleFact         Stages 3–5, 7
+  error.rs          AppError (thiserror) + Serialize         Stage 5
+  case_file.rs      RawCase -> TryFrom -> Case               Stage 6
+  transcript.rs     Speaker, Turn, Phase                     Stages 10a–10d
+  llm.rs            trait InferenceEngine + MockEngine       Stage 11a
+  prompt.rs         deterministic String assembly            Stage 20
+  scoring.rs        Report, Verdict, ScoreBreakdown          Stage 21
+  generator.rs      seeded case skeletons + is_solvable      Stage 22
   # ---- shell: allowed Tauri, tokio, the filesystem ----
-  storage.rs        reads case files from disk              Stage 8
-  state.rs          AppState, managed via tauri::State      Stage 9c
-  session/          stateful interrogation orchestration
-  llm.rs            trait InferenceEngine + MockEngine (11a); llm/ when llama.rs lands (19)
-  ipc.rs            wire types (9a) + #[tauri::command] wrappers (9b)
-                    (a directory when it holds a second command group — DECISIONS, 2026-09-13)
+  storage.rs        reads case files from disk               Stage 8
+  ipc.rs            wire types + #[tauri::command] wrappers  Stages 9a–13
+  state.rs          AppState, managed via tauri::State       Stages 9c, 10e, 11b–12
+  engine_thread.rs  the engine's own thread + channels       Stage 14
+  llama.rs          the real model (FFI)                     Stage 19
+  session/          stateful interrogation orchestration     Phase 3
 ```
 
 **Invariants for the whole project:**
@@ -57,34 +58,16 @@ src-tauri/src/
 
 ---
 
-## Phase 1 — Rust core & Tauri foundations — Stages 1–10
+## Phase 1 — Rust core & Tauri foundations — Stages 1–10 ✅
 
 Ownership, borrowing, lifetimes, structs, enums with data, `Option`/`Result`, `?`, custom errors,
-traits, `TryFrom`, the IPC boundary, interior mutability.
+traits, `TryFrom`, the IPC boundary, interior mutability. Domain model (1–4), `AppError` (5), case
+files (6a–6d), `VisibleFact` (7), disk and IPC (8–9c), transcript, phase and lock (10a–10h).
+What was built: `STAGE-LOG.md`. Why: `DECISIONS.md`.
 
-- **1.1 Domain model** — `Case`, `Suspect`, `Fact`, newtype ids, `Difficulty`. Stages 1–4. ✅
-- **1.2 Error handling** — `AppError` via `thiserror`, `Serialize` for IPC. Stage 5 ✅.
-  Settled: owned serializable fields only, wire format `#[serde(tag = "kind")]`, `Io`/`Parse` carry
-  `{ path, message }` — `DECISIONS.md`, 2026-08-25 (two entries).
-- **1.3 Case files, parse-don't-validate** — `RawCase` → `TryFrom` → `Case`, four structural checks,
-  no filesystem. Stages 6a–6d ✅. Format and the reasons: `DECISIONS.md`, 2026-08-27.
-- **1.4 Knowledge gating by type** — `VisibleFact<'a>`, produced solely by `Case::visible_to`.
-  Stage 7. Single owner of the visibility rule — `DECISIONS.md`, 2026-08-25.
-- **1.5 Disk and IPC** — `storage.rs` reads a case (Stage 8); the screen-shaped wire types (9a);
-  `#[tauri::command]` and the handler list (9b); `AppState`, `.manage()` and `State<'_, T>` (9c). **No lock here** — `AppState` is read-only until Stage 10e.
-  `DECISIONS.md`, 2026-09-13 and 2026-09-14.
-- **1.6 Transcript and phase** — `enum Phase { Briefing, Interrogating { suspect, turns }, Reporting }`.
-  The suspect and the lines exist only inside `Interrogating`, so illegal states do not compile; a
-  wrong transition is `InvalidState`. **`Mutex` lands in 10e**, because the phase is the first thing
-  that changes while the app runs. **10d is a consolidation stage** — zero new elements, the
-  borrowed/owned pair on a second type (`CLAUDE.md` Rule 1). Stages 10a–10f — queue in
-  `PROGRESS.md`, `DECISIONS.md` 2026-09-17.
-
-**Concept to internalize before Phase 2:** `std::sync::MutexGuard` is not `Send` across `.await`.
-Stage 15 makes you feel it; Stage 10e is where the habit forms.
-
-**Exit:** a case loads from disk, one command returns it to React, a phase that holds data it
-should not have does not compile, a wrong transition is an `InvalidState` error, all domain logic tested without launching Tauri.
+**Exit (met at 10h):** a case loads from disk, one command returns it to React, a phase that holds
+data it should not have does not compile, a wrong transition is an `InvalidState` error, all domain
+logic tested without launching Tauri.
 
 ## Phase 2 — Async Rust & local LLM — Stages 11–19 *(the hard phase)*
 
@@ -93,38 +76,36 @@ FFI lifetimes.
 
 | # | Stage | Headline concept | Est |
 |---|---|---|---|
-| 11a | `trait InferenceEngine` + `MockEngine` | declaring your own trait | 20 |
-| 11b | the game holds an engine | trait objects (`Box<dyn …>`) | 25 |
-| 11c | the room keeps the exchange | consolidation — zero new | 25 |
-| 11d | React asks a question | consolidation — zero new | 20 |
-| 12 | the first `async fn` | a future does nothing until polled | 45 |
-| 13 | where blocking work goes | blocking work must leave the runtime | 50 |
-| 14 | channels | an `mpsc` pipe moves ownership | 50 |
+| 11a–11d ✅ | the engine trait, held by `AppState`, asked from React | declaring a trait; `Box<dyn …>` | — |
+| 12 ✅ | a question waits until it is awaited | a future does nothing until awaited | 25 |
+| 13 ✅ | slow work gets its own thread | `spawn_blocking` + `move` | 25 |
+| 14a ✅ | the engine gets its own thread | a channel | 25 |
+| 14b | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
 | 15 | sharing across threads | `Arc<Mutex<T>>`, and why a std guard cannot cross `.await` | 55 |
 | 16 | streaming to React | Tauri events with a typed payload | 45 |
 | 17 | cancellation | `select!` and cooperative cancellation | 55 |
-| 18 | **toolchain session** — `llama-cpp-2` on Windows/CUDA | **zero new concepts. Environment only.** | 2 h |
+| 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |
 | 19 | owning the model | one thread owns the FFI handle | 60 |
 
-Each of these still has to pass Rule 1 (one new thing) before it is issued; several will split.
+Each of these still has to pass Rule 2 (one new thing) before it is issued; several will split.
 
 - **2.1 The engine trait, mock first** — `trait InferenceEngine`, `MockEngine` with canned
-  deterministic lines. Unblocks Phases 3–4 and keeps the suite fast forever. Stage 11.
+  deterministic lines. Unblocks Phases 3–4 and keeps the suite fast forever. Stage 11 ✅.
 - **2.2 Async inside Tauri** — Tauri v2 already runs tokio. `spawn` vs `spawn_blocking`.
-  Stages 12–13.
+  Stages 12–13 ✅.
 - **2.3 The threading model** — *the most important lesson in the project.* llama.cpp decoding is
   blocking FFI and must not run on a tokio worker. One dedicated OS thread owns the `LlamaContext`;
   work in over a channel, tokens out over another; the async side only ever talks to channels.
-  `LlamaModel` behind an `Arc`, loaded once. **Do it wrong once on purpose, watch the UI freeze,
-  then fix it.** Stages 13–15, 19.
+  `LlamaModel` behind an `Arc`, loaded once. The thread and its channels are built with the mock
+  first (14a–14b); the real model moves onto it in Stage 19.
 - **2.4 Streaming** — `mpsc` → `app_handle.emit("interrogation://token", …)` → `listen()`. Every
   event carries a session/turn id so late tokens from a cancelled generation are discarded.
   Stage 16.
 - **2.5 Cancellation** — `CancellationToken` checked inside the decode loop; `select!`, drop
   semantics, cleanup order. Stage 17.
-- **2.6 The build** — MSVC, CMake, CUDA toolkit, the `cuda` feature flag. **A session of its own,
+- **2.6 The build** — Xcode command-line tools, CMake, Metal offload. **A session of its own,
   zero feature work alongside it.** Record the working toolchain versions in `docs/BUILD.md` the
-  moment it compiles. 8B instruct at Q4_K_M (~4.7 GB) fits 8 GB VRAM. Weights in `models/`,
+  moment it compiles. Size the model to the Mac's unified memory: an 8B instruct at Q4_K_M is ~4.7 GB. Weights in `models/`,
   gitignored. Stage 18.
 - **2.7 KV cache** — reuse across turns rather than re-prompting the transcript. Truncation:
   system prompt + first N + last M, summarize the middle.
@@ -187,13 +168,13 @@ React Three Fiber, blend shapes, expressions driven by pressure from the Rust si
 | `cargo clippy --all-targets -- -D warnings` every stage | The cheapest Rust tutor you have. Read the lint names, not just the fixes. |
 | Domain tests run without launching Tauri | If scoring can't be tested headlessly, the layering is wrong. |
 | `MockEngine` stays working forever | The fast test path and the offline dev path. |
-| `tracing` from day one, not `println!` | Async token streams are unreadable in `println!`. |
+| `tracing`, not `println!`, from Stage 16 | Async token streams are unreadable in `println!`. |
 
 ## Risk register
 
 | Risk | Mitigation |
 |---|---|
-| `llama-cpp-2` won't build on Windows/CUDA | Isolated session, no feature work alongside. Document exact versions. Fallback: `llama-server` sidecar over HTTP for one phase — same trait, so the swap is contained. |
+| `llama-cpp-2` won't build on macOS/Metal | Isolated session, no feature work alongside. Document exact versions. Fallback: `llama-server` sidecar over HTTP for one phase — same trait, so the swap is contained. |
 | Blocking FFI on the async runtime | Dedicated thread + channels (§2.3). Non-negotiable. |
 | Everything ends up in `lib.rs` | One module per concept, domain/shell split, reviewed each stage. There is no crate boundary to catch it. |
 | Prompt-engineering rabbit hole | Snapshot-tested prompts; time-box tuning. |

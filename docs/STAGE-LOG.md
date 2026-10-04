@@ -1,7 +1,9 @@
 # STAGE-LOG — one entry per finished stage
 
 A lookup. What he built, where he got stuck, what to do differently. Lessons that became rules are in
-`MENTOR-NOTES.md`; open tidy-ups are in `PROGRESS.md`. Neither is repeated here.
+`CLAUDE.md`; open tidy-ups are in `PROGRESS.md`. Neither is repeated here.
+Entries before 2026-09-24 cite the old `CLAUDE.md`: their "Rule N", "correction N", ledger and
+four-questions mentions do not match the current rules.
 
 ---
 
@@ -152,7 +154,7 @@ took the one that leaves *where the lines live* decided in one place.
 `&[turns.last()]` — step 2's tool in step 1, wrapped in a new list (`E0308`, expected `Turn`, found
 `Option<&Turn>`). One exchange, fixed.
 **Do differently.** Goal first, always. Predictions were asked for at both runs and not reported.
-Four questions asked at review — outcome recorded in `CONCEPTS.md`.
+Four questions asked at review.
 
 ### Stage 10e — the app holds the phase ✅ 2026-09-22
 
@@ -166,15 +168,15 @@ editor's "make it `&mut self`" quick fix, accepted twice, so the measured `E0596
 checkpoints arrived as failure rather than as the evidence they were written to be.
 **Do differently.** The unblocking ladder was too slow — when the line is plumbing and the lesson is
 elsewhere, print it whole at the second exchange, not the fifth. Method calls on a field and
-`&self` vs `&mut self` are `shaky`, `0 of 2`; 10f is now a consolidation stage run in chat
-(`DECISIONS.md`, 2026-09-22), and the lock is asked about there, since he did not type it here.
+`&self` vs `&mut self` are `shaky`, `0 of 2`; 10f is now a consolidation stage run in chat, and
+the lock is asked about there, since he did not type it here.
 
 ### Stage 10f — two more methods through the lock ✅ 2026-09-23
 
 **Built.** `AppState::record` and `AppState::suspect` in `state.rs`, the 10e lock on two more
 methods. Spec `tests/app_room.rs`, 4/4; `app_phase` 4/4 still, `fmt` and `clippy -D warnings` clean
-in the reference crate against his `state.rs`. Committed `591b991`. Run in chat, no brief
-(`DECISIONS.md`, 2026-09-22): §0 and one step per message, measured counts `0/4` → `2/4` → `4/4`.
+in the reference crate against his `state.rs`. Committed `591b991`. Run in chat, no brief:
+§0 and one step per message, measured counts `0/4` → `2/4` → `4/4`.
 **Stuck.** Nowhere reported. Both method calls on the guard typed unaided; `suspect` came in with
 `let phase` (no `mut`) and `Ok(…)` around the answer. He did not report predictions or run output,
 so whether he met `E0308` / `unused_mut` on the way is unknown. Recall: both multiple-choice right.
@@ -205,7 +207,7 @@ numbers. Then the console was a browser tab (`window.__TAURI__` undefined). Then
 shape check (`DECISIONS.md`, 2026-09-25).
 **Do differently.** A copy-and-change table says what stays, and shows the finished result. Edits to
 existing lines give the line number and the whole line. Anything that runs Tauri is checked on
-Windows, not only in the Linux container.
+his machine, not only in the Linux container.
 
 ### Stage 11a — the suspect gets a voice ✅ 2026-09-26
 
