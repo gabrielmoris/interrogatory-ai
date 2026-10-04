@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-03 (Stage 14a reviewed).
+Last updated: 2026-10-04 (14a closed; stage doc shape set by him — correction 26).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
 | Last reviewed | **Stage 14a**, 2026-10-03. 4/4 `engine_thread` (20 repeat runs, no flake); 167 across twenty-seven files, `fmt` and `clippy -D warnings` clean against his exact files. |
-| Uncommitted | His Stage 14a: `src/engine_thread.rs` (new), `src/lib.rs` (`pub mod engine_thread;`), and this review's `PROGRESS.md` / `STAGE-LOG.md`. The spec and doc are `63b937c`. |
-| Next action | **His:** commit 14a. **Mine:** write 14b (`DECISIONS.md`, 2026-09-30). |
+| Uncommitted | `CLAUDE.md` (Rules 4–9, six-section doc shape), the rewritten 14a doc, `PROGRESS.md`, `STAGE-LOG.md`. His 14a is `8e12a19`. |
+| Next action | **Mine:** write 14b in the six-section shape (`CLAUDE.md`; model doc: `stage-14a`). **His:** commit these docs. |
 | Blocked on | nothing |
 
 **The teaching method was rewritten from the base on 2026-09-24** — see `CLAUDE.md`. Stages up to
@@ -30,8 +30,8 @@ Stages 1–14a ✅ — `STAGE-LOG.md`. Phases 2–3: `ROADMAP.md`. Stage 10's sh
 | ~~11d~~ ✅ | React asks a question | **zero new elements** — `#[tauri::command] ask_suspect`, handler list, console `invoke` (10h pattern). Doc and spec written and verified (1 test; 156 across twenty-four files). | 20 |
 | ~~12~~ ✅ | a question waits until it is awaited | **`async fn` + `.await`** — a future does nothing until awaited. `AppState::ask` and `ask_suspect` become async; tests use `block_on`. Doc and spec written and verified (3 tests; 159 across twenty-five files). | 25 |
 | ~~13~~ ✅ | slow work gets its own thread | **`spawn_blocking` + `move`** — work on another thread must own what it uses. `case_intro_in_background` (disk read), `case_intro` async, `AppError::BackgroundFailed`. Doc and spec written and verified (4 tests; 163 across twenty-six files). | 25 |
-| ~~14a~~ ✅ | the engine gets its own thread | **a channel** — `Sender`/`Receiver`, `send` moves the value, `for … in inbox` ends when every `Sender` is gone. `engine_thread.rs :: start`, `Question`. Doc and spec written and verified (4 tests; 167 across twenty-seven files). | 25 |
-| 14b | `ask` goes through the engine thread | **zero new elements** — `AppState` holds the `Sender`; `ask` sends a `Question` and waits with `spawn_blocking` (13). Shape measured, not written. | 20 |
+| ~~14a~~ ✅ | the engine gets its own thread | **a channel** — `Sender`/`Receiver`, `send` moves the value, `for … in inbox` ends when every `Sender` is gone. `engine_thread.rs :: start`, `Question`. Code pasted from the first doc; doc rewritten 2026-10-04 in the six-section shape, kept as the model. | 25 |
+| 14b | `ask` goes through the engine thread | **zero new elements** — he types `channel()`, `send` and `recv` himself (recall of 14a). `AppState` holds the `Sender`; `ask` sends a `Question` and waits with `spawn_blocking` (13). Shape measured, not written. | 20 |
 
 Where an id from React is checked: `DECISIONS.md`, 2026-09-23.
 

@@ -270,12 +270,19 @@ and added to the doc's "What you learned" (closure = `() =>`, `move` = the closu
 **Do differently.** Closures had been used since 9a without the word "closure" being taught. Name a
 syntax the first time it appears, even when it is not the stage's new thing.
 
-### Stage 14a — the engine gets its own thread ✅ 2026-10-03
+### Stage 14a — the engine gets its own thread ✅ 2026-10-04 (code pasted; closed by him)
 
 **Built.** `src/engine_thread.rs` (new shell module): `Question { text, answer_to: Sender<AppResult<String>> }`;
 `start(Box<dyn InferenceEngine>) -> Sender<Question>` = `channel()` + `thread::spawn(move || answer_all(..))`;
 `answer_all` runs `for question in inbox` and `let _ = question.answer_to.send(reply)`. `lib.rs` gains
 `pub mod engine_thread;`. Spec `tests/engine_thread.rs`, 4/4 (20 repeat runs, no flake); 167 across
 twenty-seven files, `fmt` and `clippy -D warnings` clean. His `engine_thread.rs` is identical to the reference.
+Committed `8e12a19`.
 **Stuck.** Nowhere reported. First submission matched the reference.
-**Do differently.** Nothing. Whether he saw step 3's `E0382` before deleting the `println!` was not reported.
+**Do differently.** The doc printed the whole file to paste, so nothing in it was his. He said so:
+*"this time I realized that it was purely copy paste... One for loop and the channel()"*. Every doc since
+the 2026-09-24 rewrite had the same shape. Rewritten the same day: "The new thing" before the steps, and
+he types both bodies (`CLAUDE.md` Rule 8). He did not redo it and closed the stage on 2026-10-04, then
+showed that the second doc still failed him: "Make a channel. Call the two ends…" gives no syntax, and
+`engine` was never traced to where it comes from. He set the six-section shape; the doc was rewritten in
+it as the model (`CLAUDE.md`, correction 26).
