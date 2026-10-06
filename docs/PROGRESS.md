@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-04 (docs audit).
+Last updated: 2026-10-04 (Stage 14b issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
 | Last reviewed | **Stage 14a**, 2026-10-03. 4/4 `engine_thread`; 167 across twenty-seven files, `fmt` and `clippy -D warnings` clean. Committed `8e12a19`. |
-| Uncommitted | The docs audit: `CLAUDE.md`, `README.md`, `docs/PROGRESS.md`, `DECISIONS.md`, `ROADMAP.md`, `STAGE-LOG.md`, `adr/ADR-0001`. |
-| Next action | **Mine:** write 14b in the six-section shape (model: `docs/stages/stage-14a-the-engine-gets-its-own-thread.md`). **His:** commit the audit. |
+| Uncommitted | Stage 14b's doc and spec: `docs/stages/stage-14b-ask-goes-through-the-engine-thread.md`, `src-tauri/tests/ask_engine_thread.rs`. The docs audit is in `542616a`. |
+| Next action | **His:** Stage 14b — `docs/stages/stage-14b-ask-goes-through-the-engine-thread.md`. **Mine:** review when he says ready. |
 | Blocked on | nothing |
 
 ## Stage queue
@@ -16,7 +16,7 @@ Stages 1–14a ✅ — `STAGE-LOG.md`. After 14b: Stage 15, sharing across threa
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 14b | `ask` goes through the engine thread | **zero new elements** — he types `channel()`, `send` and `recv` himself (recall of 14a). `AppState` holds the `Sender`; `ask` sends a `Question` and waits with `spawn_blocking` (13). Shape measured, not written (`DECISIONS.md`, 2026-09-30). | 20 |
+| 14b | `ask` goes through the engine thread | **zero new Rust** — he types `channel()`, `send` and `recv()` (14a) and `spawn_blocking` (13). One new shape: three nested `Result`s, one `?` per line. Spec `tests/ask_engine_thread.rs`, 3 tests (1/3 before); reference measured 170 across twenty-eight files, `fmt` and `clippy -D warnings` clean. Doc issued 2026-10-04. | 25 |
 
 ## Open, not blocking
 

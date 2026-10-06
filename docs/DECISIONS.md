@@ -5,6 +5,19 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-04 — Stage 14b's spec: one engine thread answers, and a crashed engine is an error
+
+**Decided.** Spec `tests/ask_engine_thread.rs` (3): both answers come from one thread that is not the caller's;
+an engine `Err` comes back from `ask` unchanged, with the question kept (1 turn); a panicking engine gives
+`Err(Inference { "receiving on a closed channel" })`. `ask` opens the three nested results one `?` per line:
+`waited` (join → `BackgroundFailed`), `answered` (`RecvError` → `Inference`), `reply`. A failed `send` → `Inference`.
+**Why.** The 2026-09-30 plan had no failing test (167/167 before and after), so nothing told him when he was done.
+The thread-id test is red until `ask` uses the engine thread; the crash test is red until the `recv` error is mapped.
+**Rejected.** Asserting a second ask after the crash — its message races between "sending…" and "receiving…"
+depending on when the dead thread drops its inbox. `??` on one line — three layers in one expression. A test that
+the wait is off the async workers — not observable from a test; clippy's `unused import: spawn_blocking` guards it.
+**Costs.** The crash test depends on std's `RecvError` message text.
+
 ### 2026-10-04 — The desktop target is his Mac (Apple Silicon, Metal), not Windows/CUDA
 
 **Decided.** Code and the local model both run on his Mac mini. `llama-cpp-2` builds with Metal there;
