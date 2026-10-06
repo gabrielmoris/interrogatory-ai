@@ -8,43 +8,74 @@ Run:   cd src-tauri && cargo test --test ask_engine_thread
 The player types a question. Today this happens:
 
 ```
-React → ask_suspect (ipc.rs) → AppState::ask (state.rs) → self.engine.reply(question)
+React → ask_suspect (ipc.rs) → AppState::ask (state.rs) → self.engine.reply(text)
 ```
 
 The engine answers inside `ask`, on whichever thread is running `ask`.
 
 In 14a you gave the engine a thread of its own (`engine_thread.rs`). Only the tests use it so far.
-This stage connects the game to it:
+This stage makes the game use it. `ipc.rs`, `lib.rs`, React and the older tests do not change.
+
+### The map: who holds what
+
+Read this before any code. Every line you write in this stage moves one of these things.
 
 ```
-React → ask_suspect (ipc.rs) → AppState::ask (state.rs)
-      → ask sends a Question into `questions`
-      → the engine thread (engine_thread.rs :: answer_all) calls engine.reply(…)
-        and sends the reply back
-      → ask receives the reply, keeps it in the room, gives it to React
+  THE GAME SIDE                                    THE ENGINE THREAD
+                                                   (started once, by start)
+
+  AppState (lives as long as the app)
+    questions  ──────────── pipe 1 ────────────▶   inbox
+    Sender<Question>        carries Questions      Receiver<Question>
+
+                                                   engine
+                                                   Box<dyn InferenceEngine>
+
+  one call to ask (lives for one question)
+    answer     ◀─────────── pipe 2 ─────────────   question.answer_to
+    Receiver<AppResult<String>>  carries 1 reply   Sender<AppResult<String>>
 ```
 
-What changes:
+A **pipe** is a channel (14a). It has two ends:
 
-- `AppState` stops holding the engine. It holds `questions`: the Sender that `start` gives back (14a).
-- `AppState::new` still receives the engine, and hands it to `start`. From then on, only the engine
-  thread has it.
-- `ask` sends each question to that thread, and waits for the answer.
+- the **Sender** end — you put a value in with `.send(value)`;
+- the **Receiver** end — the value comes out there, on the other thread, with `.recv()` or a `for` loop.
 
-What does not change: `ipc.rs`, `lib.rs`, React, and all the older tests. `AppState::new` takes the
-same two inputs as before, so everything that calls it stays as it is.
+A Sender is a value that *has* a method `send`. It is not a function. You write
+`self.questions.send(question)`, never `self.questions(…)`.
 
-Almost nothing here is new Rust. You type `channel()`, `send` and `recv()` yourself — you met them in
-14a — and the waiting uses `spawn_blocking` from Stage 13. One thing you have not seen yet: three `Result`s
-inside each other (§4.1).
+| name | what it is | who holds it | made where |
+|---|---|---|---|
+| `questions` | the Sender end of pipe 1 | `AppState`, as a field | in `start`, once, when the app starts |
+| `inbox` | the Receiver end of pipe 1 | the engine thread | in `start` |
+| `engine` | the suspect's brain (`MockEngine` today) | the engine thread, and nobody else | in `lib.rs`; `new` hands it to `start` |
+| `answer_to` | the Sender end of pipe 2 | travels inside the `Question` | in `ask`, a new one for every question |
+| `answer` | the Receiver end of pipe 2 | `ask` | in `ask` |
+| `question` | one `Question`: `text` + `answer_to` | built in `ask`, then sent through pipe 1 | in `ask` |
+
+Why two pipes: pipe 1 is shared by every question, so it cannot also carry the answers back — an
+answer could reach the wrong asker. So each `ask` makes its own small pipe 2, and puts its Sender
+end inside the question: "send the reply here".
+
+### One question, start to end
+
+1. `ask` makes pipe 2: `answer_to` and `answer`.
+2. `ask` builds one `Question` holding the player's text and `answer_to`.
+3. `ask` sends that `Question` into pipe 1. From now on, `answer_to` is with the engine thread.
+4. On the engine thread, the `for` loop wakes up with the `Question`, calls
+   `engine.reply(&question.text)`, and sends the reply into `question.answer_to`. **This is your 14a
+   code** (§5.2). It already works.
+5. The reply comes out of `answer`, back in `ask`. `ask` waits for it with `answer.recv()`, on a
+   background thread (§5.8).
+6. `ask` keeps the reply in the room, and gives it back to React.
+
+In this stage you write steps 1, 2, 3, 5 and 6, inside `ask`.
 
 ## 2. Files and templates
 
 | File | What you do |
 |---|---|
 | `src/state.rs` | paste the template in three places, then write one line in `new` and the body of `ask` |
-
-Nothing else changes.
 
 **Place 1 — the imports at the top of `state.rs`.** Replace all of them with:
 
@@ -59,8 +90,6 @@ use std::sync::mpsc::{channel, Sender};
 use std::sync::Mutex;
 use tauri::async_runtime::spawn_blocking;
 ```
-
-Three lines are new: `start, Question` (14a), `channel, Sender` (14a), `spawn_blocking` (Stage 13).
 
 **Place 2 — the struct and `new`.** Replace everything from `/// What the app holds on to…` down to
 the end of `new` with:
@@ -84,31 +113,21 @@ impl AppState {
     }
 ```
 
-The field `engine: Box<dyn InferenceEngine>` is gone. `questions: Sender<Question>` takes its place.
-
 **Place 3 — `ask`.** Replace the whole function, doc comment included, with:
 
 ```rust
     /// The suspect's reply to what the detective just asked.
     /// The engine answers on its own thread. `ask` waits for that answer on a background thread.
-    pub async fn ask(&self, question: &str) -> AppResult<String> {
+    pub async fn ask(&self, text: &str) -> AppResult<String> {
         todo!()
     }
 ```
 
-The old body is in §5.1. You will type three of its lines again.
+The input is now called `text`, not `question`: in this function, `question` is the `Question` you
+build (§1). If you pasted an earlier version of this template, rename it in the first line of `ask`.
 
 Run: `0 passed; 3 failed`, and 7 warnings (unused things, and one `unreachable expression`). Each
 test stops with `not yet implemented` inside `new`: that is the `todo!()` in the `questions` line.
-The warnings go away as you write the code.
-
-What each part is:
-
-- `questions` — the slot where `ask` drops questions for the engine. It is the Sender end of the
-  channel that `start` makes (§5.2).
-- `new` — still receives the engine. Now it passes it on to `start`, instead of keeping it.
-- `ask` — the same job as before: keep the question, get the reply, keep the reply, give it back.
-  Only the middle changes: the reply now comes from the engine thread.
 
 ## 3. What each function does, and how to build it
 
@@ -121,100 +140,168 @@ What each part is:
       Box::new(MockEngine::new("I have nothing to say to you.")),
   ))
   ```
-  In the tests, `viktor_in_the_room(Box::new(WhereAmIEngine))` passes it.
-- **`question`, in `ask`.** The text the player typed, as a `&str`. It comes from
-  `ipc.rs :: ask_suspect`:
+- **`text`, in `ask`.** What the player typed, as a `&str`. It comes from `ipc.rs :: ask_suspect`:
   ```rust
   state.ask(&question).await
   ```
-  Careful with the two names: `question` (small q) is that text. `Question` (capital Q) is the
-  struct from 14a that carries a text to the engine.
-- **`self.questions`, in `ask`.** The Sender that `new` keeps.
+- **`self.questions`, in `ask`.** The Sender of pipe 1, which `new` keeps.
 
-### `new` — step by step
+### `new`
 
-What it does: gives the engine to `start`, and keeps the Sender that `start` gives back.
+Replace the `todo!()` in the `questions` line. Type:
 
-1. In the `questions:` line, replace `todo!()` with a call to `start`, giving it `engine`.
-   Syntax: §5.2 (what `start` takes and gives back) and §5.3 (a field filled by a function call).
+```rust
+            questions: start(engine),
+```
+
+`start` (your 14a code, §5.2) makes pipe 1, starts the engine thread, and moves `engine` and `inbox`
+into it. It gives back pipe 1's Sender. The field `questions` keeps it. In the map (§1), this line
+draws everything on the right side, and the `questions` end on the left.
 
 Run: still `0 passed; 3 failed`, now 4 warnings. Each test now stops with `not yet implemented`
-inside `ask`. That means `new` works: the engine thread is running.
+inside `ask`. So `new` works: the engine thread is running.
 
-### `ask` — step by step
+### `ask`
 
-What it does: keeps the question in the room, sends it to the engine thread, waits for the answer
-on a background thread, keeps the answer in the room, and gives it back.
+Delete the `todo!()`. Type the blocks below, in this order. Under each block: what it does in the
+map. Syntax is explained in §4 and §5, where the block points.
 
-Delete the `todo!()`, then write these lines, in this order:
+**Block 1 — keep the player's line in the room.**
 
-1. Keep the question in the room: call `self.record` with `Speaker::Detective` and `question`, with
-   `?` at the end. Same line as in the old `ask` (§5.1).
-2. Make a channel for the answer. Name its two ends `answer_to` (the Sender) and `answer` (the
-   Receiver). Syntax: §5.4.
-3. Send a `Question` into `self.questions`. Its `text` is `question` turned into a `String`. Its
-   `answer_to` is your `answer_to`. Then turn `send`'s error into `AppError::Inference` with
-   `.map_err`, and end with `?`. Syntax: §5.5 (`.to_string()`), §5.6 (building and sending a
-   `Question`), §5.7 (`.map_err`).
-4. Wait for the answer: call `spawn_blocking` with a `move` closure that calls `answer.recv()`.
-   Then `.await`, then `.map_err` into `AppError::BackgroundFailed`, then `?`. Keep the result in
-   `waited`. Syntax: §5.8. What `waited` holds: §4.1.
-5. Turn `waited`'s error into `AppError::Inference` with `.map_err`, then `?`. Keep the result in
-   `answered`. Syntax: §4.1 and §5.7.
-6. Put `?` after `answered`, and keep the result in `reply`. Syntax: §4.1.
-7. Keep the reply in the room, and give it back: the last two lines of the old `ask` (§5.1).
+```rust
+        self.record(Speaker::Detective, text)?;
+```
+
+Same as the first line of the old `ask` (§5.1), with the input's new name.
+
+**Block 2 — make pipe 2.** (§1, step 1)
+
+```rust
+        let (answer_to, answer) = channel();
+```
+
+`channel()` makes a new pipe and gives back both ends: `answer_to` is the Sender, `answer` the
+Receiver. This pipe is only for this one reply. Syntax: §5.4.
+
+**Block 3 — build the `Question`.** (§1, step 2)
+
+```rust
+        let question = Question {
+            text: text.to_string(),
+            answer_to,
+        };
+```
+
+One value, two fields — the struct from 14a. `text.to_string()` copies the player's words into a
+`String` that the `Question` owns, because the words travel to another thread (§5.5). `answer_to,`
+puts pipe 2's Sender inside, so the engine knows where to reply (short for `answer_to: answer_to,`,
+§5.3). After this line, `answer_to` belongs to `question`; you cannot use it on its own any more.
+
+**Block 4 — send it into pipe 1.** (§1, step 3)
+
+```rust
+        self.questions
+            .send(question)
+            .map_err(|e| AppError::Inference {
+                message: e.to_string(),
+            })?;
+```
+
+`self.questions` is pipe 1's Sender. `.send(question)` puts the `Question` in; on the engine thread,
+the `for` loop in `answer_all` wakes up with it (§1, step 4). `send` fails only when the engine
+thread is gone. Then `.map_err` turns that failure into `AppError::Inference`, and `?` stops `ask`
+with it (§5.6, §5.7).
+
+**Block 5 — wait for the reply, on a background thread.** (§1, step 5)
+
+```rust
+        let waiting = spawn_blocking(move || answer.recv());
+        let waited = waiting.await.map_err(|e| AppError::BackgroundFailed {
+            message: e.to_string(),
+        })?;
+```
+
+Line 1: `answer.recv()` waits until the reply comes out of pipe 2. `spawn_blocking` runs that wait
+on a background thread, so no game thread is stopped while the engine thinks. `move` hands `answer`
+to that thread. `waiting` is the handle to that background job (§5.8).
+
+Line 2: `.await` pauses `ask` until the background job has finished. If that thread crashed,
+`.map_err` turns it into `AppError::BackgroundFailed`, and `?` stops `ask` with it. `waited` is
+what `recv()` gave back — §4.1 shows what that is.
+
+**Block 6 — take the reply out.**
+
+```rust
+        let answered = waited.map_err(|e| AppError::Inference {
+            message: e.to_string(),
+        })?;
+        let reply = answered?;
+```
+
+`waited` says whether a reply came out of pipe 2 at all. If the engine thread died, none can come:
+that becomes `AppError::Inference`. `answered` is the engine's own answer: `Ok(the text)`, or the
+engine's error. `answered?` takes the text out, or passes the engine's error up as it is. After
+these two lines, `reply` is a plain `String` (§4.1).
+
+**Block 7 — keep the reply in the room, give it back.** (§1, step 6)
+
+```rust
+        self.record(Speaker::Suspect, &reply)?;
+        Ok(reply)
+```
+
+The last two lines of the old `ask` (§5.1).
 
 Run: `3 passed; 0 failed`.
 
-Last: `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (170 tests). `cargo fmt`
-may move the line breaks in step 4 — that is fine. Say ready.
+Last: `cargo fmt`, `cargo clippy --all-targets -- -D warnings`, `cargo test` (170 tests). Say ready.
 
 ### If it does not compile
 
 | the compiler says | fix |
 |---|---|
-| `E0425 cannot find value questions in this scope`, in `new` | The field needs its value after a `:` — `questions: start(engine),` (§5.3). |
-| `E0425 cannot find value questions in this scope`, in `ask` | It is a field: `self.questions` (§5.6). |
-| `E0308 mismatched types` … `expected String, found &str` | `text: question.to_string()` (§5.5). |
-| `E0277 ? couldn't convert the error to AppError` | A `.map_err(…)` is missing before a `?`: at the end of step 3, or in step 5 (§4.1). |
-| `E0277 Receiver<…> cannot be shared between threads safely` | Put `move` before `\|\|` in step 4 (§5.8). |
-| `E0599 no method named map_err found for enum JoinHandle` | `.await` is missing before `.map_err` in step 4 (§5.8). |
-| `E0308 mismatched types` … `expected &str, found &Result<String, AppError>` (and a second one at `Ok(reply)`) | The `?` after `answered` is missing (step 6, §4.1). |
-| clippy: `unused std::result::Result that must be used` | The `?` at the end of step 3 is missing. |
-| clippy: `unused import: tauri::async_runtime::spawn_blocking` | You called `answer.recv()` without `spawn_blocking`. The tests pass that way, but the game would stall (§5.8). Write step 4 as it says. |
-| a test `has been running for over 60 seconds` | Step 4 (wait) comes before step 3 (send), so no answer can ever come. Swap them. Stop the run with Ctrl+C. |
+| `E0599 no method named questions found for reference &AppState` … `field, not a method` | `questions` is a Sender, not a function: `self.questions.send(question)` (block 4). |
+| `E0599 no variant named Engine found for enum AppError` | The variant is `AppError::Inference` (§5.7). |
+| `E0308 mismatched types` … `expected Result<String, AppError>, found ()` | The end of `ask` is missing: blocks 5 to 7. The last line must be `Ok(reply)`, with no `;`. |
+| `E0308 mismatched types` … `expected String, found &str` | Write `text: text.to_string()`, not `text` alone (block 3). |
+| `E0382 use of moved value: answer_to` | `answer_to` now belongs to `question` (block 3). Do not use it after that. |
+| `E0277 ? couldn't convert the error to AppError` | A `.map_err(…)` is missing before a `?`: in block 4 or block 6 (§4.1). |
+| `E0277 Receiver<…> cannot be shared between threads safely` | Put `move` before `\|\|` in block 5 (§5.8). |
+| `E0599 no method named map_err found for enum JoinHandle` | Write `waiting.await.map_err(…)`: the `.await` is missing (block 5). |
+| `E0308 mismatched types` … `expected &str, found &Result<String, AppError>` (and a second one at `Ok(reply)`) | The `?` after `answered` is missing (block 6). |
+| clippy: `unused std::result::Result that must be used` | The `?` at the end of block 4 is missing. |
+| clippy: `unused import: tauri::async_runtime::spawn_blocking` | You called `answer.recv()` without `spawn_blocking`. The tests pass that way, but the game would stall (§5.8). Write block 5 as shown. |
+| a test `has been running for over 60 seconds` | Block 5 (wait) is before block 4 (send), so no reply can ever come. Swap them. Stop the run with Ctrl+C. |
 
 ## 4. New syntax and methods
 
 ### 4.1 Three `Result`s, one inside the other
 
 In Stage 13, `spawn_blocking(…).await` gave you two results, one inside the other: did the thread
-finish, and did the case load (§5.8). Here there are three.
+finish, and did the case load (§5.8). Here there are three. Build them from the inside out:
 
-Build it from the inside out:
-
-- `answer` carries an `AppResult<String>`: the engine's own answer. It is `Ok(text)`, or `Err` when
-  the engine failed.
-- `answer.recv()` puts a `Result` around it: an answer arrived, or `RecvError` — "no answer can ever
+- `answer` carries an `AppResult<String>`: the engine's own answer. `Ok(text)`, or `Err` when the
+  engine failed.
+- `answer.recv()` puts a `Result` around it: a reply came out, or `RecvError` — "no reply can ever
   come".
-- `spawn_blocking(…).await` puts one more `Result` around that: the background thread finished, or
-  it crashed (`tauri::Error`).
+- `spawn_blocking(…)` + `.await` puts one more `Result` around that: the background thread finished,
+  or it crashed (`tauri::Error`).
 
-So step 4's line, before its `?`, has this type. The compiler writes it like this:
+So `waiting.await`, before its `?`, has this type. The compiler writes it like this:
 
 ```
 Result<Result<Result<String, AppError>, RecvError>, tauri::Error>
 ```
 
-Read it as boxes, one inside the next. Steps 4, 5 and 6 open one box each, with `?`:
+Read it as boxes, one inside the next. Blocks 5 and 6 open one box per line, with `?`:
 
-| step | the line | opens | its error means | becomes |
+| block | the line | opens | its error means | becomes |
 |---|---|---|---|---|
-| 4 | `let waited = spawn_blocking(…).await.map_err(…)?;` | the outer box | the background thread crashed | `AppError::BackgroundFailed` |
-| 5 | `let answered = waited.map_err(…)?;` | the middle box | the engine thread is gone: no answer will ever come | `AppError::Inference` |
+| 5 | `let waited = waiting.await.map_err(…)?;` | the outer box | the background thread crashed | `AppError::BackgroundFailed` |
+| 6 | `let answered = waited.map_err(…)?;` | the middle box | the engine thread is gone: no reply will ever come | `AppError::Inference` |
 | 6 | `let reply = answered?;` | the inner box | the engine answered with an error | stays as it is: it is already an `AppError` |
 
-After step 6, `reply` is a plain `String`.
+After the last line, `reply` is a plain `String`.
 
 Two rules you already know make this work:
 
@@ -228,7 +315,7 @@ Two rules you already know make this work:
 **When the middle box fails.** The test `a_crashed_engine_is_an_error_not_a_crash` shows it. The
 engine calls `panic!`, and its thread stops. Everything that thread held is thrown away — including
 the question's `answer_to`. With no Sender left, `recv()` stops waiting and returns an error. Its
-message is `receiving on a closed channel`, and step 5 turns it into `AppError::Inference`. The game
+message is `receiving on a closed channel`, and block 6 turns it into `AppError::Inference`. The game
 gets an error it can show the player, and keeps running.
 
 **When to use it:** whenever one value carries several things that could have failed on the way.
@@ -252,10 +339,10 @@ pub async fn ask(&self, question: &str) -> AppResult<String> {
 }
 ```
 
-The first line is your step 1. The last two lines are your step 7. The middle line goes away:
-`AppState` no longer has an engine.
+The first line is block 1. The last two lines are block 7. The middle line goes away: `AppState` no
+longer has an engine. Blocks 2 to 6 take its place.
 
-### 5.2 `start` — what it takes and gives back
+### 5.2 `start` and `answer_all` — the right side of the map
 
 `engine_thread.rs`:
 
@@ -265,14 +352,22 @@ pub fn start(engine: Box<dyn InferenceEngine>) -> Sender<Question> {
     thread::spawn(move || answer_all(engine, inbox));
     questions
 }
+
+fn answer_all(engine: Box<dyn InferenceEngine>, inbox: Receiver<Question>) {
+    for question in inbox {
+        let reply = engine.reply(&question.text);
+        let _ = question.answer_to.send(reply);
+    }
+}
 ```
 
-It takes the engine, and gives back a `Sender<Question>`: exactly the type of the new field. Calling
-it starts the engine thread.
+`start` takes the engine and gives back a `Sender<Question>`: exactly the type of the new field.
+`answer_all` is the other half of every `ask`: it takes each `Question` out of pipe 1 and sends the
+reply into that question's `answer_to`.
 
-### 5.3 A field filled by calling a function
+### 5.3 Filling struct fields
 
-`state.rs :: new`:
+`state.rs :: new`, before this stage:
 
 ```rust
 Self {
@@ -282,11 +377,12 @@ Self {
 }
 ```
 
-`phase: Mutex::new(Phase::Briefing)` fills the field with what the call gives back.
+`phase: Mutex::new(Phase::Briefing)` fills the field with what the call gives back — like
+`questions: start(engine)`.
 
-`cases_dir,` alone is short for `cases_dir: cases_dir,`. That works only when a variable has the
-same name as the field. There is no variable called `questions` in `new`, so that line needs the
-long form: the field name, `:`, then the call.
+`cases_dir,` alone is short for `cases_dir: cases_dir,`. That works only when a variable has the same
+name as the field. In block 3, `answer_to,` works that way. `text,` alone would not: the variable
+`text` is a `&str`, and the field wants a `String`.
 
 ### 5.4 `channel()` and `let (a, b)`
 
@@ -296,7 +392,7 @@ long form: the field name, `:`, then the call.
 let (questions, inbox) = channel();
 ```
 
-And in `tests/engine_thread.rs`, a channel for one answer — the same as your step 2:
+And in `tests/engine_thread.rs`, a channel for one reply — the same as block 2:
 
 ```rust
 let (answer_to, answer) = channel();
@@ -305,7 +401,7 @@ let (answer_to, answer) = channel();
 The Sender comes first, the Receiver second. You do not write the type: Rust works it out from the
 `Question` you put `answer_to` in.
 
-The same test then waits for the answer with `recv()`:
+The same test then waits for the reply with `recv()`:
 
 ```rust
 assert_eq!(
@@ -314,8 +410,8 @@ assert_eq!(
 );
 ```
 
-`recv()` waits until a value arrives in the Receiver. `Ok(Ok(…))` is the middle and inner boxes of
-§4.1: an answer arrived, and the engine did not fail.
+`recv()` waits until a value comes out of the Receiver. `Ok(Ok(…))` is the middle and inner boxes of
+§4.1: a reply came out, and the engine did not fail.
 
 ### 5.5 `&str` to `String` with `.to_string()`
 
@@ -330,10 +426,10 @@ pub fn new(line: &str) -> Self {
 ```
 
 `line` is a `&str`, and the field wants a `String`. `.to_string()` makes a `String` that owns its own
-copy of the text. Same in step 3: `question` is a `&str`, and `Question`'s `text` is a `String`. It
-must own its copy, because it travels to the engine thread.
+copy of the text. Same in block 3: `text` is a `&str`, and `Question`'s field `text` is a `String`.
+It must own its copy, because it travels to the engine thread.
 
-### 5.6 Building a `Question` and sending it
+### 5.6 Building a `Question` and sending it — from the 14a test
 
 `tests/engine_thread.rs :: a_question_sent_in_gets_its_answer_back`:
 
@@ -346,13 +442,11 @@ questions
     .expect("the engine thread is running");
 ```
 
-`answer_to,` alone is short for `answer_to: answer_to,` (§5.3).
+Blocks 3 and 4 do the same thing in two steps: build the `Question` and keep it in `question`, then
+`.send(question)`. Three things are different in `ask`:
 
-In `ask`, three things are different:
-
-- The Sender is a field of `AppState`: `self.questions.send(…)`. Same shape as `self.phase.lock()`
-  in your `begin`.
-- `text` is `question.to_string()`.
+- The Sender is a field of `AppState`, so it is `self.questions` — like `self.phase` in your `begin`.
+- `text` is `text.to_string()`.
 - No `.expect(…)`: that would crash the game if the engine thread were gone. Use `.map_err(…)?`
   instead (§5.7).
 
@@ -370,15 +464,15 @@ let mut phase = self.phase.lock().map_err(|e| AppError::Poisoned {
 })?;
 ```
 
-`.map_err` turns the error into an `AppError`. `e.to_string()` keeps the error's message. `?`
-passes it up. In steps 3 and 5 the variant is `Inference`. Its definition, in `error.rs`:
+`.map_err` turns the error into an `AppError`. `e.to_string()` keeps the error's message. `?` passes
+it up. In blocks 4 and 6 the variant is `Inference`. Its definition, in `error.rs`:
 
 ```rust
 #[error("the inference engine failed: {message}")]
 Inference { message: String },
 ```
 
-### 5.8 `spawn_blocking(move || …)`, then `.await`, `.map_err`, `?`
+### 5.8 `spawn_blocking(move || …)`, then `.await`
 
 `ipc.rs :: case_intro_in_background`:
 
@@ -390,45 +484,45 @@ spawn_blocking(move || case_intro_from(&cases_dir, &slug))
     })?
 ```
 
-Step 4 has the same shape. Its closure is `move || answer.recv()`. `move` hands `answer` to the
+Block 5 is the same, split over two lines: `spawn_blocking(…)` first, kept in `waiting`, then
+`waiting.await.map_err(…)?`. Its closure is `move || answer.recv()`. `move` hands `answer` to the
 background thread. Without `move`, the closure would only borrow `answer`, and a Receiver cannot be
 used from another thread through a borrow. That is the `E0277 … cannot be shared between threads
 safely` error.
 
 **Why `recv()` goes inside `spawn_blocking`.** `recv()` waits by stopping the thread it runs on.
 `ask` is `async`, so it runs on one of a small, fixed group of threads that run all the app's async
-work, other commands included. With the real model, an answer takes seconds. Calling `recv()`
-directly would stop one of those threads for all that time. `spawn_blocking` moves the waiting to a
-thread made for waiting, and `.await` lets `ask` pause without stopping anything.
+work, other commands included. With the real model, a reply takes seconds. Calling `recv()` directly
+would stop one of those threads for all that time. `spawn_blocking` moves the waiting to a thread
+made for waiting, and `.await` lets `ask` pause without stopping anything.
 
-The tests cannot see this: they pass either way. Clippy can. `spawn_blocking` is in the imports, so
-if you do not use it, `unused import` fails the run.
+The tests cannot see this: they pass either way. Clippy can. `spawn_blocking` is in the imports, so if
+you do not use it, `unused import` fails the run.
 
 ## 6. What you built
 
 In order, for one question in the game:
 
 1. When the app starts, `lib.rs` calls `AppState::new` with the `MockEngine`.
-2. `new` hands the engine to `start`. The engine thread starts and waits for questions. `AppState`
-   keeps only `questions`.
-3. The player asks. React calls `ask_suspect`, which calls `ask`.
-4. `ask` keeps the question in the room.
-5. `ask` makes a channel for the answer, and sends `Question { text, answer_to }` into `questions`.
+2. `new` hands the engine to `start`. Pipe 1 and the engine thread exist. `AppState` keeps only
+   `questions`.
+3. The player asks. React calls `ask_suspect`, which calls `ask` with the text.
+4. `ask` keeps the player's line in the room.
+5. `ask` makes pipe 2, builds `Question { text, answer_to }`, and sends it into pipe 1.
 6. On the engine thread, `answer_all` wakes up, calls `engine.reply(&question.text)`, and sends the
-   reply into `answer_to`.
-7. Meanwhile `ask` waits: `recv()` runs on a background thread (`spawn_blocking`), and `.await`
-   lets `ask` pause without stopping any other work.
-8. The reply arrives. `ask` opens the three results, one per line (§4.1), keeps the reply in the
-   room, and gives it to React.
+   reply into `question.answer_to`.
+7. Meanwhile `ask` waits: `recv()` runs on a background thread, and `.await` lets `ask` pause.
+8. The reply comes out of `answer`. `ask` opens the three boxes (§4.1), keeps the reply in the room,
+   and gives it to React.
 
-If the engine fails, its error comes back through the same channel, like any answer. If the engine
-thread crashes, `ask` gives back `AppError::Inference`, and the game keeps running.
+If the engine fails, its error comes back through pipe 2, like any reply. If the engine thread
+crashes, `ask` gives back `AppError::Inference`, and the game keeps running.
 
 New in this stage:
 
 - **Three `Result`s inside each other**: open one per line with `?`, and put `.map_err` first when
   the error is not an `AppError`.
-- Everything else you already knew, used in a new place: `channel()`, `send` and `recv` (14a);
+- Everything else you already knew, used in a new place: `channel()`, `send` and `recv()` (14a);
   `spawn_blocking`, `move` and `.await` (Stage 13).
 
 Next, Stage 15: sharing one value between threads — `Arc<Mutex<T>>`, and why a `Mutex` lock must

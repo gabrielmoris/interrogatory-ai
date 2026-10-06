@@ -11,6 +11,7 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 an engine `Err` comes back from `ask` unchanged, with the question kept (1 turn); a panicking engine gives
 `Err(Inference { "receiving on a closed channel" })`. `ask` opens the three nested results one `?` per line:
 `waited` (join → `BackgroundFailed`), `answered` (`RecvError` → `Inference`), `reply`. A failed `send` → `Inference`.
+`ask`'s input is `text: &str` (renamed 2026-10-07) so `question` names only the `Question` value; the join handle gets its own `let waiting`.
 **Why.** The 2026-09-30 plan had no failing test (167/167 before and after), so nothing told him when he was done.
 The thread-id test is red until `ask` uses the engine thread; the crash test is red until the `recv` error is mapped.
 **Rejected.** Asserting a second ask after the crash — its message races between "sending…" and "receiving…"
