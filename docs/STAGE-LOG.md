@@ -288,3 +288,19 @@ he types both bodies (`CLAUDE.md` Rule 8). He did not redo it and closed the sta
 showed that the second doc still failed him: "Make a channel. Call the two ends…" gives no syntax, and
 `engine` was never traced to where it comes from. He set the six-section shape; the doc was rewritten in
 it as the model (`CLAUDE.md`, correction 26).
+
+### Stage 14b — `ask` goes through the engine thread ✅ 2026-10-07
+
+**Built.** `state.rs`: the `engine` field becomes `questions: Sender<Question>`; `new` fills it with
+`start(engine)`. `ask` = `record` → `channel()` → build `Question` → `self.questions.send(..).map_err(Inference)?`
+→ `spawn_blocking(move || answer.recv())` + `.await.map_err(BackgroundFailed)?` → `waited.map_err(Inference)?`
+→ `answered?` → `record` → `Ok(reply)`. Spec `tests/ask_engine_thread.rs`, 3/3 (10 repeat runs); 170 across
+twenty-eight files, `fmt` and `clippy -D warnings` clean. His `ask` matches the reference except that he kept
+the input named `question` and shadows it with `let question = Question { .. }`. Committed `4452c29`.
+**Stuck.** First attempt: `self.questions(question.to_string(), answer_to)` (the Sender called like a function)
+and `AppError::Engine` (no such variant). He said the steps described code in words he had no picture for
+(correction 27). The doc was rewritten the same day: the map in §1, the code shown in every block. He finished
+green, then said it was "still confusing" and he was "a bit lost".
+**Do differently.** "Zero new elements" counted syntax, not load: 14b put three recalled ideas (a thread of its
+own, two channels, waiting with `spawn_blocking`) plus three nested `Result`s into one function. Count the ideas
+a function combines, not only the new syntax.

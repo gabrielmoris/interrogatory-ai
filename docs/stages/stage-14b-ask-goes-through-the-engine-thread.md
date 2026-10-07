@@ -525,5 +525,5 @@ New in this stage:
 - Everything else you already knew, used in a new place: `channel()`, `send` and `recv()` (14a);
   `spawn_blocking`, `move` and `.await` (Stage 13).
 
-Next, Stage 15: sharing one value between threads — `Arc<Mutex<T>>`, and why a `Mutex` lock must
-be let go before an `.await`.
+Next, Stage 14c: see what `ask` does — the moves, the waiting and the three results, shown by the
+compiler and by the running tests.

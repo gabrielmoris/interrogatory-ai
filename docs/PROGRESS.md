@@ -1,22 +1,23 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-07 (14b doc rewritten after correction 27).
+Last updated: 2026-10-07 (Stage 14b reviewed; 14c issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 14a**, 2026-10-03. 4/4 `engine_thread`; 167 across twenty-seven files, `fmt` and `clippy -D warnings` clean. Committed `8e12a19`. |
-| Uncommitted | His `state.rs` (14b in progress). The rewritten 14b doc, `CLAUDE.md` (Rules 5, 8, 10), this file, `DECISIONS.md`. |
-| Next action | **His:** finish `ask` — doc §3, blocks 4–7 (`new` and blocks 1–2 are done). **Mine:** review when he says ready. |
+| Last reviewed | **Stage 14b**, 2026-10-07. 3/3 `ask_engine_thread` (10 repeat runs); 170 across twenty-eight files, `fmt` and `clippy -D warnings` clean. Committed `4452c29`. |
+| Uncommitted | This file, `STAGE-LOG.md` (the 14b review), `docs/stages/stage-14c-see-what-ask-does.md`, the 14b doc's last line. |
+| Next action | **His:** Stage 14c — `docs/stages/stage-14c-see-what-ask-does.md`. **Mine:** review when he says ready, then cut Stage 15. |
 | Blocked on | nothing |
 
 ## Stage queue
 
-Stages 1–14a ✅ — `STAGE-LOG.md`. After 14b: Stage 15, sharing across threads (`ROADMAP.md`, Phase 2).
+Stages 1–14b ✅ — `STAGE-LOG.md`.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 14b | `ask` goes through the engine thread | **zero new Rust** — he types `channel()`, `send` and `recv()` (14a) and `spawn_blocking` (13). One new shape: three nested `Result`s, one `?` per line. Spec `tests/ask_engine_thread.rs`, 3 tests (1/3 before); reference measured 170 across twenty-eight files, `fmt` and `clippy -D warnings` clean. Doc issued 2026-10-04; rewritten 2026-10-07 with the map in §1 and the code shown in each block (correction 27). `ask`'s input renamed `text`. | 25 |
+| 14c | see what `ask` does | consolidation, no feature. He picked three unclear parts of 14b: who holds what, waiting (`spawn_blocking` + `.await`), the three `Result`s. Three `E0382` experiments, then `dbg!` in the real tests. New tool: `dbg!`. All output measured on the reference. | 30 |
+| 15 | sharing across threads | not cut yet — `ROADMAP.md` Phase 2 lists `Arc<Mutex<T>>` and why a lock must be let go before `.await`. Must pass Rule 2; likely splits. | — |
 
 ## Open, not blocking
 
