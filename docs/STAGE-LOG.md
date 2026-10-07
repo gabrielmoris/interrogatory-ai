@@ -304,3 +304,14 @@ green, then said it was "still confusing" and he was "a bit lost".
 **Do differently.** "Zero new elements" counted syntax, not load: 14b put three recalled ideas (a thread of its
 own, two channels, waiting with `spawn_blocking`) plus three nested `Result`s into one function. Count the ideas
 a function combines, not only the new syntax.
+
+### Stage 14c — see what `ask` does ✅ 2026-10-07 (consolidation, no feature)
+
+**Built.** Nothing new in the game. Step 0 renamed `ask`'s input to `text` (no more two `question`s).
+Part A: three `let again = …;` lines, each read as `E0382` (`answer_to` into the `Question`, `question` into
+`send`, `answer` into the `move` closure). Part C: `dbg!` on `waited`, `answered`, `reply`, run with
+`-- --nocapture --test-threads=1`. His `ask` matches the reference; 170 across twenty-eight files, `fmt` and
+`clippy -D warnings` clean.
+**Stuck.** Nowhere reported. At review the three `dbg!` lines were still in `state.rs` (Part C, step 3).
+**Do differently.** A consolidation stage closed the gap he named (who holds what, waiting, nested results)
+with the compiler and real values rather than more prose. Use it again when he finishes green but lost.
