@@ -315,3 +315,15 @@ Part A: three `let again = …;` lines, each read as `E0382` (`answer_to` into t
 **Stuck.** Nowhere reported. At review the three `dbg!` lines were still in `state.rs` (Part C, step 3).
 **Do differently.** A consolidation stage closed the gap he named (who holds what, waiting, nested results)
 with the compiler and real values rather than more prose. Use it again when he finishes green but lost.
+
+### Stage 15 — the answer can be awaited ✅ 2026-10-12
+
+**Built.** Pipe 2 is `tauri::async_runtime::channel(1)`: `Question.answer_to` is
+`tauri::async_runtime::Sender<AppResult<String>>`, `answer_all` uses `blocking_send`, and `ask` awaits
+`answer.recv()` with `.ok_or(Inference { "the engine stopped before it answered" })?`. `spawn_blocking` left
+`ask`. Specs `tests/engine_thread.rs` 4/4 and `tests/ask_engine_thread.rs` 3/3 (10 repeat runs); 170 across
+twenty-eight files, `fmt` and `clippy -D warnings` clean. His `engine_thread.rs` is identical to the reference;
+his `ask` differs only by two blank lines. Committed `c189e3c`.
+**Stuck.** Nowhere reported. First submission passed.
+**Do differently.** Nothing new. The map-first doc with code in every step (Rules 5, 8, 10) held up on its
+first full stage.

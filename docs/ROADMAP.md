@@ -82,7 +82,7 @@ FFI lifetimes.
 | 14a ✅ | the engine gets its own thread | a channel | 25 |
 | 14b ✅ | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
 | 14c ✅ | see what `ask` does | consolidation; `dbg!` | 30 |
-| 15 | the answer can be awaited | an async channel: `recv().await` | 30 |
+| 15 ✅ | the answer can be awaited | an async channel: `recv().await` | 30 |
 | 16 | streaming to React | Tauri events with a typed payload | 45 |
 | 17 | cancellation | `select!`, cooperative cancellation, `Arc` (the stop flag both sides hold) | 55 |
 | 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |
