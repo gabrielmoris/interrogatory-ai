@@ -5,6 +5,29 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-12 — Stage 16 splits in three; the engine is handed `say`; React gets a Tauri `Channel`
+
+**Decided.** 16a: `InferenceEngine::reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()>`.
+`MockEngine` says its line word by word (`split_inclusive(' ')`). `answer_all` collects the pieces in `heard` and
+sends `match said { Ok(()) => Ok(heard), Err(error) => Err(error) }` on pipe 2; `ask` unchanged. Spec
+`tests/pieces.rs` (5); the test engines in `engine.rs`, `app_engine.rs`, `engine_thread.rs`, `ask_engine_thread.rs`
+take the new signature. Measured: 175, `fmt`/`clippy` clean. 16b: pipe 2 carries each piece plus an end/failure
+message; `ask` loops until the end (new: `loop`/`break`); pipe 2's capacity and `engine_thread.rs`'s read-second-
+first test are settled when 16b is cut. 16c: `ask_suspect` takes a `tauri::ipc::Channel<String>`, `ask` forwards
+each piece into it, React makes `new Channel()` with `onmessage`.
+**Why.** Rule 2: a callback, a loop, a Tauri channel — three new things, three stages, following the data from
+the model outward. A callback keeps `llm.rs` domain-pure and is the shape of a llama.cpp decode loop (one call
+per token). Tauri v2 documents `ipc::Channel` for ordered streaming; one per call means no turn ids (ROADMAP
+§2.4 had planned `emit` + ids). Pieces go through `ask`, not from the engine thread straight to React: Stage 15's
+awaitable receiver was made for this, `engine_thread.rs` stays free of IPC types, and in Stage 17 dropping
+`ask`'s receiver is what tells the engine thread to stop.
+**Rejected.** `reply` returning an iterator — lifetimes in a trait object, and a decode loop is awkward as one.
+A generic `say: impl FnMut(&str)` — the trait no longer fits `Box<dyn InferenceEngine>`. `&dyn Fn` — the
+collecting closure changes `heard`. A `Sender` passed into `reply` — channel types in a domain module.
+`said.map(|()| heard)` — `match` on `Ok`/`Err` is syntax he has written (`Phase::record`).
+**Costs.** 16a's collecting moves from `answer_all` to `ask` in 16b. Every test engine changed shape. `say`
+returns nothing; Stage 17 may make it return "keep going?".
+
 ### 2026-10-08 — Stage 15 is the awaitable answer channel; `Arc` moves to cancellation (Stage 17)
 
 **Decided.** Pipe 2 becomes `tauri::async_runtime::channel(1)` (tokio's bounded mpsc, re-exported by Tauri — no

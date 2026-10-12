@@ -9,6 +9,9 @@
 //!
 //! Since Stage 15 the answer pipe is an async channel (`tauri::async_runtime::channel`).
 //! The game awaits it. A test is not async, so it waits with `blocking_recv()`.
+//!
+//! Since Stage 16a an engine says its reply in pieces (see `pieces.rs`). The
+//! engine thread puts them back together, so each answer is still one `String`.
 
 use interrogatory_ai_lib::engine_thread::{start, Question};
 use interrogatory_ai_lib::error::{AppError, AppResult};
@@ -20,8 +23,9 @@ use tauri::async_runtime::channel;
 struct EchoEngine;
 
 impl InferenceEngine for EchoEngine {
-    fn reply(&self, prompt: &str) -> AppResult<String> {
-        Ok(format!("You asked: {prompt}"))
+    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+        say(&format!("You asked: {prompt}"));
+        Ok(())
     }
 }
 
@@ -29,8 +33,9 @@ impl InferenceEngine for EchoEngine {
 struct WhereAmIEngine;
 
 impl InferenceEngine for WhereAmIEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
-        Ok(format!("{:?}", thread::current().id()))
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+        say(&format!("{:?}", thread::current().id()));
+        Ok(())
     }
 }
 
@@ -38,7 +43,7 @@ impl InferenceEngine for WhereAmIEngine {
 struct BrokenEngine;
 
 impl InferenceEngine for BrokenEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
         Err(AppError::Inference {
             message: "out of memory".to_string(),
         })

@@ -12,6 +12,8 @@
 //!
 //! Since Stage 12 `ask` is async. A test cannot `.await`, so it waits with
 //! `block_on` (see `ask_async.rs`).
+//!
+//! Since Stage 16a an engine says its reply in pieces (see `pieces.rs`).
 
 use interrogatory_ai_lib::error::AppResult;
 use interrogatory_ai_lib::ids::SuspectId;
@@ -24,8 +26,9 @@ use tauri::async_runtime::block_on;
 struct EchoEngine;
 
 impl InferenceEngine for EchoEngine {
-    fn reply(&self, prompt: &str) -> AppResult<String> {
-        Ok(prompt.to_string())
+    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+        say(prompt);
+        Ok(())
     }
 }
 
@@ -61,16 +64,16 @@ fn two_kinds_of_engine_can_sit_in_one_list() {
         Box::new(EchoEngine),
     ];
 
-    let replies: Vec<AppResult<String>> = engines
-        .iter()
-        .map(|engine| engine.reply("Did you take the ledger?"))
-        .collect();
+    let mut replies: Vec<String> = Vec::new();
+    for engine in &engines {
+        let mut heard = String::new();
+        engine
+            .reply("Did you take the ledger?", &mut |piece| {
+                heard.push_str(piece)
+            })
+            .expect("neither engine fails");
+        replies.push(heard);
+    }
 
-    assert_eq!(
-        replies,
-        vec![
-            Ok("No comment.".to_string()),
-            Ok("Did you take the ledger?".to_string()),
-        ]
-    );
+    assert_eq!(replies, vec!["No comment.", "Did you take the ledger?"]);
 }

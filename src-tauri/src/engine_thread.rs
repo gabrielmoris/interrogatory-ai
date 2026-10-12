@@ -19,7 +19,12 @@ pub fn start(engine: Box<dyn InferenceEngine>) -> Sender<Question> {
 /// Runs on the engine's thread. Answers each question until no one can ask any more.
 fn answer_all(engine: Box<dyn InferenceEngine>, inbox: Receiver<Question>) {
     for question in inbox {
-        let reply = engine.reply(&question.text);
-        let _ = question.answer_to.blocking_send(reply);
+        let mut heard = String::new();
+        let said = engine.reply(&question.text, &mut |piece| heard.push_str(piece));
+        let answer = match said {
+            Ok(()) => Ok(heard),
+            Err(error) => Err(error),
+        };
+        let _ = question.answer_to.blocking_send(answer);
     }
 }

@@ -2,8 +2,8 @@ use crate::error::AppResult;
 
 /// Anything that can answer the detective. The game only talks to this.
 pub trait InferenceEngine: Send + Sync {
-    /// The suspect's reply to what the detective just said.
-    fn reply(&self, prompt: &str) -> AppResult<String>;
+    /// Answers the detective one piece at a time: calls `say` once per piece.
+    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()>;
 }
 
 /// A fake engine for tests: it always gives the same line.
@@ -20,7 +20,11 @@ impl MockEngine {
 }
 
 impl InferenceEngine for MockEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
-        Ok(self.line.clone())
+    /// Says its line one word at a time.
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+        for word in self.line.split_inclusive(' ') {
+            say(word);
+        }
+        Ok(())
     }
 }

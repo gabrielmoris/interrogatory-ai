@@ -83,7 +83,9 @@ FFI lifetimes.
 | 14b ✅ | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
 | 14c ✅ | see what `ask` does | consolidation; `dbg!` | 30 |
 | 15 ✅ | the answer can be awaited | an async channel: `recv().await` | 30 |
-| 16 | streaming to React | Tauri events with a typed payload | 45 |
+| 16a | the suspect speaks in pieces | a function as an input: `say: &mut dyn FnMut(&str)` | 30 |
+| 16b | each piece travels to `ask` | `loop` until the last message | 35 |
+| 16c | React shows the pieces | Tauri's `ipc::Channel`, Rust and TypeScript sides | 40 |
 | 17 | cancellation | `select!`, cooperative cancellation, `Arc` (the stop flag both sides hold) | 55 |
 | 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |
 | 19 | owning the model | one thread owns the FFI handle | 60 |
@@ -99,9 +101,10 @@ Each of these still has to pass Rule 2 (one new thing) before it is issued; seve
   work in over a channel, tokens out over another; the async side only ever talks to channels.
   `LlamaModel` behind an `Arc`, loaded once. The thread and its channels are built with the mock
   first (14a–14b); the real model moves onto it in Stage 19.
-- **2.4 Streaming** — `mpsc` → `app_handle.emit("interrogation://token", …)` → `listen()`. Every
-  event carries a session/turn id so late tokens from a cancelled generation are discarded.
-  Stage 16.
+- **2.4 Streaming** — the engine calls `say` once per piece (16a); each piece goes through pipe 2
+  to `ask` (16b); `ask` forwards it into a `tauri::ipc::Channel` that `ask_suspect` receives from
+  React (16c). One channel per call, so a late piece can only reach the call that asked — no turn
+  ids on every message. Replaces the `emit`/`listen` plan (`DECISIONS.md`, 2026-10-12).
 - **2.5 Cancellation** — `CancellationToken` checked inside the decode loop; `select!`, drop
   semantics, cleanup order. Stage 17.
 - **2.6 The build** — Xcode command-line tools, CMake, Metal offload. **A session of its own,

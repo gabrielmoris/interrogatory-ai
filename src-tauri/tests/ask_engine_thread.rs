@@ -9,6 +9,8 @@
 //!
 //! The tests below cannot see that waiting. They check what you can see from
 //! outside: who answers, and what comes back when the engine fails or crashes.
+//!
+//! Since Stage 16a an engine says its reply in pieces (see `pieces.rs`).
 
 use interrogatory_ai_lib::error::{AppError, AppResult};
 use interrogatory_ai_lib::ids::SuspectId;
@@ -22,8 +24,9 @@ use tauri::async_runtime::block_on;
 struct WhereAmIEngine;
 
 impl InferenceEngine for WhereAmIEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
-        Ok(format!("{:?}", thread::current().id()))
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+        say(&format!("{:?}", thread::current().id()));
+        Ok(())
     }
 }
 
@@ -31,7 +34,7 @@ impl InferenceEngine for WhereAmIEngine {
 struct BrokenEngine;
 
 impl InferenceEngine for BrokenEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
         Err(AppError::Inference {
             message: "out of memory".to_string(),
         })
@@ -42,7 +45,7 @@ impl InferenceEngine for BrokenEngine {
 struct CrashingEngine;
 
 impl InferenceEngine for CrashingEngine {
-    fn reply(&self, _prompt: &str) -> AppResult<String> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
         panic!("the model crashed");
     }
 }
