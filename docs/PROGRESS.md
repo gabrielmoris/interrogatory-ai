@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-07 (Stage 14c reviewed).
+Last updated: 2026-10-08 (Stage 15 issued).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 14c**, 2026-10-07. Consolidation; `ask` input renamed `text`. 170 across twenty-eight files, `fmt` and `clippy -D warnings` clean. Three `dbg!` lines still to delete. |
-| Uncommitted | His `state.rs` (14c: rename + the `dbg!` lines), this file, `STAGE-LOG.md`. |
-| Next action | **His:** delete the three `dbg!` lines in `ask`, then commit. **Mine:** cut Stage 15 once he says the picture is clear. |
+| Last reviewed | **Stage 14c**, 2026-10-07. Consolidation; `ask` input renamed `text`; `dbg!` lines removed. 170 across twenty-eight files, `fmt` and `clippy -D warnings` clean. Committed `6ccd236`. |
+| Uncommitted | Stage 15: its doc, the two changed specs (`tests/engine_thread.rs`, `tests/ask_engine_thread.rs`), `DECISIONS.md`, `ROADMAP.md`, this file, the 14c doc's last line. |
+| Next action | **His:** Stage 15 — `docs/stages/stage-15-the-answer-can-be-awaited.md`. **Mine:** review when he says ready. |
 | Blocked on | nothing |
 
 ## Stage queue
@@ -16,7 +16,8 @@ Stages 1–14c ✅ — `STAGE-LOG.md`.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 15 | sharing across threads | not cut yet — `ROADMAP.md` Phase 2 lists `Arc<Mutex<T>>` and why a lock must be let go before `.await`. Must pass Rule 2; likely splits. | — |
+| 15 | the answer can be awaited | **an async channel** (`tauri::async_runtime::channel(1)`, `blocking_send`, `recv().await` → `Option`). Pipe 2 only; `spawn_blocking` leaves `ask`. Specs: `tests/engine_thread.rs` (4) and `tests/ask_engine_thread.rs` (3), both changed; before: does not compile (5 × `E0308`). Reference measured 170, `fmt`/`clippy` clean. Re-cut 2026-10-08 (`DECISIONS.md`): `Arc` moves to 17. | 30 |
+| 16 | the reply comes in pieces | not cut yet — streaming to React (`ROADMAP.md` §2.4) | — |
 
 ## Open, not blocking
 

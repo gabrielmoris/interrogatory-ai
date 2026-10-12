@@ -4,9 +4,9 @@ use crate::ids::SuspectId;
 use crate::llm::InferenceEngine;
 use crate::transcript::{Phase, Speaker};
 use std::path::PathBuf;
-use std::sync::mpsc::{channel, Sender};
+use std::sync::mpsc::Sender;
 use std::sync::Mutex;
-use tauri::async_runtime::spawn_blocking;
+use tauri::async_runtime::channel;
 
 /// What the app holds on to for as long as it runs.
 pub struct AppState {
@@ -52,11 +52,12 @@ impl AppState {
     }
 
     /// The suspect's reply to what the detective just asked.
-    /// The engine answers on its own thread. `ask` waits for that answer on a background thread.
+    /// The engine answers on its own thread. `ask` awaits that answer.
     pub async fn ask(&self, text: &str) -> AppResult<String> {
         self.record(Speaker::Detective, text)?;
 
-        let (answer_to, answer) = channel();
+        let (answer_to, mut answer) = channel(1);
+
         let question = Question {
             text: text.to_string(),
             answer_to,
@@ -68,14 +69,10 @@ impl AppState {
                 message: e.to_string(),
             })?;
 
-        let waiting = spawn_blocking(move || answer.recv());
-        let waited = waiting.await.map_err(|e| AppError::BackgroundFailed {
-            message: e.to_string(),
+        let answered = answer.recv().await.ok_or(AppError::Inference {
+            message: "the engine stopped before it answered".to_string(),
         })?;
 
-        let answered = waited.map_err(|e| AppError::Inference {
-            message: e.to_string(),
-        })?;
         let reply = answered?;
 
         self.record(Speaker::Suspect, &reply)?;

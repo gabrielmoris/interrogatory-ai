@@ -80,10 +80,11 @@ FFI lifetimes.
 | 12 ✅ | a question waits until it is awaited | a future does nothing until awaited | 25 |
 | 13 ✅ | slow work gets its own thread | `spawn_blocking` + `move` | 25 |
 | 14a ✅ | the engine gets its own thread | a channel | 25 |
-| 14b | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
-| 15 | sharing across threads | `Arc<Mutex<T>>`, and why a std guard cannot cross `.await` | 55 |
+| 14b ✅ | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
+| 14c ✅ | see what `ask` does | consolidation; `dbg!` | 30 |
+| 15 | the answer can be awaited | an async channel: `recv().await` | 30 |
 | 16 | streaming to React | Tauri events with a typed payload | 45 |
-| 17 | cancellation | `select!` and cooperative cancellation | 55 |
+| 17 | cancellation | `select!`, cooperative cancellation, `Arc` (the stop flag both sides hold) | 55 |
 | 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |
 | 19 | owning the model | one thread owns the FFI handle | 60 |
 

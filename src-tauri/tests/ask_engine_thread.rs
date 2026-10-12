@@ -4,7 +4,8 @@
 //!
 //! Since 14a the engine can live on a thread of its own. Now the game uses it:
 //! `AppState::new` hands the engine to `start`, and `ask` sends each question
-//! through the channel, then waits for the answer on a background thread.
+//! through the channel, then waits for the answer. Since Stage 15 it awaits the
+//! answer channel itself; in 14b it waited on a background thread.
 //!
 //! The tests below cannot see that waiting. They check what you can see from
 //! outside: who answers, and what comes back when the engine fails or crashes.
@@ -86,11 +87,11 @@ fn a_crashed_engine_is_an_error_not_a_crash() {
     let app = viktor_in_the_room(Box::new(CrashingEngine));
 
     // The engine thread dies. Its end of the answer channel goes with it,
-    // so the wait ends with an error instead of an answer.
+    // so the wait ends with `None` instead of an answer (Stage 15).
     assert_eq!(
         block_on(app.ask("Did you take the ledger?")),
         Err(AppError::Inference {
-            message: "receiving on a closed channel".to_string()
+            message: "the engine stopped before it answered".to_string()
         })
     );
     assert_eq!(app.turn_count(), Ok(1));

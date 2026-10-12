@@ -6,7 +6,7 @@ use std::thread;
 /// One question for the engine, and where to send its answer.
 pub struct Question {
     pub text: String,
-    pub answer_to: Sender<AppResult<String>>,
+    pub answer_to: tauri::async_runtime::Sender<AppResult<String>>,
 }
 
 /// Puts the engine on a thread of its own. Send questions to what comes back.
@@ -20,6 +20,6 @@ pub fn start(engine: Box<dyn InferenceEngine>) -> Sender<Question> {
 fn answer_all(engine: Box<dyn InferenceEngine>, inbox: Receiver<Question>) {
     for question in inbox {
         let reply = engine.reply(&question.text);
-        let _ = question.answer_to.send(reply);
+        let _ = question.answer_to.blocking_send(reply);
     }
 }

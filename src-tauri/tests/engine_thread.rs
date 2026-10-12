@@ -7,13 +7,14 @@
 //! of a channel you drop questions into. Each `Question` carries its own
 //! `Sender` for the answer, so the answer goes back to whoever asked.
 //!
-//! A test may wait with `recv()`. The game must not; Stage 14b shows how it waits.
+//! Since Stage 15 the answer pipe is an async channel (`tauri::async_runtime::channel`).
+//! The game awaits it. A test is not async, so it waits with `blocking_recv()`.
 
 use interrogatory_ai_lib::engine_thread::{start, Question};
 use interrogatory_ai_lib::error::{AppError, AppResult};
 use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
-use std::sync::mpsc::channel;
 use std::thread;
+use tauri::async_runtime::channel;
 
 /// Answers with the question it was asked, so each answer can be told apart.
 struct EchoEngine;
@@ -47,7 +48,7 @@ impl InferenceEngine for BrokenEngine {
 #[test]
 fn a_question_sent_in_gets_its_answer_back() {
     let questions = start(Box::new(MockEngine::new("I was at home all night.")));
-    let (answer_to, answer) = channel();
+    let (answer_to, mut answer) = channel(1);
 
     questions
         .send(Question {
@@ -57,16 +58,16 @@ fn a_question_sent_in_gets_its_answer_back() {
         .expect("the engine thread is running");
 
     assert_eq!(
-        answer.recv(),
-        Ok(Ok("I was at home all night.".to_string()))
+        answer.blocking_recv(),
+        Some(Ok("I was at home all night.".to_string()))
     );
 }
 
 #[test]
 fn each_answer_goes_back_to_whoever_asked() {
     let questions = start(Box::new(EchoEngine));
-    let (first_to, first) = channel();
-    let (second_to, second) = channel();
+    let (first_to, mut first) = channel(1);
+    let (second_to, mut second) = channel(1);
 
     questions
         .send(Question {
@@ -83,19 +84,19 @@ fn each_answer_goes_back_to_whoever_asked() {
 
     // Read the second answer first: each one waits in its own channel.
     assert_eq!(
-        second.recv(),
-        Ok(Ok("You asked: Where is the ledger?".to_string()))
+        second.blocking_recv(),
+        Some(Ok("You asked: Where is the ledger?".to_string()))
     );
     assert_eq!(
-        first.recv(),
-        Ok(Ok("You asked: Who is Viktor?".to_string()))
+        first.blocking_recv(),
+        Some(Ok("You asked: Who is Viktor?".to_string()))
     );
 }
 
 #[test]
 fn the_engine_answers_from_another_thread() {
     let questions = start(Box::new(WhereAmIEngine));
-    let (answer_to, answer) = channel();
+    let (answer_to, mut answer) = channel(1);
 
     questions
         .send(Question {
@@ -105,7 +106,7 @@ fn the_engine_answers_from_another_thread() {
         .expect("the engine thread is running");
 
     let there = answer
-        .recv()
+        .blocking_recv()
         .expect("an answer came back")
         .expect("this engine never fails");
     let here = format!("{:?}", thread::current().id());
@@ -116,7 +117,7 @@ fn the_engine_answers_from_another_thread() {
 fn an_engine_failure_comes_back_as_the_answer() {
     // A failed reply is still an answer. It goes back like any other.
     let questions = start(Box::new(BrokenEngine));
-    let (answer_to, answer) = channel();
+    let (answer_to, mut answer) = channel(1);
 
     questions
         .send(Question {
@@ -126,8 +127,8 @@ fn an_engine_failure_comes_back_as_the_answer() {
         .expect("the engine thread is running");
 
     assert_eq!(
-        answer.recv(),
-        Ok(Err(AppError::Inference {
+        answer.blocking_recv(),
+        Some(Err(AppError::Inference {
             message: "out of memory".to_string()
         }))
     );

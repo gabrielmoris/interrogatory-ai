@@ -5,6 +5,23 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-08 — Stage 15 is the awaitable answer channel; `Arc` moves to cancellation (Stage 17)
+
+**Decided.** Pipe 2 becomes `tauri::async_runtime::channel(1)` (tokio's bounded mpsc, re-exported by Tauri — no
+new dependency). `Question.answer_to: tauri::async_runtime::Sender<AppResult<String>>` (full path: std's `Sender`
+is already imported for pipe 1); `answer_all` uses `blocking_send`; `ask` = `answer.recv().await.ok_or(Inference
+{ "the engine stopped before it answered" })?` then `answered?`. `spawn_blocking` leaves `ask` (`BackgroundFailed`
+stays for `case_intro`). Pipe 1 stays `std::sync::mpsc`. Specs changed: `tests/engine_thread.rs` (`channel(1)`,
+`blocking_recv`, `Some(..)`), `tests/ask_engine_thread.rs` (crash message). Measured: 170, `fmt`/`clippy` clean.
+**Why.** Removes 14b's cost (a blocking-pool thread parked per question); `ask` drops from three nested results to
+two; Stage 16's streamed reply needs a receiver awaited once per piece. ROADMAP's old Stage 15 (`Arc<Mutex<T>>`)
+had no feature needing it — everything crosses threads through channels. `Arc` first earns its place with the stop
+flag shared by `ask` and the engine thread (Stage 17). Supersedes the 2026-09-30 "Rejected: tokio channels" line.
+**Rejected.** `tokio::sync::oneshot` — exact for one reply, but a new direct dependency, and 16 needs many
+messages. Keeping `spawn_blocking` until 16 — one parked thread per streamed piece. A contrived `Arc<Mutex<Phase>>`.
+**Costs.** Two channel kinds in `engine_thread.rs`. The "std guard across `.await`" lesson has no occasion yet
+(`record` never holds the lock across an await); it is taught when one appears.
+
 ### 2026-10-04 — Stage 14b's spec: one engine thread answers, and a crashed engine is an error
 
 **Decided.** Spec `tests/ask_engine_thread.rs` (3): both answers come from one thread that is not the caller's;
@@ -41,7 +58,7 @@ below (`0xc0000139`, the `tauri::test` crash) are history; on macOS `tauri::test
 `spawn_blocking`. The reply `Sender` inside each question is the request/response shape the real engine keeps.
 **Rejected.** One fixed answers channel — with two askers an answer can reach the wrong one; rewritten in 14b.
 tokio channels (`tauri::async_runtime::channel`) — `blocking_recv`/`blocking_send`, a capacity: a second API;
-they arrive when `select!` needs an awaitable receiver (Stage 17). The loop in `llm.rs` — that file is domain.
+they arrive when `select!` needs an awaitable receiver (Stage 17). *(Superseded 2026-10-08: they arrive in Stage 15.)* The loop in `llm.rs` — that file is domain.
 Returning the `JoinHandle` — nothing joins; the thread ends when the last `Sender` drops.
 **Costs.** In 14b each question in flight parks one blocking-pool thread on `recv`. Harmless at one question
 at a time; replaced by an awaitable receiver later. A panicking engine kills its thread; 14b maps the
@@ -56,7 +73,7 @@ failed `send`/`recv` to `AppError::Inference`.
 **Why.** Rule 2: one idea — slow work leaves on its own thread and must own what it takes (`move`, owned
 inputs). Disk reads are what `spawn_blocking` is for, and the inputs are plain owned values, so no `Arc`.
 **Rejected.** Moving `engine.reply` into `spawn_blocking` — `&self` cannot enter a `'static` closure
-without `Arc<dyn InferenceEngine>` (Stage 15, a second new thing), and the real engine gets one dedicated
+without `Arc<dyn InferenceEngine>` (a second new thing), and the real engine gets one dedicated
 thread with channels (ROADMAP §2.3, Stages 14/19), so the code would be thrown away.
 **Costs.** `begin_interrogation` still reads the case on the window thread (it borrows `&AppState`).
 Left until the loaded case is held in state (Phase 3). `ask` still runs the mock on a tokio worker (Stage 14).
@@ -92,7 +109,7 @@ then `self.record(Suspect, &reply)?`. Three separate steps, each lock taken and 
 Outside the room it fails with `record`'s own refusal (`action: "record a line"`). `AppState::turn_count`
 added for the test to read. A failed `reply` leaves the question kept without an answer.
 **Why.** Zero new elements. And the real model takes seconds: holding the phase lock that long would
-stall every other command. Stage 15 teaches that; the shape is already right.
+stall every other command. The shape is already right (see 2026-10-08 on when the lock-across-`.await` lesson comes).
 **Rejected.** One lock across all three — blocks the app while the model thinks. A separate
 "ask a question" refusal — a second phase check next to `record`'s. `AppState::transcript()` —
 returning lines out of a lock needs `.to_vec()` and a lifetime reason; that is 11d-or-later material.
@@ -110,7 +127,7 @@ Tauri's `.manage` needs `Send + Sync` (measured: without it, 14 `E0277` across `
 **Rejected.** `AppState<E: InferenceEngine>` — every `State<'_, AppState>` in `ipc.rs` would carry `E`.
 `Box<dyn InferenceEngine + Send + Sync>` at each use — the same promise written three times.
 Keeping `new(cases_dir)` with a default mock plus a second constructor — two doors for one thing.
-`Arc` — nothing clones the engine yet (Stage 15).
+`Arc` — nothing clones the engine yet (`Arc` arrives in Stage 17).
 **Costs.** Four older test files changed to the two-argument `new`. `Send + Sync` is used a stage
 before it is taught; 11b's doc says so in one line.
 
@@ -165,7 +182,7 @@ first (10e). Each takes the lock, asks `Phase`, and drops the guard before it re
 lock becomes `AppError::Poisoned { message }` through `.map_err` — never a panic.
 **Why.** `State<'_, AppState>` only ever gives `&AppState`: every command shares it and async ones run
 on other threads. So a change needs a lock, and the check and the change must sit under one guard —
-the double-click test. `std`'s `Mutex`, not tokio's: nothing `.await`s while holding it (Stage 15).
+the double-click test. `std`'s `Mutex`, not tokio's: nothing `.await`s while holding it.
 `ipc.rs` stays "deserialize, delegate, map errors".
 **Rejected.** `.lock().unwrap()` — one panic while holding the guard makes every later command panic,
 with no `kind` for React to branch on. Recovering with `PoisonError::into_inner` — right only while

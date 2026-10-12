@@ -398,4 +398,5 @@ A3 is the same: `move || answer.recv()` hands `answer` to the background thread.
   `.map_err` goes only where that error is not an `AppError` yet. You saw the real values printed.
 - **New tools:** `dbg!(&value)`, and `cargo test … -- --nocapture --test-threads=1` to see it.
 
-Next, Stage 15: sharing one value between threads.
+Next, Stage 15: the answer can be awaited — pipe 2 becomes a channel `ask` can `.await`, and the
+background thread goes away.
