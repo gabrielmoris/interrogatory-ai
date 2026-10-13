@@ -6,7 +6,7 @@ TypeScript developer and a **Rust beginner**. He has ~2–4 h/week.
 
 **Resume:** this file → `docs/PROGRESS.md` → the current stage doc.
 
-**Why the rules look like this.** 27 corrections shaped them; the last four set today's method.
+**Why the rules look like this.** 28 corrections shaped them; the last five set today's method.
 24 (2026-09-24): explanations pitched at an expert added load — beginner words only.
 25 (2026-10-03): docs printed the code to paste — he types the new lines himself (Rule 8).
 26 (2026-10-04): steps named things without showing the syntax — he set the six-section doc
@@ -14,6 +14,8 @@ TypeScript developer and a **Rust beginner**. He has ~2–4 h/week.
 27 (2026-10-07): steps described code in words ("send a Question into `self.questions`"). Words
 mean nothing until he has the mental map. The map comes first, and every step shows its code
 (Rules 5, 8, 10).
+28 (2026-10-13): 16a printed every line, so typing it was copying — "read, copy and paste… I need
+some challenges." Bodies made of pieces he already has are now his to build (Rules 5, 8).
 Do not bring back: predict sure/guessing, "a version that passes and is still wrong", analogies
 with breakage clauses, closed-book questions, mentor idiom. History: `docs/STAGE-LOG.md`.
 
@@ -32,16 +34,20 @@ with breakage clauses, closed-book questions, mentor idiom. History: `docs/STAGE
 2. **One new thing per stage.** Everything else is something he has already written.
 3. **Everything goes in the stage doc.** Chat only says what changed in the doc.
 4. **Short sentences.** No word he has to look up. Long is fine when it is organized; dense is not.
-5. **Steps show code.** Each step is the code to type, then one or two sentences on what it does in
-   §1's map. Syntax explanations stay in §4/§5, and the step points there. Never describe a line of
-   code in words instead of showing it.
+5. **Two kinds of step.** **Build it** is the default, for any body made of things he has already
+   written: what the code must do, in plain steps; the pieces, each one as code (from §5, or §4's
+   example); the run result that says it is right. The doc does not print the answer.
+   **Type it** is only for the lines that use the stage's new thing: the code, then one or two
+   sentences on what it does in §1's map. Every stage has at least one Build it, and §3 starts with
+   the easiest one. A piece is always code, never a name in a sentence.
 6. **New syntax is shown, not described.** For each new piece: what it is, its general form, an
    example (from the test file, or with other names), when it is used, and why here. A step he cannot
    write without guessing the syntax is a mentor defect. No analogies unless they are exact.
 7. **When he is stuck:** tell him exactly what to change and one line why. No hint ladders.
-8. **He types the code; he does not paste it.** Scaffolding (imports, structs, signatures, doc
-   comments) is pasted. Every other line is shown in its step, and he types it. The test tells him
-   when it is right.
+8. **He writes the code; the doc does not hand it over.** Scaffolding (imports, structs, signatures,
+   doc comments) is pasted. Lines that use the new thing are shown, and he types them. Everything
+   else he builds from the pieces (Rule 5). The test tells him when it is right; the review says
+   where his version differs from mine and whether that matters.
 9. **Known syntax gets a pasted example.** Copy the lines from his repo, with file and function, into
    §5. Never "like in Stage 13" without the code — he should not have to search.
 10. **The map before the code.** §1 draws who holds what and what travels where, with the real
@@ -65,9 +71,10 @@ Table of files and what to do in each. The full template to paste: imports, stru
 signatures, doc comments, every body `todo!()`. Expected run result. What each part is for.
 
 ## 3. What each function does, and how to build it
-Where each parameter comes from. Per function: what it does, then the code blocks to type, each
-followed by what it does in the map, pointing to §4.x / §5.x — and the measured run result. Ends
-with "If it does not compile".
+Where each parameter comes from. Easiest Build it first. Per function: what it does, then either
+Build it (plain steps + the pieces as code) or Type it (the code + what it does in the map), each
+pointing to §4.x / §5.x — and the measured run result. Ends with "If it does not compile": the
+error and what to change, never a whole Build it body.
 
 ## 4. New syntax and methods
 One numbered subsection per new piece: what it is, its form, an example, when, why here.

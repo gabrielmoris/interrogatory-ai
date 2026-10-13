@@ -327,3 +327,15 @@ his `ask` differs only by two blank lines. Committed `c189e3c`.
 **Stuck.** Nowhere reported. First submission passed.
 **Do differently.** Nothing new. The map-first doc with code in every step (Rules 5, 8, 10) held up on its
 first full stage.
+
+### Stage 16a — the suspect speaks in pieces ✅ 2026-10-13
+
+**Built.** `InferenceEngine::reply(&self, prompt, say: &mut dyn FnMut(&str)) -> AppResult<()>`. `MockEngine`
+says its line with `split_inclusive(' ')`. `answer_all` collects the pieces in `heard` (inside the loop) and sends
+`match said { Ok(()) => Ok(heard), Err(error) => Err(error) }`. Spec `tests/pieces.rs` 5/5; 175 across twenty-nine
+files, `fmt` and `clippy -D warnings` clean. Identical to the reference, except that the trait's doc comment lost the
+line saying what `Ok(())` and `Err` mean. Committed `3d8cb75`, together with the docs.
+**Stuck.** Nowhere. First submission passed.
+**Do differently.** Correction 28: he typed every line the doc printed and called it "read, copy and paste… I
+really don't think I am learning, I need some challenges." Green on the first try meant the stage asked nothing of
+him. Rules 5 and 8 now leave bodies made of known pieces for him to build. 16b is the first stage cut that way.
