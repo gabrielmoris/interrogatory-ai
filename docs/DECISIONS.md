@@ -5,6 +5,25 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-13 — Stage 16b: pipe 2 carries `Said`; `ask` loops until the last message
+
+**Decided.** `engine_thread.rs`: `#[derive(Debug, PartialEq)] pub enum Said { Piece(String), Done, Failed(AppError) }`;
+`Question.answer_to: tauri::async_runtime::Sender<Said>`. `answer_all`: the `say` closure sends `Said::Piece(piece.to_string())`
+with `blocking_send`; after `reply`, `finished` becomes `Said::Done` / `Said::Failed(error)` and is sent last. `ask`:
+`let mut reply = String::new(); loop { let said = answer.recv().await.ok_or(..)?; match said { Piece(piece) =>
+reply.push_str(&piece), Done => break, Failed(error) => return Err(error) } }`, then record and `Ok(reply)` as in 15.
+Pipe 2 stays `channel(1)`. Spec `tests/pieces_travel.rs` (4). `tests/engine_thread.rs` reads `Said` messages, in the
+order asked; `tests/pieces.rs` drops its three engine-thread tests (their 16b form is in the new spec) → 2. Measured:
+176, `fmt`/`clippy` clean, 10 repeat runs. After correction 29 (2026-10-14) the closure and the loop are Type it; his Build it is the `match` that makes `last`, the send, and `reply`'s first and last lines.
+**Why.** An explicit last message: a closed pipe cannot tell "done" from "crashed", and the crash test needs an `Err`.
+Capacity 1: the engine never runs more than one piece ahead of `ask`; nothing to tune, and Stage 17's stop is noticed
+at the engine's next send. `loop`/`break` is the one new thing; every other line is a piece he has written.
+**Rejected.** `AppResult<Option<String>>` messages (`Some` = piece, `None` = done) — three meanings in two nested
+types. Closing the pipe to mean done — a crash would look like a complete, empty reply. `while let` — the end is a
+message, not the pipe running dry, and it is a second new thing. A larger capacity — no measured need.
+**Costs.** Tests that read pipe 2 directly must read in the order asked: reading the second question's pipe first
+now waits forever (the engine thread is stuck on the first pipe's `Done`). `Said` derives `PartialEq` for the tests.
+
 ### 2026-10-12 — Stage 16 splits in three; the engine is handed `say`; React gets a Tauri `Channel`
 
 **Decided.** 16a: `InferenceEngine::reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()>`.

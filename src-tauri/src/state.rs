@@ -1,4 +1,4 @@
-use crate::engine_thread::{start, Question};
+use crate::engine_thread::{start, Question, Said};
 use crate::error::{AppError, AppResult};
 use crate::ids::SuspectId;
 use crate::llm::InferenceEngine;
@@ -52,7 +52,7 @@ impl AppState {
     }
 
     /// The suspect's reply to what the detective just asked.
-    /// The engine answers on its own thread. `ask` awaits that answer.
+    /// The engine says it piece by piece on its own thread. `ask` puts the pieces together.
     pub async fn ask(&self, text: &str) -> AppResult<String> {
         self.record(Speaker::Detective, text)?;
 
@@ -69,11 +69,19 @@ impl AppState {
                 message: e.to_string(),
             })?;
 
-        let answered = answer.recv().await.ok_or(AppError::Inference {
-            message: "the engine stopped before it answered".to_string(),
-        })?;
+        let mut reply = String::new();
 
-        let reply = answered?;
+        loop {
+            let said = answer.recv().await.ok_or(AppError::Inference {
+                message: "the engine stopped before it answered".to_string(),
+            })?;
+
+            match said {
+                Said::Piece(piece) => reply.push_str(&piece),
+                Said::Done => break,
+                Said::Failed(error) => return Err(error),
+            }
+        }
 
         self.record(Speaker::Suspect, &reply)?;
         Ok(reply)
