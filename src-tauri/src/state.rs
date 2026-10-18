@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use tauri::async_runtime::channel;
+use tauri::ipc::Channel;
 
 /// What the app holds on to for as long as it runs.
 pub struct AppState {
@@ -52,8 +53,9 @@ impl AppState {
     }
 
     /// The suspect's reply to what the detective just asked.
-    /// The engine says it piece by piece on its own thread. `ask` puts the pieces together.
-    pub async fn ask(&self, text: &str) -> AppResult<String> {
+    /// The engine says it piece by piece on its own thread. `ask` sends each piece to React
+    /// through `on_piece` the moment it comes, and puts the pieces together.
+    pub async fn ask(&self, text: &str, on_piece: Channel<String>) -> AppResult<String> {
         self.record(Speaker::Detective, text)?;
 
         let (answer_to, mut answer) = channel(1);
@@ -77,7 +79,15 @@ impl AppState {
             })?;
 
             match said {
-                Said::Piece(piece) => reply.push_str(&piece),
+                Said::Piece(piece) => {
+                    reply.push_str(&piece);
+
+                    on_piece
+                        .send(piece)
+                        .map_err(|e| AppError::WindowUnreachable {
+                            message: e.to_string(),
+                        })?;
+                }
                 Said::Done => break,
                 Said::Failed(error) => return Err(error),
             }

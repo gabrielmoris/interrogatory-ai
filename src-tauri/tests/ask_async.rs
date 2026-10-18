@@ -14,6 +14,13 @@ use interrogatory_ai_lib::llm::MockEngine;
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
+use tauri::ipc::Channel;
+
+/// A channel to no window: every piece `ask` sends into it is dropped.
+/// Since Stage 16c `ask` sends each piece to React (see `pieces_to_react.rs`).
+fn no_window() -> Channel<String> {
+    Channel::new(|_| Ok(()))
+}
 
 /// The app with Viktor in the room. He always says the same line.
 fn viktor_in_the_room() -> AppState {
@@ -29,7 +36,7 @@ fn viktor_in_the_room() -> AppState {
 fn calling_ask_does_not_ask_yet() {
     let app = viktor_in_the_room();
 
-    let _question = app.ask("Where were you on Tuesday?");
+    let _question = app.ask("Where were you on Tuesday?", no_window());
 
     assert_eq!(app.turn_count(), Ok(0));
 }
@@ -38,7 +45,7 @@ fn calling_ask_does_not_ask_yet() {
 fn awaiting_the_question_asks_it() {
     let app = viktor_in_the_room();
 
-    let question = app.ask("Where were you on Tuesday?");
+    let question = app.ask("Where were you on Tuesday?", no_window());
 
     assert_eq!(
         block_on(question),
@@ -51,9 +58,9 @@ fn awaiting_the_question_asks_it() {
 fn a_question_never_awaited_is_never_asked() {
     let app = viktor_in_the_room();
 
-    let forgotten = app.ask("Where were you on Tuesday?");
+    let forgotten = app.ask("Where were you on Tuesday?", no_window());
     drop(forgotten);
-    block_on(app.ask("Who can say so?")).unwrap();
+    block_on(app.ask("Who can say so?", no_window())).unwrap();
 
     assert_eq!(app.turn_count(), Ok(2));
 }

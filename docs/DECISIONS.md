@@ -5,6 +5,27 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-14 — Stage 16c: React hands `ask` a `Channel`; a piece that cannot reach React stops `ask`
+
+**Decided.** React makes `new Channel<string>()` per question and passes it to `invoke("ask_suspect", { question, onPiece })`.
+`ask_suspect(state, question, on_piece: tauri::ipc::Channel<String>)` → `state.ask(&question, on_piece)`. `AppState::ask(&self,
+text: &str, on_piece: Channel<String>)`; the `Piece` arm is `{ reply.push_str(&piece); on_piece.send(piece).map_err(|e|
+AppError::WindowUnreachable { message: e.to_string() })?; }`. New variant `WindowUnreachable { message }` ("the window could not
+be reached: {message}"). `App.tsx` is replaced by a minimal room (call Viktor in, ask, `onmessage` grows the reply). Spec
+`tests/pieces_to_react.rs` (4); `ask_command.rs` takes three inputs; six files pass a `no_window()` channel to `ask`. Measured:
+180, `fmt`/`clippy` clean, 10 repeat runs; `App.tsx` run in a headless WebKitGTK window: seven pieces arrive before `invoke`
+resolves; `tsc` clean against the lockfile's `@tauri-apps/api` 2.11.1.
+**Why.** By value: one channel per question, nothing needs it after `ask`, and tests pass `Channel::new(..)` with no borrowed
+temporaries in their futures. `?`, not `let _ =`: a reply nobody saw should not enter the transcript Phase 3 scores, and
+returning drops `ask`'s end of pipe 2 — the signal Stage 17's stop builds on. `push_str` before `send`: `send` moves the
+`String`, so no clone.
+**Rejected.** `let _ = on_piece.send(..)` — records a reply nobody saw and hides a dead window. `&Channel<String>` — no gain,
+the channel is a cheap handle. A closure parameter on `ask` (`impl FnMut(String) + Send`) to keep IPC types out of `state.rs` —
+`state.rs` is a shell module, and it is a second new piece of syntax. `AppError::Inference` for the failure — the engine did
+not fail. `emit`/`listen` — rejected 2026-10-12.
+**Costs.** Every test that calls `ask` needs a channel. `state.rs` now imports `tauri::ipc`. `MockEngine` answers at once, so
+the pieces are visible only in the console until Stage 19.
+
 ### 2026-10-13 — Stage 16b: pipe 2 carries `Said`; `ask` loops until the last message
 
 **Decided.** `engine_thread.rs`: `#[derive(Debug, PartialEq)] pub enum Said { Piece(String), Done, Failed(AppError) }`;

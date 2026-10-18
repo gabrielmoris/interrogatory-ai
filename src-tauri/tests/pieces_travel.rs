@@ -17,6 +17,13 @@ use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
 use tauri::async_runtime::{block_on, channel};
+use tauri::ipc::Channel;
+
+/// A channel to no window: every piece `ask` sends into it is dropped.
+/// Since Stage 16c `ask` sends each piece to React (see `pieces_to_react.rs`).
+fn no_window() -> Channel<String> {
+    Channel::new(|_| Ok(()))
+}
 
 /// Says its reply in three pieces that are not whole words, the way a real model can.
 struct HesitantEngine;
@@ -106,7 +113,7 @@ fn ask_puts_the_pieces_back_together() {
     let app = viktor_in_the_room(Box::new(MockEngine::new("I was at home all night.")));
 
     assert_eq!(
-        block_on(app.ask("Where were you on Tuesday?")),
+        block_on(app.ask("Where were you on Tuesday?", no_window())),
         Ok("I was at home all night.".to_string())
     );
     // The question and the whole reply are kept in the room.
@@ -118,7 +125,7 @@ fn ask_gives_back_the_failure_not_half_a_reply() {
     let app = viktor_in_the_room(Box::new(FailsHalfwayEngine));
 
     assert_eq!(
-        block_on(app.ask("Did you take the ledger?")),
+        block_on(app.ask("Did you take the ledger?", no_window())),
         Err(AppError::Inference {
             message: "out of memory".to_string()
         })

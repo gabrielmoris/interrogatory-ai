@@ -339,3 +339,16 @@ line saying what `Ok(())` and `Err` mean. Committed `3d8cb75`, together with the
 **Do differently.** Correction 28: he typed every line the doc printed and called it "read, copy and paste… I
 really don't think I am learning, I need some challenges." Green on the first try meant the stage asked nothing of
 him. Rules 5 and 8 now leave bodies made of known pieces for him to build. 16b is the first stage cut that way.
+
+### Stage 16b — each piece travels to `ask` ✅ 2026-10-14
+
+**Built.** Pipe 2 carries `Said { Piece(String), Done, Failed(AppError) }`. `answer_all` sends a `Piece` from inside
+the `say` closure, then `Done` or `Failed`. `ask` takes messages in a `loop` — `Piece` → `push_str`, `Done` → `break`,
+`Failed` → `return Err` — then records the reply as before. Spec `tests/pieces_travel.rs` 4/4; 176 across thirty
+files, `fmt` and `clippy -D warnings` clean. Identical to the reference except blank lines.
+**Stuck.** First cut: at §3.1, the first Build it — a whole body with two pieces he had never written (a closure with
+a `{ }` body, `.to_string()` for a value that crosses threads), and a table sending him to §5 (correction 29). §3 was
+rewritten that night: two Type it, four small Build it. Then at step E: `E0308 expected Result<String, AppError>,
+found ()`, pointing at `break` — the two lines after the loop were missing.
+**Do differently.** He finished saying it is "either copy paste or too hard". The steps have two settings — type a
+printed line, or build a body — and nothing between. The middle is not settled yet; see `PROGRESS.md`.

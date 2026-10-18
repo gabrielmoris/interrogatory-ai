@@ -21,6 +21,13 @@ use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
+use tauri::ipc::Channel;
+
+/// A channel to no window: every piece `ask` sends into it is dropped.
+/// Since Stage 16c `ask` sends each piece to React (see `pieces_to_react.rs`).
+fn no_window() -> Channel<String> {
+    Channel::new(|_| Ok(()))
+}
 
 /// A second engine, written here: it repeats the question back.
 struct EchoEngine;
@@ -41,7 +48,7 @@ fn the_app_asks_the_engine_it_was_given() {
     app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(
-        block_on(app.ask("Where were you on Tuesday?")),
+        block_on(app.ask("Where were you on Tuesday?", no_window())),
         Ok("I was at home all night.".to_string())
     );
 }
@@ -52,7 +59,7 @@ fn any_engine_fits_the_same_field() {
     app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(
-        block_on(app.ask("Who is Viktor?")),
+        block_on(app.ask("Who is Viktor?", no_window())),
         Ok("Who is Viktor?".to_string())
     );
 }

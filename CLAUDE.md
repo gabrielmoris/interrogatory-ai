@@ -6,7 +6,7 @@ TypeScript developer and a **Rust beginner**. He has ~2–4 h/week.
 
 **Resume:** this file → `docs/PROGRESS.md` → the current stage doc.
 
-**Why the rules look like this.** 29 corrections shaped them; the last six set today's method.
+**Why the rules look like this.** 30 corrections shaped them; the last seven set today's method.
 24 (2026-09-24): explanations pitched at an expert added load — beginner words only.
 25 (2026-10-03): docs printed the code to paste — he types the new lines himself (Rule 8).
 26 (2026-10-04): steps named things without showing the syntax — he set the six-section doc
@@ -20,6 +20,8 @@ some challenges." Bodies made of pieces he already has are now his to build (Rul
 closure with a `{ }` body, `.to_string()` for a value that crosses threads), and a table sent him to
 §5 for each piece. He stopped at the first step: "I am lost. I can't do it." Build it is now only for
 easy lines, one change at a time, with his code next to the step (Rule 5).
+30 (2026-10-14): he finished 16b saying it was "either copy paste or too hard" — two settings, nothing
+between. Asked to choose, he picked both middle steps: **Fill it** and **Order it** (Rules 5, 8).
 Do not bring back: predict sure/guessing, "a version that passes and is still wrong", analogies
 with breakage clauses, closed-book questions, mentor idiom. History: `docs/STAGE-LOG.md`.
 
@@ -38,21 +40,29 @@ with breakage clauses, closed-book questions, mentor idiom. History: `docs/STAGE
 2. **One new thing per stage.** Everything else is something he has already written.
 3. **Everything goes in the stage doc.** Chat only says what changed in the doc.
 4. **Short sentences.** No word he has to look up. Long is fine when it is organized; dense is not.
-5. **Two kinds of step.** **Type it** for every line that is new to him, or that puts known things
-   together in a way he has not written: the code, then a table of what each part does in §1's map.
+5. **Four kinds of step, from most shown to least.**
+   **Type it** for every line that is new to him, or that puts known things together in a way he has
+   not written: the code, then a table of what each part does in §1's map.
+   **Fill it** — the line is printed with gaps, `____`. Each gap is a name or value he already has,
+   never syntax. His most similar line is printed right next to it.
+   **Order it** — the lines are printed out of order (a part may be "your step B line"). He puts them
+   in order. The step prints the measured error for the wrong order.
    **Build it** only for easy lines — a line he has already written, renamed or with one part
    changed: what it must do, his existing code right next to the step (never a pointer to another
-   section), and the list of changes. The doc does not print the Build it answer. Every stage has at
-   least one Build it. One change per step, each with its measured run result — compile errors
-   included. A piece is always code, never a name in a sentence.
+   section), and the list of changes.
+   The doc never prints the answer to Fill it, Order it or Build it; "If it does not compile" may.
+   Every stage has at least one Fill it or Order it, and at least one Build it. One change per step,
+   each with its measured run result — compile errors included. A piece is always code, never a name
+   in a sentence.
 6. **New syntax is shown, not described.** For each new piece: what it is, its general form, an
    example (from the test file, or with other names), when it is used, and why here. A step he cannot
    write without guessing the syntax is a mentor defect. No analogies unless they are exact.
 7. **When he is stuck:** tell him exactly what to change and one line why. No hint ladders.
 8. **He writes the code; the doc does not hand it over.** Scaffolding (imports, structs, signatures,
-   doc comments) is pasted. Lines that use the new thing are shown, and he types them. Everything
-   else he builds from the pieces (Rule 5). The test tells him when it is right; the review says
-   where his version differs from mine and whether that matters.
+   doc comments) is pasted. Lines that use the new thing are shown, and he types them — as Type it, or
+   as Fill it when every gap is a name he has. Everything else he builds from the pieces (Rule 5).
+   The test tells him when it is right; the review says where his version differs from mine and
+   whether that matters.
 9. **Known syntax gets a pasted example.** Copy the lines from his repo, with file and function, into
    §5. Never "like in Stage 13" without the code — he should not have to search.
 10. **The map before the code.** §1 draws who holds what and what travels where, with the real
@@ -77,8 +87,10 @@ signatures, doc comments, every body `todo!()`. Expected run result. What each p
 
 ## 3. What each function does, and how to build it
 Where each parameter comes from. Per function: what it does, then its steps in order, one change
-each: Type it (the code + a table of what each part does in the map) or Build it (what the line
-must do + his own code next to it + the changes) — and the measured run result after each.
+each: Type it (the code + a table of what each part does in the map), Fill it (the line with gaps +
+his most similar line), Order it (the lines out of order + the error for the wrong order) or Build it
+(what the line must do + his own code next to it + the changes) — and the measured run result after
+each.
 Ends with "If it does not compile": the error and what to change, never a whole Build it body.
 
 ## 4. New syntax and methods
@@ -108,7 +120,7 @@ tell him in one line. Never leave a design question to him.
 | Path | What |
 |---|---|
 | `docs/PROGRESS.md` | status, next action, stage queue |
-| `docs/stages/` | one doc per stage. `stage-14a` is the model; older docs are a record, not a template |
+| `docs/stages/` | one doc per stage. `stage-16c` is the model (all four kinds of step); older docs are a record, not a template |
 | `docs/STAGE-LOG.md` | what happened in each stage |
 | `docs/DECISIONS.md` | architecture decisions, newest first |
 | `docs/ROADMAP.md` | phases 2–5, module layout, risks |

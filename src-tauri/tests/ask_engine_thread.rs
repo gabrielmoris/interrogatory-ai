@@ -19,6 +19,13 @@ use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
 use std::thread;
 use tauri::async_runtime::block_on;
+use tauri::ipc::Channel;
+
+/// A channel to no window: every piece `ask` sends into it is dropped.
+/// Since Stage 16c `ask` sends each piece to React (see `pieces_to_react.rs`).
+fn no_window() -> Channel<String> {
+    Channel::new(|_| Ok(()))
+}
 
 /// Answers with the id of the thread it runs on.
 struct WhereAmIEngine;
@@ -61,8 +68,10 @@ fn viktor_in_the_room(engine: Box<dyn InferenceEngine>) -> AppState {
 fn every_answer_comes_from_the_one_engine_thread() {
     let app = viktor_in_the_room(Box::new(WhereAmIEngine));
 
-    let first = block_on(app.ask("Where were you on Tuesday?")).expect("this engine never fails");
-    let second = block_on(app.ask("Who can say so?")).expect("this engine never fails");
+    let first = block_on(app.ask("Where were you on Tuesday?", no_window()))
+        .expect("this engine never fails");
+    let second =
+        block_on(app.ask("Who can say so?", no_window())).expect("this engine never fails");
     let here = format!("{:?}", thread::current().id());
 
     // Not the test's thread...
@@ -76,7 +85,7 @@ fn an_engine_failure_comes_back_from_ask() {
     let app = viktor_in_the_room(Box::new(BrokenEngine));
 
     assert_eq!(
-        block_on(app.ask("Did you take the ledger?")),
+        block_on(app.ask("Did you take the ledger?", no_window())),
         Err(AppError::Inference {
             message: "out of memory".to_string()
         })
@@ -92,7 +101,7 @@ fn a_crashed_engine_is_an_error_not_a_crash() {
     // The engine thread dies. Its end of the answer channel goes with it,
     // so the wait ends with `None` instead of an answer (Stage 15).
     assert_eq!(
-        block_on(app.ask("Did you take the ledger?")),
+        block_on(app.ask("Did you take the ledger?", no_window())),
         Err(AppError::Inference {
             message: "the engine stopped before it answered".to_string()
         })

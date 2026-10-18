@@ -1,4 +1,5 @@
 use tauri::async_runtime::spawn_blocking;
+use tauri::ipc::Channel;
 use tauri::State;
 
 use crate::case::Case;
@@ -74,7 +75,12 @@ pub fn begin_interrogation(
     begin_interrogation_from(&state, &slug, suspect)
 }
 
+/// Asks the suspect in the room. Each piece of the reply goes to React through `on_piece`.
 #[tauri::command]
-pub async fn ask_suspect(state: State<'_, AppState>, question: String) -> AppResult<String> {
-    state.ask(&question).await
+pub async fn ask_suspect(
+    state: State<'_, AppState>,
+    question: String,
+    on_piece: Channel<String>,
+) -> AppResult<String> {
+    state.ask(&question, on_piece).await
 }

@@ -83,8 +83,8 @@ FFI lifetimes.
 | 14b ✅ | `ask` goes through the engine thread | zero new — recall of 14a | 20 |
 | 14c ✅ | see what `ask` does | consolidation; `dbg!` | 30 |
 | 15 ✅ | the answer can be awaited | an async channel: `recv().await` | 30 |
-| 16a | the suspect speaks in pieces | a function as an input: `say: &mut dyn FnMut(&str)` | 30 |
-| 16b | each piece travels to `ask` | `loop` until the last message | 35 |
+| 16a ✅ | the suspect speaks in pieces | a function as an input: `say: &mut dyn FnMut(&str)` | 30 |
+| 16b ✅ | each piece travels to `ask` | `loop` until the last message | 35 |
 | 16c | React shows the pieces | Tauri's `ipc::Channel`, Rust and TypeScript sides | 40 |
 | 17 | cancellation | `select!`, cooperative cancellation, `Arc` (the stop flag both sides hold) | 55 |
 | 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |

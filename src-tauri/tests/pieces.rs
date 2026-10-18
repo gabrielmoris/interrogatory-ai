@@ -16,6 +16,13 @@ use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 use interrogatory_ai_lib::state::AppState;
 use std::path::PathBuf;
 use tauri::async_runtime::block_on;
+use tauri::ipc::Channel;
+
+/// A channel to no window: every piece `ask` sends into it is dropped.
+/// Since Stage 16c `ask` sends each piece to React (see `pieces_to_react.rs`).
+fn no_window() -> Channel<String> {
+    Channel::new(|_| Ok(()))
+}
 
 /// Says its reply in three pieces that are not whole words, the way a real model can.
 struct HesitantEngine;
@@ -48,7 +55,7 @@ fn ask_still_gives_back_the_whole_reply() {
     app.begin(SuspectId::new(2)).unwrap();
 
     assert_eq!(
-        block_on(app.ask("Where were you on Tuesday?")),
+        block_on(app.ask("Where were you on Tuesday?", no_window())),
         Ok("I... I was home.".to_string())
     );
     assert_eq!(app.turn_count(), Ok(2));

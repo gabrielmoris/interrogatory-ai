@@ -40,6 +40,9 @@ pub enum AppError {
 
     #[error("work on a background thread stopped before it finished: {message}")]
     BackgroundFailed { message: String },
+
+    #[error("the window could not be reached: {message}")]
+    WindowUnreachable { message: String },
 }
 
 /// A `Result` that fails with `AppError`. Use it instead of spelling out  `Result<T, AppError>` in every signature.
