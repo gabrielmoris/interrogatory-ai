@@ -9,6 +9,9 @@
 //! `ask` still gives back the whole reply. In 16a the engine thread put the
 //! pieces together. Since Stage 16b each piece travels to `ask` on its own,
 //! and `ask` puts them together: the tests for that are in `pieces_travel.rs`.
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::error::AppResult;
 use interrogatory_ai_lib::ids::SuspectId;
@@ -28,7 +31,7 @@ fn no_window() -> Channel<String> {
 struct HesitantEngine;
 
 impl InferenceEngine for HesitantEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say("I... ");
         say("I was ho");
         say("me.");
@@ -42,7 +45,8 @@ fn the_mock_says_its_line_one_word_at_a_time() {
     let mut pieces: Vec<String> = Vec::new();
 
     let said = engine.reply("Where were you on Tuesday?", &mut |piece| {
-        pieces.push(piece.to_string())
+        pieces.push(piece.to_string());
+        true
     });
 
     assert_eq!(said, Ok(()));

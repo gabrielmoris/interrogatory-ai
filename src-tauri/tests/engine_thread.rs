@@ -14,6 +14,9 @@
 //! Since Stage 16b each piece comes out of the answer pipe on its own, as
 //! `Said::Piece`, and a last message says how the reply ended: `Said::Done` or
 //! `Said::Failed` (see `pieces_travel.rs`).
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::engine_thread::{start, Question, Said};
 use interrogatory_ai_lib::error::{AppError, AppResult};
@@ -25,7 +28,7 @@ use tauri::async_runtime::channel;
 struct EchoEngine;
 
 impl InferenceEngine for EchoEngine {
-    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say(&format!("You asked: {prompt}"));
         Ok(())
     }
@@ -35,7 +38,7 @@ impl InferenceEngine for EchoEngine {
 struct WhereAmIEngine;
 
 impl InferenceEngine for WhereAmIEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say(&format!("{:?}", thread::current().id()));
         Ok(())
     }
@@ -45,7 +48,7 @@ impl InferenceEngine for WhereAmIEngine {
 struct BrokenEngine;
 
 impl InferenceEngine for BrokenEngine {
-    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         Err(AppError::Inference {
             message: "out of memory".to_string(),
         })

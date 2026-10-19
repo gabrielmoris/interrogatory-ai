@@ -14,6 +14,9 @@
 //! `block_on` (see `ask_async.rs`).
 //!
 //! Since Stage 16a an engine says its reply in pieces (see `pieces.rs`).
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::error::AppResult;
 use interrogatory_ai_lib::ids::SuspectId;
@@ -33,7 +36,7 @@ fn no_window() -> Channel<String> {
 struct EchoEngine;
 
 impl InferenceEngine for EchoEngine {
-    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say(prompt);
         Ok(())
     }
@@ -76,7 +79,8 @@ fn two_kinds_of_engine_can_sit_in_one_list() {
         let mut heard = String::new();
         engine
             .reply("Did you take the ledger?", &mut |piece| {
-                heard.push_str(piece)
+                heard.push_str(piece);
+                true
             })
             .expect("neither engine fails");
         replies.push(heard);

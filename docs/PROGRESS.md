@@ -1,28 +1,25 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-14 (Stage 16c cut).
+Last updated: 2026-10-19 (Stage 17a reviewed).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
-| Last reviewed | **Stage 16b**, 2026-10-14. 4/4 `pieces_travel`; 176 across thirty files, `fmt` and `clippy -D warnings` clean. Identical to the reference except blank lines. |
-| Uncommitted | 16b's review notes in `STAGE-LOG.md`. All of Stage 16c so far: `docs/stages/stage-16c-react-shows-the-pieces.md`, `tests/pieces_to_react.rs` (new), `tests/ask_command.rs` and six test files that call `ask` (`app_engine`, `ask_async`, `ask_engine_thread`, `pieces`, `pieces_travel`, `room_exchange`); `CLAUDE.md` (30: Fill it, Order it); `DECISIONS.md`, `ROADMAP.md`, this file. |
-| Next action | **His:** Stage 16c — `docs/stages/stage-16c-react-shows-the-pieces.md`. §2 pastes (four places), then steps A–D: Build it, Fill it, Order it, Type it (React). Then say ready. |
+| Last reviewed | **Stage 17a**, 2026-10-19. 4/4 `no_one_listens` (20 repeat runs); 184 across thirty-two files, `fmt` and `clippy -D warnings` clean. `src/` identical to the reference. Passed first submission. |
+| Uncommitted | All of Stage 17a — his `llm.rs` and `engine_thread.rs`, the stage doc, `tests/no_one_listens.rs` and the seven test files I changed — plus the 16c and 17a review notes in `STAGE-LOG.md`, `DECISIONS.md`, `ROADMAP.md`, this file. One commit. |
+| Next action | **His:** commit Stage 17a. **Mine:** cut Stage 17b — the player presses Stop (`CancellationToken`). The plan and the prototype are in `DECISIONS.md`, 2026-10-18. |
 | Blocked on | nothing |
 
 ## Stage queue
 
-Stages 1–16b ✅ — `STAGE-LOG.md`.
+Stages 1–17a ✅ — `STAGE-LOG.md`.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 16c | React shows the pieces | Tauri's `ipc::Channel`, Rust and TypeScript sides | cut, ~40 min. Spec `pieces_to_react.rs` (4); 180 measured |
-| 17 | the player stops the suspect mid-sentence | to be settled when cut (`ROADMAP.md`) | not cut |
+| 17b | the player presses Stop | `CancellationToken` | planned, prototyped (`DECISIONS.md`, 2026-10-18) |
+| 17c | Stop works while the suspect is silent | `select!` | planned, prototyped |
 
 ## Open, not blocking
-
-- [ ] `llm.rs :: InferenceEngine::reply` — the doc comment lost its second line, the one saying what
-      `Ok(())` and `Err` mean now that the text goes out through `say`. Tidying.
 
 - [ ] Doc comments: `ipc.rs :: case_intro_from` and `case_intro` have none. `parse_case`'s says
       "but it it fails"; `RawCase`'s says only "Raw case". Tidying.

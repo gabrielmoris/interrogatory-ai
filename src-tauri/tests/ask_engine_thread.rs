@@ -11,6 +11,9 @@
 //! outside: who answers, and what comes back when the engine fails or crashes.
 //!
 //! Since Stage 16a an engine says its reply in pieces (see `pieces.rs`).
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::error::{AppError, AppResult};
 use interrogatory_ai_lib::ids::SuspectId;
@@ -31,7 +34,7 @@ fn no_window() -> Channel<String> {
 struct WhereAmIEngine;
 
 impl InferenceEngine for WhereAmIEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say(&format!("{:?}", thread::current().id()));
         Ok(())
     }
@@ -41,7 +44,7 @@ impl InferenceEngine for WhereAmIEngine {
 struct BrokenEngine;
 
 impl InferenceEngine for BrokenEngine {
-    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         Err(AppError::Inference {
             message: "out of memory".to_string(),
         })
@@ -52,7 +55,7 @@ impl InferenceEngine for BrokenEngine {
 struct CrashingEngine;
 
 impl InferenceEngine for CrashingEngine {
-    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, _say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         panic!("the model crashed");
     }
 }

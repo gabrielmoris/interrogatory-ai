@@ -10,6 +10,9 @@
 //! No app starts here, so there is no React. `react()` below makes a channel
 //! like the one React makes, and keeps every piece that arrives, so a test can
 //! look at them.
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::error::{AppError, AppResult};
 use interrogatory_ai_lib::ids::SuspectId;
@@ -53,7 +56,7 @@ fn viktor_in_the_room(engine: Box<dyn InferenceEngine>) -> AppState {
 struct FailsHalfwayEngine;
 
 impl InferenceEngine for FailsHalfwayEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say("I was ");
         Err(AppError::Inference {
             message: "out of memory".to_string(),
@@ -68,7 +71,7 @@ struct WaitsForReactEngine {
 }
 
 impl InferenceEngine for WaitsForReactEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say("I ");
         let react_got = self.react_got.lock().expect("only this engine uses it");
         match react_got.recv_timeout(Duration::from_secs(5)) {

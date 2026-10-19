@@ -28,12 +28,14 @@ pub fn start(engine: Box<dyn InferenceEngine>) -> Sender<Question> {
 }
 
 /// Runs on the engine's thread. Answers each question until no one can ask any more.
+/// If `ask` stops reading pipe 2, `say` gives back `false`, and the engine stops talking.
 fn answer_all(engine: Box<dyn InferenceEngine>, inbox: Receiver<Question>) {
     for question in inbox {
         let finished = engine.reply(&question.text, &mut |piece| {
-            let _ = question
+            question
                 .answer_to
-                .blocking_send(Said::Piece(piece.to_string()));
+                .blocking_send(Said::Piece(piece.to_string()))
+                .is_ok()
         });
 
         let last = match finished {

@@ -352,3 +352,29 @@ rewritten that night: two Type it, four small Build it. Then at step E: `E0308 e
 found ()`, pointing at `break` — the two lines after the loop were missing.
 **Do differently.** He finished saying it is "either copy paste or too hard". The steps have two settings — type a
 printed line, or build a body — and nothing between. The middle is not settled yet; see `PROGRESS.md`.
+
+### Stage 16c — React shows the pieces ✅ 2026-10-18
+
+**Built.** React makes `new Channel<string>()` per question; `onmessage` appends each piece to the reply on screen, and
+`invoke("ask_suspect", { question, onPiece })` passes it. `ask_suspect` takes `on_piece: Channel<String>` and hands it to
+`ask`. The `Piece` arm is a block: `reply.push_str(&piece);` then `on_piece.send(piece).map_err(|e| WindowUnreachable {..})?;`.
+New `AppError::WindowUnreachable`. `App.tsx` is the minimal room (call Viktor in, ask). Spec `tests/pieces_to_react.rs` 4/4
+(10 repeat runs); 180 across thirty-one files, `fmt` and `clippy -D warnings` clean; `App.tsx` passes `tsc` and prettier. A
+`node_modules` folder and a debug build from 2026-10-18 show the app was run. Identical to the reference except one blank line inside the `Piece` arm. Committed `fca1282`.
+**Stuck.** Nowhere reported. First submission passed.
+**Do differently.** First stage with the two middle steps he chose on 2026-10-14 (`CLAUDE.md` 30): step B was Fill it (the
+send line with two gaps, his pipe-1 send next to it), step C Order it (push before send — the move decides). Both landed on
+the first try. Keep one of each per stage. If he says it was still copying, make the gaps bigger (a whole argument,
+not one name).
+
+### Stage 17a — the suspect stops when no one listens ✅ 2026-10-19
+
+**Built.** `InferenceEngine::reply` takes `say: &mut dyn FnMut(&str) -> bool`; the trait's doc comment says what `true`/`false`
+and `Ok`/`Err` mean (closes the 16a doc-comment note). `answer_all`'s closure gives back
+`question.answer_to.blocking_send(Said::Piece(piece.to_string())).is_ok()` — no `let _ =`, no `;`. `MockEngine::reply`:
+`if !say(word) { break; }`. Spec `tests/no_one_listens.rs` 4/4 (20 repeat runs); 184 across thirty-two files, `fmt` and
+`clippy -D warnings` clean. `src/` identical to the reference, byte for byte. Not committed at review.
+**Stuck.** Nowhere reported. First submission passed.
+**Do differently.** Two steps only — Fill it (the `.is_ok()` gap, his `is_some()` line next to it) and Build it (the `if`, his
+`if !is_slug(slug)` next to it). No Order it: the stage changes two places, and a third step would have been invented. A short
+stage by design; 17b (Stop button, `CancellationToken`) is the bigger one and should carry an Order it again.

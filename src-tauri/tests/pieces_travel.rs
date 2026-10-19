@@ -9,6 +9,9 @@
 //!
 //! `ask` takes the messages out one by one, in a `loop`, and puts the pieces
 //! together. It stops at the last message.
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::engine_thread::{start, Question, Said};
 use interrogatory_ai_lib::error::{AppError, AppResult};
@@ -29,7 +32,7 @@ fn no_window() -> Channel<String> {
 struct HesitantEngine;
 
 impl InferenceEngine for HesitantEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say("I... ");
         say("I was ho");
         say("me.");
@@ -41,7 +44,7 @@ impl InferenceEngine for HesitantEngine {
 struct FailsHalfwayEngine;
 
 impl InferenceEngine for FailsHalfwayEngine {
-    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str)) -> AppResult<()> {
+    fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         say("I was ");
         Err(AppError::Inference {
             message: "out of memory".to_string(),

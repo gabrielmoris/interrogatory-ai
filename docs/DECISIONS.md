@@ -5,6 +5,39 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-18 — Stage 17 splits in three; 17a: `say` gives back `bool`, and the engine stops when no one listens
+
+**Decided.** 17a: `InferenceEngine::reply(&self, prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()>`. `say` gives
+back `true` while someone listens; on `false` an engine says nothing more and gives back `Ok(())`. `answer_all`'s closure gives
+back `question.answer_to.blocking_send(Said::Piece(piece.to_string())).is_ok()`. `MockEngine`: `if !say(word) { break; }`. Spec
+`tests/no_one_listens.rs` (4: the mock stops on `false`; says everything on `true`; the engine thread says `false` once pipe 2's
+receiver is dropped; `ask` stopped by a closed window → the engine stops by its 3rd piece and the next question is answered
+whole). Seven test files take the new signature; three closures in `engine.rs`, `pieces.rs`, `app_engine.rs` end in `true`.
+Measured: 184, `fmt`/`clippy` clean, 200 repeat runs; the engine stops after 2 or 3 pieces (300 runs), 1000 with a closure that
+always says `true`. **17b (planned):** `tokio-util`'s `CancellationToken` (0.7.19, already in `Cargo.lock`). `AppState.stop:
+Mutex<CancellationToken>`; `ask` gets a fresh one from a private sync helper (`*guard = CancellationToken::new()`, clone out — the
+guard never crosses an `.await`); `stop_suspect` command → `AppState::stop` → `cancel()`; `ask` checks `stop.is_cancelled()` right
+after each `recv`, before using the message, and on a stop `break`s: the reply so far is kept in the room and given back as
+`Ok`. React: a Stop button. **17c (planned):** `tokio::select!` over `answer.recv()` and `stop.cancelled()` replaces 17b's check;
+`tokio` becomes a direct dependency with `macros` (adds `tokio-macros` to the lock). Both prototyped 2026-10-18: 185 green,
+clippy clean; a silent-engine test fails on 17b's check (the engine times out) and passes with `select!`.
+**Why.** Rule 2: ROADMAP's Stage 17 held cooperative cancellation, a token, `select!` and `Arc`. Engine side first: it is
+testable today through 16c's `WindowUnreachable` stop, and 17b's Stop needs it to free the engine thread. A thread cannot be
+stopped from outside, so the engine must be told, and `say` is its only line to the app. Dropping `ask`'s receiver is the
+signal (planned 2026-10-12); `.is_ok()` carries it into the decode loop — where Stage 19's llama.cpp loop will hear it per
+token. `bool`, not `ControlFlow`: one new type fewer. 17b checks per message before 17c's `select!`, so he meets the problem
+(a silent suspect cannot be stopped) before the tool. No `Arc` in Stage 17: the engine learns through the closed pipe, and
+`AppState` is already shared by Tauri; `Arc` arrives with `LlamaModel` (Stage 19, ROADMAP §2.3). Supersedes the 2026-10-08 line
+"`Arc` first earns its place with the stop flag".
+**Rejected.** An `Arc<AtomicBool>` stop flag read by the engine thread — a second path for what the closed pipe already says,
+and not awaitable for 17c. `Sender::is_closed()` checked in the engine thread — the engine itself still would not stop. The
+engine reading a token — tokio types in a domain module. An endless test engine — a wrong closure would hang the suite;
+1000 pieces fail fast. `Notify` for 17b — a stop pressed between replies would stop the next one. A stop message through a
+clone of pipe 2's `Sender` kept in `AppState` — the clone keeps pipe 2 open, so a crashed engine would hang `ask`.
+**Costs.** Every test engine changed signature again. An engine may ignore `false` (the trait cannot force it); the older test
+engines do, harmlessly, with 1–3 pieces. The engine hears the stop only at its next piece: a real model's prompt processing
+(before the first token) is not interrupted — revisit in Stage 19 if it is long.
+
 ### 2026-10-14 — Stage 16c: React hands `ask` a `Channel`; a piece that cannot reach React stops `ask`
 
 **Decided.** React makes `new Channel<string>()` per question and passes it to `invoke("ask_suspect", { question, onPiece })`.

@@ -85,8 +85,10 @@ FFI lifetimes.
 | 15 ✅ | the answer can be awaited | an async channel: `recv().await` | 30 |
 | 16a ✅ | the suspect speaks in pieces | a function as an input: `say: &mut dyn FnMut(&str)` | 30 |
 | 16b ✅ | each piece travels to `ask` | `loop` until the last message | 35 |
-| 16c | React shows the pieces | Tauri's `ipc::Channel`, Rust and TypeScript sides | 40 |
-| 17 | cancellation | `select!`, cooperative cancellation, `Arc` (the stop flag both sides hold) | 55 |
+| 16c ✅ | React shows the pieces | Tauri's `ipc::Channel`, Rust and TypeScript sides | 40 |
+| 17a | the suspect stops when no one listens | cooperative cancellation: `say: &mut dyn FnMut(&str) -> bool` | 25 |
+| 17b | the player presses Stop | a stop sign two places hold: `CancellationToken` | 40 |
+| 17c | Stop works while the suspect is silent | `select!` | 35 |
 | 18 | **toolchain session** — `llama-cpp-2` on macOS/Metal | **zero new concepts. Environment only.** | 2 h |
 | 19 | owning the model | one thread owns the FFI handle | 60 |
 
@@ -105,8 +107,12 @@ Each of these still has to pass Rule 2 (one new thing) before it is issued; seve
   to `ask` (16b); `ask` forwards it into a `tauri::ipc::Channel` that `ask_suspect` receives from
   React (16c). One channel per call, so a late piece can only reach the call that asked — no turn
   ids on every message. Replaces the `emit`/`listen` plan (`DECISIONS.md`, 2026-10-12).
-- **2.5 Cancellation** — `CancellationToken` checked inside the decode loop; `select!`, drop
-  semantics, cleanup order. Stage 17.
+- **2.5 Cancellation** — three steps (`DECISIONS.md`, 2026-10-18). 17a: `say` gives back `false`
+  once `ask` has dropped pipe 2's receiver, and the engine's decode loop stops itself. 17b: React's
+  Stop → `stop_suspect` → cancels the question's `CancellationToken`; `ask` checks it per message and
+  keeps the reply so far. 17c: `select!` on the next message or the token, so a silent suspect can be
+  stopped. No `Arc` here — the engine learns through the closed pipe; `Arc` comes with the model
+  (§2.3).
 - **2.6 The build** — Xcode command-line tools, CMake, Metal offload. **A session of its own,
   zero feature work alongside it.** Record the working toolchain versions in `docs/BUILD.md` the
   moment it compiles. Size the model to the Mac's unified memory: an 8B instruct at Q4_K_M is ~4.7 GB. Weights in `models/`,

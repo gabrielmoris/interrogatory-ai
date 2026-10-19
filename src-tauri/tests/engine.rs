@@ -9,6 +9,9 @@
 //!
 //! Since Stage 16a an engine says its reply in pieces: `reply` calls `say`
 //! once per piece (see `pieces.rs`). These tests put the pieces back together.
+//!
+//! Since Stage 17a `say` gives back `true` while someone is listening and
+//! `false` once no one is (see `no_one_listens.rs`).
 
 use interrogatory_ai_lib::error::AppResult;
 use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
@@ -17,7 +20,10 @@ use interrogatory_ai_lib::llm::{InferenceEngine, MockEngine};
 /// line. This function does not know it is a mock.
 fn ask(engine: &impl InferenceEngine, question: &str) -> AppResult<String> {
     let mut heard = String::new();
-    engine.reply(question, &mut |piece| heard.push_str(piece))?;
+    engine.reply(question, &mut |piece| {
+        heard.push_str(piece);
+        true
+    })?;
     Ok(heard)
 }
 
@@ -27,7 +33,8 @@ fn the_mock_answers_with_its_line() {
     let mut heard = String::new();
 
     let said = engine.reply("Where were you on Tuesday?", &mut |piece| {
-        heard.push_str(piece)
+        heard.push_str(piece);
+        true
     });
 
     assert_eq!(said, Ok(()));
