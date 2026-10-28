@@ -34,6 +34,16 @@ function App() {
     }
   }
 
+  // The player presses Stop: the suspect stops mid-sentence.
+  async function stop() {
+    setProblem("");
+    try {
+      await invoke("stop_suspect");
+    } catch (error) {
+      setProblem(JSON.stringify(error));
+    }
+  }
+
   return (
     <main className="container">
       <h1>Interrogation room</h1>
@@ -55,6 +65,10 @@ function App() {
         />
         <button type="submit">Ask</button>
       </form>
+
+      <div className="row">
+        <button onClick={stop}>Stop</button>
+      </div>
 
       <p>{reply}</p>
       <p>{problem}</p>

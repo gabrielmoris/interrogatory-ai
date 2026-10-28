@@ -5,6 +5,38 @@ Per entry: decided / why / rejected / costs. If an entry needs more, it was two 
 
 ---
 
+### 2026-10-19 — Stage 17b: a new `CancellationToken` per question; `ask` looks at it after each `recv`, before using the message
+
+**Decided.** As planned 2026-10-18, made concrete. `Cargo.toml`: `tokio-util = "0.7.19"` (already in `Cargo.lock`
+through `reqwest`; no new package). `AppState.stop_sign: Mutex<CancellationToken>`, made in `new`. `pub fn stop(&self) ->
+AppResult<()>`: lock, `cancel()`, `Ok(())`. Private `fn new_stop_sign(&self) -> AppResult<CancellationToken>`: lock (`mut`),
+`*stop_sign = CancellationToken::new();`, `Ok(stop_sign.clone())`. `ask`'s first line `let stop_sign = self.new_stop_sign()?;`;
+in the loop, `if stop_sign.is_cancelled() { break; }` between `let said = …?;` and `match said`. `ipc.rs`: sync
+`#[tauri::command] pub fn stop_suspect(state) -> AppResult<()> { state.stop() }`, registered in `lib.rs`. `App.tsx`: a Stop
+button; `stop()` is `callViktorIn` calling `stop_suspect`. A stopped reply is kept in the room and given back as `Ok`.
+Spec `tests/press_stop.rs` (5): the command's shape; Stop between questions does not stop the next reply; Stop when
+`"was "` reaches React → `Ok("I was ")`, React saw exactly that, 2 turns; a piece that arrives after Stop is not shown
+(a player thread presses Stop while `ask` waits); after Stop the engine stops by its 4th piece and the next question is
+answered whole. Steps: A, C, J Type it; E Fill it; G Order it; B, D, F, H, I Build it. Measured: 189, `fmt`/`clippy`
+clean, `tsc`/prettier clean; 200 sequential + 400 parallel runs green; both wrong places for the check fail the
+late-piece test, 200/200 each; the engine said 3 pieces (200/300) or 4. Headless app run, mock slowed to 300 ms a word:
+Stop at 0.8 s → `stop_suspect` returned in 2 ms while `ask_suspect` was in flight; `ask_suspect` returned `"I have "` at
+0.9 s; nothing more reached the screen. Without the `generate_handler!` entry React gets `"Command stop_suspect not found"`.
+**Why.** A token cannot be put back down, so one long-lived token would stop every later reply: each question gets a new
+one, made at the top of `ask` so a Stop pressed early still reaches it. The lock lives in a sync helper, like `record`:
+held inside `ask`, the std guard crosses `.await` and `ask_suspect`'s future is not `Send` (measured: "future cannot be
+sent between threads safely"). The check goes after `recv` and before use because Stop is pressed while `ask` waits:
+the message that wakes it was said after Stop. Only the late-piece test tells the three places apart, hence its thread
+and its 100 ms sleep. Field, guard and `ask`'s local are all `stop_sign`, as `phase` is field and guard.
+**Rejected.** `Mutex<Option<CancellationToken>>` with `None` between questions — a second state with nothing to do.
+`Err(Stopped)` — a stop is not a failure, and React would treat an error as the normal end. Not recording an empty
+stopped reply — a branch Phase 3 can decide on. A `stop_suspect_from(&AppState)` to test the command's body — the body is
+one call; the shape test, the review and step J's app run cover it. Counting pieces with an atomic in the test helper —
+matching on the piece's text is plainer.
+**Costs.** No test runs `stop_suspect`'s body. The late-piece test relies on a 100 ms sleep to be sure `ask` is waiting
+(0 failures in 600 runs, under load). A reply stopped before its first piece records an empty suspect turn. Stop is seen
+only when the next message comes — 0.1 s with the slowed mock, never with a silent engine: 17c.
+
 ### 2026-10-18 — Stage 17 splits in three; 17a: `say` gives back `bool`, and the engine stops when no one listens
 
 **Decided.** 17a: `InferenceEngine::reply(&self, prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()>`. `say` gives

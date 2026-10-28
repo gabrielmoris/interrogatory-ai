@@ -1,5 +1,5 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use ipc::{ask_suspect, begin_interrogation, case_intro};
+use ipc::{ask_suspect, begin_interrogation, case_intro, stop_suspect};
 use llm::MockEngine;
 use state::AppState;
 use std::path::PathBuf;
@@ -26,7 +26,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             case_intro,
             begin_interrogation,
-            ask_suspect
+            ask_suspect,
+            stop_suspect
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

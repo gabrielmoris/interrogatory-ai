@@ -8,6 +8,7 @@ use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use tauri::async_runtime::channel;
 use tauri::ipc::Channel;
+use tokio_util::sync::CancellationToken;
 
 /// What the app holds on to for as long as it runs.
 pub struct AppState {
@@ -15,6 +16,8 @@ pub struct AppState {
     phase: Mutex<Phase>,
     /// Where questions for the engine go. The engine itself lives on its own thread.
     questions: Sender<Question>,
+    /// The stop sign of the question being answered now. `stop` puts it up.
+    stop_sign: Mutex<CancellationToken>,
 }
 
 impl AppState {
@@ -23,6 +26,7 @@ impl AppState {
             cases_dir,
             phase: Mutex::new(Phase::Briefing),
             questions: start(engine),
+            stop_sign: Mutex::new(CancellationToken::new()),
         }
     }
 
@@ -52,10 +56,33 @@ impl AppState {
         Ok(phase.suspect())
     }
 
+    /// The player pressed Stop: the reply being said now ends where it is.
+    pub fn stop(&self) -> AppResult<()> {
+        let stop_sign = self.stop_sign.lock().map_err(|e| AppError::Poisoned {
+            message: e.to_string(),
+        })?;
+        stop_sign.cancel();
+        Ok(())
+    }
+
+    /// A new stop sign for the question that starts now.
+    /// `AppState` keeps one hand on it, for `stop`. `ask` gets the other.
+    fn new_stop_sign(&self) -> AppResult<CancellationToken> {
+        let mut stop_sign = self.stop_sign.lock().map_err(|e| AppError::Poisoned {
+            message: e.to_string(),
+        })?;
+
+        *stop_sign = CancellationToken::new();
+        Ok(stop_sign.clone())
+    }
+
     /// The suspect's reply to what the detective just asked.
     /// The engine says it piece by piece on its own thread. `ask` sends each piece to React
     /// through `on_piece` the moment it comes, and puts the pieces together.
+    /// If the player presses Stop, the reply ends where it is, and that much is kept.
     pub async fn ask(&self, text: &str, on_piece: Channel<String>) -> AppResult<String> {
+        let stop_sign = self.new_stop_sign()?;
+
         self.record(Speaker::Detective, text)?;
 
         let (answer_to, mut answer) = channel(1);
@@ -77,6 +104,10 @@ impl AppState {
             let said = answer.recv().await.ok_or(AppError::Inference {
                 message: "the engine stopped before it answered".to_string(),
             })?;
+
+            if stop_sign.is_cancelled() {
+                break;
+            }
 
             match said {
                 Said::Piece(piece) => {

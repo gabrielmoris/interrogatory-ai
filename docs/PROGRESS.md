@@ -1,13 +1,13 @@
 # PROGRESS — where we are
 
-Last updated: 2026-10-19 (Stage 17a reviewed).
+Last updated: 2026-10-19 (Stage 17a committed `db99f2f`; Stage 17b cut).
 
 |  |  |
 |---|---|
 | Phase | **2 — Async Rust & local LLM** (Phase 1 exit met at 10h) |
 | Last reviewed | **Stage 17a**, 2026-10-19. 4/4 `no_one_listens` (20 repeat runs); 184 across thirty-two files, `fmt` and `clippy -D warnings` clean. `src/` identical to the reference. Passed first submission. |
-| Uncommitted | All of Stage 17a — his `llm.rs` and `engine_thread.rs`, the stage doc, `tests/no_one_listens.rs` and the seven test files I changed — plus the 16c and 17a review notes in `STAGE-LOG.md`, `DECISIONS.md`, `ROADMAP.md`, this file. One commit. |
-| Next action | **His:** commit Stage 17a. **Mine:** cut Stage 17b — the player presses Stop (`CancellationToken`). The plan and the prototype are in `DECISIONS.md`, 2026-10-18. |
+| Uncommitted | Stage 17b's doc, `tests/press_stop.rs`, and the 17b notes in `DECISIONS.md` and this file. Commit them with your 17b code. |
+| Next action | **His:** Stage 17b — `docs/stages/stage-17b-the-player-presses-stop.md`. **Mine:** review 17b, then cut 17c. |
 | Blocked on | nothing |
 
 ## Stage queue
@@ -16,7 +16,7 @@ Stages 1–17a ✅ — `STAGE-LOG.md`.
 
 | # | Stage | New thing | Est |
 |---|---|---|---|
-| 17b | the player presses Stop | `CancellationToken` | planned, prototyped (`DECISIONS.md`, 2026-10-18) |
+| 17b | the player presses Stop | `CancellationToken` | cut 2026-10-19, measured (`DECISIONS.md`); awaiting him |
 | 17c | Stop works while the suspect is silent | `select!` | planned, prototyped |
 
 ## Open, not blocking

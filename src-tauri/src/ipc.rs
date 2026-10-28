@@ -84,3 +84,9 @@ pub async fn ask_suspect(
 ) -> AppResult<String> {
     state.ask(&question, on_piece).await
 }
+
+/// The player pressed Stop: the suspect stops mid-sentence.
+#[tauri::command]
+pub fn stop_suspect(state: State<'_, AppState>) -> AppResult<()> {
+    state.stop()
+}
