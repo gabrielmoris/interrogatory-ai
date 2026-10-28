@@ -26,8 +26,6 @@ impl InferenceEngine for MockEngine {
     /// Says its line one word at a time. Stops as soon as no one is listening.
     fn reply(&self, _prompt: &str, say: &mut dyn FnMut(&str) -> bool) -> AppResult<()> {
         for word in self.line.split_inclusive(' ') {
-            std::thread::sleep(std::time::Duration::from_millis(300));
-
             if !say(word) {
                 break;
             }
